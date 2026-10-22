@@ -51,9 +51,9 @@ try{
  assert.deepEqual(await page.evaluate(()=>window.__drawnCodes),[]);
  await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');await readyAction(page);
  assert.equal(await page.locator('#order-code').textContent(),'4826');
- assert.ok((await page.locator('#instruction').textContent()).includes('A 區'));
- await page.waitForFunction(()=>window.__drawnCodes.includes('4826'));
- results.push('Before greeting: no visible pickup code or shelf hint in HUD, tutorial, queue or canvas; first interaction reveals request.');
+ assert.equal(await page.locator('#order-zone').textContent(),'A');
+ assert.deepEqual(await page.evaluate(()=>window.__drawnCodes),[]);
+ results.push('Before greeting: no visible pickup code or shelf hint in HUD, tutorial, queue or canvas; first interaction reveals request in the order card only.');
  await keyTo(page,'a','x',96);await keyTo(page,'w','y',132);await page.keyboard.press('e');
  await choose(page,'4863');
  await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');

@@ -17,7 +17,7 @@
   <main class="workspace">
     <section class="scene-panel" aria-label="店面工作區">
       <div class="scene-toolbar"><span><i class="live-dot"></i> <span id="store-day">街坊集運 · 第 1 天</span></span><span id="scene-status">等你開檔</span></div>
-      <div class="canvas-wrap" id="canvas-wrap"><canvas id="shop" tabindex="0" aria-label="店員工作區。用 WASD 或方向鍵移動，E 互動；手機使用下方搖桿。"></canvas><div class="scene-vignette"></div><div id="toast" class="toast" role="status" aria-live="polite"></div></div>
+      <div class="canvas-wrap" id="canvas-wrap"><canvas id="shop" tabindex="0" aria-label="店員工作區。用 WASD 或方向鍵移動，E 互動；手機使用下方搖桿。"></canvas><div class="scene-vignette"></div></div>
       <div class="touch-controls" id="touch-controls">
         <div class="joystick" id="joystick" role="group" aria-label="移動搖桿"><div class="joystick-cross"></div><span class="joystick-knob" id="joystick-knob"></span></div>
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
@@ -30,7 +30,7 @@
         <div class="card-heading"><h1 id="order-title">下一單，交畀你</h1><span id="queue-count" class="count-pill">0 人等候</span></div>
         <div class="order-main"><div class="zone-stamp" id="order-zone">—</div><div class="order-number"><span>客人提貨碼</span><strong id="order-code">準備中</strong></div><span class="customer-mini" id="customer-mini"></span></div>
         <div class="patience-row"><span id="patience-label">客人耐性</span><strong id="patience-text">—</strong></div><div class="patience-track" role="progressbar" aria-label="客人耐性" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="patience-fill"></div></div>
-        <p class="order-instruction" id="instruction">準備好就開始今日嘅班次。</p>
+        
         <div class="held-card"><span class="held-icon">▣</span><div><small>店員手上</small><strong id="held-code">空手 · 可以取件</strong></div></div>
       </section>
       <section class="queue-card"><div class="card-heading"><h2>門口仲有…</h2><span class="small-tag">等候隊列</span></div><div id="queue-list" class="queue-list"><p class="quiet">街坊就嚟到。</p></div></section>

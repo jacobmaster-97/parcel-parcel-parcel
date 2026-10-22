@@ -44,3 +44,7 @@ P4：換日動畫與額外回饋音效。
 - 手上待上架新貨仍計入收貨數量，避免拿起最後一件就提前開門。
 - Chromium 手機模擬不是 Android/iPhone 真機；持續效能、讀屏玩法、其他語言尚未驗證。
 - 正式 HTTPS 在本環境 Chromium 有代理 CA 問題（DEBUG_HANDOFF.md）；發布時以 HTTPS 200、Pages built 與線上內容一致性驗證，不宣稱線上 Chromium 互動已通過。
+
+## 最新 UI 更正：三個紅圈區域永久留白
+
+移除右側 instruction 段落及 toast DOM、停用所有 toast 輸出；不繪製櫃檯標籤或顧客頭頂提貨碼。桌面1440×1000與手機390×844的最終離線 HTML 在接待前後、整理與換日均通過區域留白檢查，訂單卡接待後仍顯示4826，JS錯誤0。截圖 blank-areas-desktop.png、blank-areas-mobile.png。此要求取代上方過往對該段說明與 Canvas 浮標的驗收。

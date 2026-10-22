@@ -20,9 +20,9 @@ const obstacles = [...targets.filter(t=>t.type==='shelf').map(t=>({x:t.x-34,y:91
  {x:252,y:214,w:96,h:24},{x:39,y:244,w:57,h:28}];
 const world = {width:480,height:340};
 let shift = new Shift(), player, actors = new Map(), departures = [], lastTime = 0;
-let action = null, toastUntil = 0, selected = null, inventoryContext = null, selectedIndex = 0;
+let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
-let camera = {x:0,y:0,scale:2}, toastText = '', practiceDone = false, queueSignature = '';
+let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog'];
 const canWork = () => shift.canWork();
@@ -39,10 +39,9 @@ function clearInput(){
 }
 function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;clearInput(); }
 function showDialog(id){clearInput();if(!$(id).open)$(id).showModal();}
-function toast(message, bad=false){
- toastText=message;$('toast').textContent=message;$('toast').classList.add('visible');
- $('toast').classList.toggle('error',bad);toastUntil=performance.now()+3400;
-}
+// The floating message area is intentionally silent in every game phase.
+function toast() {}
+
 function beep(success=true){
  if(!sound)return;
  try{
@@ -285,8 +284,6 @@ function draw(){
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,46);
  pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,79,204,'#8d693f');
- const first=shift.queue[0],actor=actors.get(first?.id);
- if(first?.revealed&&actor&&!actor.moving){pill(first.code,actor.x,actor.y-54,'#8c5834');}
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-35,target.type==='counter'?215:target.type==='receiving'?238:89,70,26);
   if(!touch)pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
@@ -311,11 +308,6 @@ function updateUI(){
  $('patience-text').textContent=stocking?'不計時':order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
  $('held-code').textContent=held?`${held.code} · ${held.zone?`${held.zone} 區`:'自選貨架'}`:'空手 · 可以取件';
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
- $('instruction').textContent=stocking?(held?'行到任一有空位的 A／B／C 貨架，按互動上架。':''):
-  order&&!known?'先到交貨櫃檯與客人互動，登記提貨碼。':
-  held?(held.zone===null?'自由選 A／B／C 貨架上架，系統會記錄位置。':known&&order.packageId===held.id?'帶到交貨櫃檯，按互動交畀客人。':`核對編號；可帶返 ${held.zone} 區退回，或移到其他貨架。`):
-  known?`去 ${shift.packages.get(order.packageId).zone} 區貨架揀 ${order.code}，再返櫃檯交貨。`:'冇客時補貨：去收貨區拿新貨自由上架。';
- $('instruction').hidden=stocking&&!held;
  if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('completed').textContent=String(shift.stats.completed);$('revenue').textContent=`$${shift.stats.revenue}`;
  const signature=shift.phase+'|'+shift.queue.slice(1).map(o=>`${o.id}:${Math.ceil(o.patience)}`).join('|');
@@ -350,7 +342,6 @@ function loop(now){
   shift.tick(elapsed);if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
- if(toastUntil&&now>toastUntil){$('toast').classList.remove('visible');toastUntil=0;}
  draw();updateUI();requestAnimationFrame(loop);
 }
 
