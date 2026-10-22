@@ -1,0 +1,5 @@
+node_modules/
+deliverables/
+assets/.packing/
+.cache/
+.DS_Store

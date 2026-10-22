@@ -1,0 +1,11 @@
+{
+  "name": "parcel-point-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve-game.mjs",
+    "test": "node tests/game.test.mjs",
+    "build": "node tools/package-prototype.mjs"
+  }
+}
