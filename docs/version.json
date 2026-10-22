@@ -1,6 +1,6 @@
 {
-  "version": "0.3.1",
-  "html_sha256": "2d1eed19b673c1f327b7682ab59755186f97ae28eab565e880978047c72c40be",
+  "version": "0.3.2",
+  "html_sha256": "39ede42d507b8c8c977e5fa56b7cbf9c661d5c0c73922d2fb616d1de8e559979",
   "features": [
     "horizontal-queue",
     "divided-counter-layout",
@@ -8,8 +8,7 @@
     "outbound-shipping"
   ],
   "changes": [
-    "interaction label clear of terminal",
-    "open counter gate artwork",
-    "double-width entrance with no label"
+    "Gate composed from original counter artwork; unified map pixel style",
+    "Separate gate asset no longer loaded or packaged"
   ]
 }

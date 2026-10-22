@@ -6,7 +6,7 @@
 
 ## 線上遊玩
 
-https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.3.1
+https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.3.2
 
 桌面使用 WASD／方向鍵移動、E 互動、方向鍵及 Enter 選貨、Esc 返回／暫停。手機使用左下搖桿、右下情境按鈕；點選包裹後確認。
 
@@ -32,7 +32,7 @@ npm run build
 
 本地網址為 http://127.0.0.1:4173 。`docs/index.html` 是內嵌素材的獨立版，可下載離線開啟。
 
-Pages 使用 main 分支的 /docs 目錄。修改後執行 npm run build，再把 deliverables/parcel-point-prototype-v0.3.1.html 複製到 docs/index.html 並提交，即會重新部署。
+Pages 使用 main 分支的 /docs 目錄。修改後執行 npm run build，再把 deliverables/parcel-point-prototype-v0.3.2.html 複製到 docs/index.html 並提交，即會重新部署。
 
 Google Sites 可用「插入 → 嵌入 → 網址」加入上方網址，並預留足夠高度；建議同時提供另開視窗遊玩連結。
 
@@ -45,3 +45,6 @@ Google Sites 可用「插入 → 嵌入 → 網址」加入上方網址，並預
 ### v0.3.1
 
 互動浮標移至店員側左方以避開收銀機；新增開啟的活動門圖案；入口加闊一倍並移除出入口浮標。
+
+### v0.3.2
+活動門改用原櫃檯貼圖組成，統一地圖畫風，停止使用獨立門素材。

@@ -83,3 +83,7 @@ P4：送貨員專用卸貨肢體動畫。
 - 未改遊戲規則；27項規則為v0.3既有驗收。完整browser-smoke新單檔驗收結果見prototype-browser-report.json。
 - UI audit：P1浮標遮擋已解決；P3門圖案清晰。閱讀順序為訂單、角色／互動點、場景設施；無新增HUD文字。手機等效預覽已驗證，真機、安全區及持續效能未驗證。
 - UI Score：Readable 8/10、UX 8/10、Accessibility 6/10、Commercial 8/10、Retention 7/10、Google Play Risk 3/10（設計估計，非商店評分預測）。P0無新增阻塞；P1已修；P2真機待驗；P3門貼圖完成；P4未加動畫。
+
+## v0.3.2 統一活動門畫風
+
+採用原counter.png像素組成門板，不再載入／打包staff_gate.png。桌面1440×1000與手機390×844已目視；定點驗收通道可走通、互動浮標存在且出入口浮標消失、獨立門資產不在打包內容，JS錯誤0，報告gate-style-report.json。僅改繪圖，沿用v0.3.1完整流程驗收；未重跑規則／全流程。真機仍未驗證。UI audit：P1畫風不一致已修正；P0/P2無新增；P3沿用櫃檯調色與像素，P4無新增動畫。UI Score沿用v0.3.1估計，本次不涉及HUD／觸控變更。

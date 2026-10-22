@@ -9,7 +9,7 @@ const people = ['customer_young', 'customer_office', 'customer_senior'];
 const characterNames = ['courier_walk','courier_carry_walk','clerk_walk','clerk_carry_walk','clerk_work','clerk_idle','clerk_carry_idle',
  ...people.flatMap(p=>[`${p}_walk`,`${p}_carry_walk`,`${p}_idle`])];
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
- 'scanner','checkout_terminal','trolley','outbound_cage','staff_gate'];
+ 'scanner','checkout_terminal','trolley','outbound_cage'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
  ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
@@ -237,9 +237,15 @@ function drawLongCounter(){
  for(const [left,right] of [[0,GATE.left],[GATE.right,world.width]]){
   for(let x=left;x<right;x+=16){const width=Math.min(16,right-x);ctx.drawImage(img,40,36,width,40,x,160,width,40);}
  }
- // Open gate stays beside the passage; precise source crop excludes transparent margins.
- const gate=images.get('staff_gate');
- if(gate)ctx.drawImage(gate,327,103,287,1472,GATE.left-10,182,14,58);
+ // Build the open counter leaf from the SAME pixels as the fixed counter.
+ // Same cream top, teal front, charcoal edging and pixel density; no separate art.
+ ctx.save();ctx.translate(GATE.left-6,184);ctx.rotate(Math.PI/2);
+ ctx.drawImage(img,40,44,16,30,0,-10,54,20);ctx.restore();
+ // Small flush hinges and pull, using the counter's existing cream/edge palette.
+ ctx.fillStyle='#253b38';ctx.fillRect(GATE.left-8,185,5,3);ctx.fillRect(GATE.left-8,222,5,3);
+ ctx.fillStyle='#e9d9b9';ctx.fillRect(GATE.left-6,186,3,1);ctx.fillRect(GATE.left-6,223,3,1);
+ ctx.fillStyle='#253b38';ctx.fillRect(GATE.left-3,228,3,6);
+ ctx.fillStyle='#e9d9b9';ctx.fillRect(GATE.left-2,229,1,4);
  drawProp('checkout_terminal',counter.x+10,164,.7);drawProp('scanner',counter.x-24,178,.65);
 }
 function pill(text,x,y,color='#315b49'){
