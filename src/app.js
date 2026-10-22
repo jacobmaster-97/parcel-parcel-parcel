@@ -160,7 +160,7 @@ function closeInventory(focus=true){
 function finish(){
  closeDialogs();clearInput();action=null;const s=shift.stats;
  $('result-title').textContent=`第 ${shift.day} 天 · 當值成績`;
- $('result-comment').textContent=s.completed>=8?'手腳俐落，街坊都收齊貨！':s.completed>0?'每一單都係進步，下次再順手啲。':'先試不計時練習，熟習貨架同交貨流程。';
+ $('result-comment').textContent=s.completed>=8?'手腳俐落，街坊都收齊貨！':s.completed>0?'每一單都係進步，下次再順手啲。':'下一天先接待客人，再按提示找貨，慢慢掌握節奏。';
  $('result-grid').replaceChildren();
  for(const [label,value] of [['累計收入',`$${shift.totalRevenue}`],['完成交貨',`${s.completed} 單`],['服務收入',`$${s.revenue}`],['新貨上架',`${s.stocked} 件`],['錯件／流失',`${s.errors} / ${s.missed}`]]){
   const box=document.createElement('div'),name=document.createElement('small'),number=document.createElement('strong');
@@ -402,7 +402,7 @@ $('pause-button').addEventListener('click',()=>pause());$('help-button').addEven
 $('practice-button').addEventListener('click',()=>start(true));$('start-button').addEventListener('click',()=>start(false));
 $('resume-button').addEventListener('click',resume);$('restart-button').addEventListener('click',()=>start(shift.practice));
 $('play-again').addEventListener('click',()=>{closeDialogs();shift.beginStocking();processEvents();$('pause-button').disabled=false;canvas.focus({preventScroll:true});});
-$('next-day').addEventListener('click',()=>{closeInventory(false);shift.nextDay();processEvents();});$('result-practice').addEventListener('click',()=>start(true));
+$('next-day').addEventListener('click',()=>{closeInventory(false);shift.nextDay();processEvents();});
 $('practice-to-shift').addEventListener('click',()=>start(false));
 $('inventory-close').addEventListener('click',()=>closeInventory());$('inventory-confirm').addEventListener('click',confirmParcel);
 $('inventory-pause').addEventListener('click',()=>{closeInventory(false);pause();});
