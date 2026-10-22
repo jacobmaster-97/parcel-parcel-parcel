@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const require=createRequire(import.meta.url);
 const {chromium}=require('playwright');
 const base=process.env.GAME_URL||'http://127.0.0.1:4173';
+const gameURL=base.startsWith('file:')?`${base}?qa=1`:`${base}/?qa=1`;
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const failures=[],results=[];
 const screenshotDir=new URL('../deliverables/',import.meta.url).pathname;
@@ -13,7 +14,7 @@ async function setup(options){
  page.on('console',m=>{if(m.type()==='error')failures.push(m.text());});
  page.on('response',r=>{if(r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});
  await page.addInitScript(()=>{window.__drawnCodes=[];const draw=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){if(/^\d{4}$/.test(String(text)))window.__drawnCodes.push(String(text));return draw.call(this,text,...args);};});
- await page.goto(`${base}/?qa=1`);await page.locator('#practice-button:enabled').waitFor();
+ await page.goto(gameURL);await page.locator('#practice-button:enabled').waitFor();
  return {context,page};
 }
 const snapshot=page=>page.evaluate(()=>window.__parcelQA.snapshot());
@@ -32,6 +33,7 @@ async function assertControlsInsideViewport(page){
 async function readyAction(page){await page.waitForFunction(()=>!window.__parcelQA.snapshot().action);}
 async function keyTo(page,key,axis,target){
  const before=(await snapshot(page)).player[axis],positive=target>before;
+ if(Math.abs(target-before)<=1)return;
  await page.keyboard.down(key);
  try{await page.waitForFunction(({axis,target,positive})=>{
   const p=window.__parcelQA.snapshot().player[axis];return positive?p>=target-1:p<=target+1;
@@ -46,28 +48,30 @@ async function choose(page,code,touch=false,zone='A'){
 try{
  const {page,context}=await setup({viewport:{width:1440,height:1000}});
  await page.locator('#practice-button').click();
+ assert.equal((await snapshot(page)).world.width,350);
+ assert.deepEqual((await snapshot(page)).targets.filter(t=>t.type==='shelf').map(t=>t.x),[105,175,245]);
  await page.waitForFunction(()=>document.querySelector('#order-code').textContent==='待接待');
  assert.ok(!(await page.locator('body').innerText()).includes('4826'));
  assert.deepEqual(await page.evaluate(()=>window.__drawnCodes),[]);
- await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');await readyAction(page);
+ await keyTo(page,'s','y',195);await keyTo(page,'d','x',175);await page.keyboard.press('e');await readyAction(page);
  assert.equal(await page.locator('#order-code').textContent(),'4826');
  assert.equal(await page.locator('#order-zone').textContent(),'A');
  assert.deepEqual(await page.evaluate(()=>window.__drawnCodes),[]);
  results.push('Before greeting: no visible pickup code or shelf hint in HUD, tutorial, queue or canvas; first interaction reveals request in the order card only.');
- await keyTo(page,'a','x',96);await keyTo(page,'w','y',132);await page.keyboard.press('e');
+ await keyTo(page,'a','x',105);await keyTo(page,'w','y',132);await page.keyboard.press('e');
  await choose(page,'4863');
- await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');
+ await keyTo(page,'s','y',195);await keyTo(page,'d','x',175);await page.keyboard.press('e');
  let state=await snapshot(page);assert.equal(state.stats.errors,1);assert.equal(state.held.code,'4863');
- await keyTo(page,'a','x',96);await keyTo(page,'w','y',132);await page.keyboard.press('e');
+ await keyTo(page,'a','x',105);await keyTo(page,'w','y',132);await page.keyboard.press('e');
  await readyAction(page);assert.equal((await snapshot(page)).held,null);
  await page.keyboard.press('e');await choose(page,'4826');
- await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');
+ await keyTo(page,'s','y',195);await keyTo(page,'d','x',175);await page.keyboard.press('e');
  await readyAction(page);state=await snapshot(page);assert.equal(state.stats.completed,1);assert.equal(state.held,null);
  // Holding the key must not cause another inventory transaction or payout.
  await page.keyboard.down('e');await page.waitForTimeout(550);await page.keyboard.up('e');
  assert.equal((await snapshot(page)).stats.completed,1);
- await keyTo(page,'a','x',116);await keyTo(page,'s','y',263);await page.keyboard.press('e');
- await choose(page,'5048',false,'receiving');await keyTo(page,'w','y',132);await keyTo(page,'d','x',228);
+ await keyTo(page,'a','x',95);await keyTo(page,'s','y',263);await page.keyboard.press('e');
+ await choose(page,'5048',false,'receiving');await keyTo(page,'w','y',132);await keyTo(page,'d','x',175);
  await page.keyboard.press('e');await page.locator('#practice-done-dialog[open]').waitFor();
  state=await snapshot(page);assert.equal(state.stats.stocked,1);assert.equal(state.remaining,180);assert.equal(state.packages.find(p=>p.code==='5048').zone,'B');
  results.push('Desktop keyboard: wrong parcel, return, correct delivery, input-repeat guard, receiving and stock completed.');
@@ -79,7 +83,7 @@ try{
  await context.close();
  const timedContext=await browser.newContext({viewport:{width:1440,height:1000}}),timed=await timedContext.newPage();
  timed.on('pageerror',e=>failures.push(e.message));
- await timed.clock.install();await timed.goto(`${base}/?qa=1`);await timed.locator('#start-button:enabled').waitFor();
+ await timed.clock.install();await timed.goto(gameURL);await timed.locator('#start-button:enabled').waitFor();
  await timed.locator('#start-button').click();
  await timed.clock.fastForward(10000);
  const afterGap=(await snapshot(timed)).remaining;assert.ok(afterGap>=169&&afterGap<=171,`Real elapsed time: ${afterGap}`);
@@ -101,9 +105,9 @@ try{
  const incoming=(await snapshot(timed)).packages.filter(p=>p.location==='receiving');
  assert.equal(incoming.length,3);
  for(const [i,p] of incoming.entries()){
-  await keyTo(timed,'a','x',116);await keyTo(timed,'s','y',263);await timed.keyboard.press('e');
+  await keyTo(timed,'a','x',95);await keyTo(timed,'s','y',263);await timed.keyboard.press('e');
   await choose(timed,p.code,false,'receiving');await keyTo(timed,'w','y',132);
-  await keyTo(timed,'d','x',i<2?360:228);await timed.keyboard.press('e');await readyAction(timed);
+  await keyTo(timed,'d','x',i<2?245:175);await timed.keyboard.press('e');await readyAction(timed);
  }
  state=await snapshot(timed);assert.equal(state.day,3);assert.equal(state.phase,'playing');assert.equal(state.receivingCount,0);
  assert.equal(state.packages.find(p=>p.id===incoming[0].id).zone,'C');
@@ -117,6 +121,7 @@ try{
  await mp.locator('#practice-button').tap();
  async function touchTo(axis,target){
   const before=(await snapshot(mp)).player[axis],positive=target>before;
+  if(Math.abs(target-before)<=1)return;
   const b=await mp.locator('#joystick').boundingBox();
   const x=b.x+b.width/2+(axis==='x'?(positive?1:-1)*b.width*.33:0);
   const y=b.y+b.height/2+(axis==='y'?(positive?1:-1)*b.height*.33:0);
@@ -126,9 +131,9 @@ try{
   },{axis,target,positive},{timeout:7000});}
   finally{await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
  }
- await touchTo('y',195);await touchTo('x',300);await mp.locator('#touch-action').tap();await readyAction(mp);
+ await touchTo('y',195);await touchTo('x',175);await mp.locator('#touch-action').tap();await readyAction(mp);
  assert.equal(await mp.locator('#order-code').textContent(),'4826');
- await touchTo('x',96);await touchTo('y',132);
+ await touchTo('x',105);await touchTo('y',132);
  // Keep a left thumb on the joystick while tapping interact with a second finger.
  const joy=await mp.locator('#joystick').boundingBox(),button=await mp.locator('#touch-action').boundingBox();
  const finger={x:joy.x+joy.width/2,y:joy.y+joy.height/2,id:1};
@@ -138,10 +143,10 @@ try{
  await mp.locator('#inventory-dialog[open]').waitFor();
  await mp.screenshot({path:screenshotDir+'prototype-mobile-inventory.png'});
  await choose(mp,'4826',true);
- await touchTo('y',195);await touchTo('x',300);await mp.locator('#touch-action').tap();await readyAction(mp);
+ await touchTo('y',195);await touchTo('x',175);await mp.locator('#touch-action').tap();await readyAction(mp);
  assert.equal((await snapshot(mp)).stats.completed,1);
- await touchTo('x',116);await touchTo('y',263);await mp.locator('#touch-action').tap();await choose(mp,'5048',true,'receiving');
- await touchTo('y',132);await touchTo('x',228);await mp.locator('#touch-action').tap();
+ await touchTo('x',95);await touchTo('y',263);await mp.locator('#touch-action').tap();await choose(mp,'5048',true,'receiving');
+ await touchTo('y',132);await touchTo('x',175);await mp.locator('#touch-action').tap();
  await mp.locator('#practice-done-dialog[open]').waitFor();assert.equal((await snapshot(mp)).stats.stocked,1);assert.equal((await snapshot(mp)).packages.find(p=>p.code==='5048').zone,'B');
  results.push('Mobile touch: two-finger interaction, parcel selection, delivery and replenishment without keyboard.');
  await mp.locator('#practice-to-shift').tap();

@@ -37,3 +37,5 @@ Google Sites 可用「插入 → 嵌入 → 網址」加入上方網址，並預
 16 項規則測試、桌面及手機模擬流程通過，詳見 QA_REPORT.md。尚待 Android／iPhone 真機與 Google Sites 實際嵌入測試。重新整理會重開班次；員工、分店、跨日存檔及自取櫃玩法未實作。
 
 角色及場景為 AI 生成並整理的原創素材；部分右向側身鏡像，持貨動畫使用固定紙箱。開發流程使用 GameStudio skill：https://github.com/guangyuspace/codex-gamestudio-skill ，未將該 skill 文件或程式打包至本倉庫。
+
+地圖收窄過渡版：350×340，三組貨架中心間距70；櫃檯置中、收貨區及排隊路徑同步調整。移速、營業時間、客流及耐性保持原值，方便後續重劃地圖。

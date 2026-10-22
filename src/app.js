@@ -11,14 +11,19 @@ const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parc
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
  ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
+// Map positions live together so the next shop-layout revision has one owner.
+const world = {width:350,height:340};
 const targets = [
- ...ZONES.map((zone,i)=>({id:zone,type:'shelf',zone,x:96+i*132,y:130,footY:110})),
- {id:'counter',type:'counter',x:300,y:195,footY:237},
- {id:'receiving',type:'receiving',x:116,y:263,footY:270}
+ ...ZONES.map((zone,i)=>({id:zone,type:'shelf',zone,x:105+i*70,y:130,footY:110})),
+ {id:'counter',type:'counter',x:175,y:195,footY:237},
+ {id:'receiving',type:'receiving',x:95,y:263,footY:270}
 ];
+const counter=targets.find(t=>t.id==='counter'),receiving=targets.find(t=>t.id==='receiving');
+const cage={x:33,y:receiving.footY};
+const queuePoints=[{x:counter.x,y:282},{x:228,y:286},{x:275,y:299},{x:318,y:309}];
+// The 101px aisle in front of the shelf bank leaves more than two 32px actors.
 const obstacles = [...targets.filter(t=>t.type==='shelf').map(t=>({x:t.x-34,y:91,w:68,h:22})),
- {x:252,y:214,w:96,h:24},{x:39,y:244,w:57,h:28}];
-const world = {width:480,height:340};
+ {x:counter.x-48,y:214,w:96,h:24},{x:cage.x-29,y:244,w:57,h:28}];
 let shift = new Shift(), player, actors = new Map(), departures = [], lastTime = 0;
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
@@ -31,7 +36,7 @@ const requestText = () => {
  return o ? o.revealed ? `客人要：${o.code} · ${shift.packages.get(o.packageId).zone} 區` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 A／B／C；不計時。' : '暫時冇客，趁空檔上架新貨。';
 };
 const dialogOpen = () => dialogIds.some(id=>$(id).open);
-function resetPlayer(){ player={x:240,y:178,face:'down',moving:false,travel:0}; }
+function resetPlayer(){ player={x:world.width/2,y:178,face:'down',moving:false,travel:0}; }
 resetPlayer();
 
 function clearInput(){
@@ -59,7 +64,7 @@ function start(practice=false){
  closeDialogs();shift=new Shift({practice});resetPlayer();actors=new Map();departures=[];
  action=null;practiceDone=false;queueSignature='';shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 A／B／C 上架。';
- const first=actors.get(shift.queue[0]?.id);if(first){first.x=300;first.y=282;first.moving=false;}
+ const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
  toast(practice?'練習不計時：先到櫃檯接待客人，登記提貨要求。':'開檔！先接待客人，空檔自由上架新貨。');
 }
@@ -100,7 +105,7 @@ function interact(){
  if(target.type==='counter'){
   if(shift.phase==='stocking'){toast('今日已停止接客，先整理新貨或按「下一天」開門。');return;}
   const first=actors.get(shift.queue[0]?.id);
-  if(first&&Math.hypot(first.x-300,first.y-282)>12){toast('客人行緊過嚟，等佢到櫃檯先。');return;}
+  if(first&&Math.hypot(first.x-queuePoints[0].x,first.y-queuePoints[0].y)>12){toast('客人行緊過嚟，等佢到櫃檯先。');return;}
   handleResult(shift.deliver(),'place');
  }else if(target.type==='shelf'){
   if(shift.held)handleResult(shift.stock(target.zone),'place');else openInventory(target);
@@ -170,7 +175,7 @@ function finish(){
 function processEvents(){
  for(const event of shift.drainEvents()){
   if(event.type==='customer')actors.set(event.order.id,{id:event.order.id,appearance:event.order.appearance,
-   x:462,y:311,face:'left',moving:true,travel:0,carrying:false});
+   x:world.width+16,y:311,face:'left',moving:true,travel:0,carrying:false});
   if(event.type==='delivered'||event.type==='missed'||event.type==='closed'){
    const actor=actors.get(event.order.id);
    if(actor){actors.delete(actor.id);actor.carrying=event.type==='delivered';departures.push(actor);}
@@ -190,7 +195,7 @@ function processEvents(){
  }
 }
 function canStand(x,y){
- if(x<15||x>465||y<57||y>326)return false;
+ if(x<15||x>world.width-15||y<57||y>world.height-14)return false;
  return !obstacles.some(o=>x+8>o.x&&x-8<o.x+o.w&&y>o.y&&y-8<o.y+o.h);
 }
 function updatePlayer(dt){
@@ -220,11 +225,10 @@ function walkActor(actor,target,dt){
 function updateActors(dt){
  shift.queue.forEach((order,i)=>{
   const actor=actors.get(order.id);if(!actor)return;
-  const points=[{x:300,y:282},{x:363,y:286},{x:408,y:299},{x:449,y:309}];
-  walkActor(actor,points[i],dt);
+  walkActor(actor,queuePoints[i],dt);
  });
- departures.forEach(actor=>walkActor(actor,{x:515,y:310},dt));
- departures=departures.filter(actor=>actor.x<500);
+ departures.forEach(actor=>walkActor(actor,{x:world.width+35,y:310},dt));
+ departures=departures.filter(actor=>actor.x<world.width+20);
 }
 function drawTile(index,x,y){const img=images.get('tiles');if(img)ctx.drawImage(img,index%4*32,Math.floor(index/4)*32,32,32,x,y,32,32);}
 function drawProp(name,x,y,scale=1){const img=images.get(name);if(img)ctx.drawImage(img,x-48*scale,y-76*scale,96*scale,80*scale);}
@@ -261,10 +265,10 @@ function draw(){
  ctx.setTransform(dpr*scale,0,0,dpr*scale,Math.round((offsetX-camera.x)*dpr*scale),Math.round((offsetY-camera.y)*dpr*scale));
  ctx.save();ctx.beginPath();ctx.rect(0,0,world.width,world.height);ctx.clip();
  for(let y=0;y<world.height;y+=32)for(let x=0;x<world.width;x+=32)drawTile(y<32?4:15,x,y);
- for(const point of [{x:358,y:285},{x:402,y:301},{x:442,y:309}]){
+ for(const point of queuePoints.slice(1)){
   ctx.strokeStyle='#bda879';ctx.lineWidth=1;ctx.strokeRect(point.x-13,point.y-6,26,10);
  }
- ctx.strokeStyle='#518378';ctx.setLineDash([4,3]);ctx.strokeRect(34,211,99,69);ctx.setLineDash([]);
+ ctx.strokeStyle='#518378';ctx.setLineDash([4,3]);ctx.strokeRect(Math.max(1,cage.x-34),211,99,69);ctx.setLineDash([]);
  const target=closestTarget();
  const drawables=[];
  for(const shelf of targets.filter(t=>t.type==='shelf'))drawables.push({y:shelf.footY,draw:()=>{
@@ -274,19 +278,19 @@ function draw(){
    drawProp('parcel_small',shelf.x+(i%2===0?-15:15),shelf.footY-27+Math.floor(i/2)*21,.7);
   });
  }});
- drawables.push({y:237,draw:()=>{drawProp('counter',300,237,1.25);drawProp('checkout_terminal',310,198,.7);drawProp('scanner',275,211,.65);}});
- drawables.push({y:270,draw:()=>{
-  drawProp('receiving_cage',68,270,1.1);const count=shift.receiving.filter(s=>s.packageId).length;
-  if(count)drawProp('parcel_medium',68,248,.9);drawProp('trolley',136,277,.8);
+ drawables.push({y:counter.footY,draw:()=>{drawProp('counter',counter.x,counter.footY,1.25);drawProp('checkout_terminal',counter.x+10,198,.7);drawProp('scanner',counter.x-25,211,.65);}});
+ drawables.push({y:receiving.footY,draw:()=>{
+  drawProp('receiving_cage',cage.x,cage.y,1.1);const count=shift.receiving.filter(s=>s.packageId).length;
+  if(count)drawProp('parcel_medium',cage.x,248,.9);drawProp('trolley',cage.x+68,277,.8);
  }});
  for(const actor of [...actors.values(),...departures])drawables.push({y:actor.y,draw:()=>drawActor(actor)});
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,46);
- pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,79,204,'#8d693f');
+ pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,cage.x+11,204,'#8d693f');
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-35,target.type==='counter'?215:target.type==='receiving'?238:89,70,26);
-  if(!touch)pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
+  if(!touch&&target.type!=='counter')pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
  }
  ctx.restore();
 }
@@ -414,7 +418,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 });
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
-if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({phase:shift.phase,
+if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({world:{...world},targets:targets.map(t=>({...t})),phase:shift.phase,
  day:shift.day,totalRevenue:shift.totalRevenue,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
