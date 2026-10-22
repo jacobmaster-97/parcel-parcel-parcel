@@ -9,16 +9,15 @@ function files(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e
 const assetFiles=['characters','environment','ui'].flatMap(folder=>files(path.join(root,'assets',folder))).filter(p=>p.endsWith('.png'));
 const embedded=Object.fromEntries(assetFiles.map(file=>[path.relative(root,file).split(path.sep).join('/'),`data:image/png;base64,${fs.readFileSync(file).toString('base64')}`]));
 const css=fs.readFileSync(path.join(root,'app.css'),'utf8');
-const rules=fs.readFileSync(path.join(root,'src/game.js'),'utf8').replace(/^export /gm,'');
-const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8').replace(/^import .*;\s*$/m,'');
+const code=['layout.js','courier-art.js','game.js','app.js'].map(name=>fs.readFileSync(path.join(root,'src',name),'utf8').replace(/^import .*;\s*$/gm,'').replace(/^export /gm,'')).join('\n');
 let html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 html=html.replace('<link rel="stylesheet" href="app.css">',`<style>${css}</style>`);
 html=html.replace(/src="(assets\/[^"<>]+\.png)"/g,(match,name)=>`src="${embedded[name]}"`);
 html=html.replace('<script type="module" src="src/app.js"></script>',
- `<script>window.__PACKAGED_ASSETS__=${JSON.stringify(embedded)};</script>\n<script type="module">\n${rules}\n${app}\n</script>`);
-const single=path.join(destination,'parcel-point-prototype-v0.2.html');fs.writeFileSync(single,html);
-const zip=path.join(destination,'parcel-point-prototype-v0.2.zip');
-const entries=['index.html','app.css','package.json','src/game.js','src/app.js','tools/serve-game.mjs',
+ `<script>window.__PACKAGED_ASSETS__=${JSON.stringify(embedded)};</script>\n<script type="module">\n${code}\n</script>`);
+const single=path.join(destination,'parcel-point-prototype-v0.3.html');fs.writeFileSync(single,html);
+const zip=path.join(destination,'parcel-point-prototype-v0.3.zip');
+const entries=['index.html','app.css','package.json','src/game.js','src/app.js','src/layout.js','src/courier-art.js','tools/serve-game.mjs',
  'tools/package-prototype.mjs','tests/game.test.mjs','tests/browser-smoke.mjs','tests/offline-smoke.mjs',
  'PROTOTYPE.md','QA_REPORT.md',...assetFiles.map(f=>path.relative(root,f))];
 // Standard ZIP assembly with built-in Node facilities: no runtime dependencies

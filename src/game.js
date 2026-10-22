@@ -1,10 +1,15 @@
+import {COURIER_ROUTE} from './layout.js';
 export const ZONES = ['A', 'B', 'C'];
 export const SHIFT_SECONDS = 180;
 const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
-  constructor({practice = false, seed = 7} = {}) {
+  constructor({practice = false, seed = 7, shippingChance = .2} = {}) {
     this.practice = practice;
+    this.shippingChance = shippingChance;
+    this.outbound = Array.from({length:6}, slot);
+    this.courier = null;
+    this.courierSerial = 0;
     this.seed = seed;
     this.phase = 'ready';
     this.day = 1;
@@ -22,7 +27,7 @@ export class Shift {
     this.orderSerial = 0;
     this.customerTimer = 10;
     this.deliveryTimer = 25;
-    this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0};
+    this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.events = [];
     for (const zone of ZONES) for (let i = 0; i < 2; i++) this.addPackage(zone, 'shelf');
     for (const zone of ZONES) this.addPackage(zone, 'receiving');
@@ -44,29 +49,44 @@ export class Shift {
   beginStocking() {
     if (this.phase !== 'closing') return false;
     this.phase = 'stocking'; this.emit('stocking');
-    if (this.receivingCount() === 0) this.nextDay();
+    if (this.receivingCount() === 0 && !this.isHoldingShipping()) this.nextDay();
     return true;
   }
   nextDay() {
     if (this.phase !== 'stocking') return false;
-    if (this.held && !this.returnHeld().ok) return false;
+    if (this.held && !this.isHoldingShipping() && !this.returnHeld().ok) return false;
+    this.forwardOutbound();
     this.day++; this.remaining = SHIFT_SECONDS; this.elapsed = 0;
-    this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0};
+    this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.customerTimer = 10; this.deliveryTimer = 25; this.phase = 'playing';
     this.emit('daystart', {day: this.day}); this.spawnCustomer(); return true;
   }
   closeDay() {
     if (this.phase !== 'playing') return;
-    if (this.held) this.returnHeld();
+    if (this.held && !this.isHoldingShipping()) this.returnHeld();
+    this.forwardOutbound();
+    if (this.courier && this.courier.stage !== 'leaving') this.turnCourierAround();
     for (const order of this.queue) {
       order.status = 'closed';
       const p = this.packages.get(order.packageId);
       if (p.orderId === order.id) p.orderId = null;
+      if (order.type === 'shipping') this.cancelShipping(p);
       this.emit('closed', {order: {...order}});
     }
     this.queue = []; this.phase = 'closing'; this.emit('end');
   }
-  slots(origin) { return origin.type === 'shelf' ? this.shelves[origin.zone] : this.receiving; }
+  slots(origin) { return origin.type === 'shelf' ? this.shelves[origin.zone] : origin.type === 'outbound' ? this.outbound : this.receiving; }
+  isHoldingShipping() { return this.held && this.packages.get(this.held).kind === 'shipping'; }
+  forwardOutbound() {
+    for (const s of this.outbound) if (s.packageId) {
+      this.packages.get(s.packageId).location = 'sent'; s.packageId = null;
+    }
+  }
+  cancelShipping(p) {
+    const s = this.outbound[p.index];
+    if (s?.reservedFor === p.id) s.reservedFor = null;
+    p.location = 'cancelled'; p.orderId = null;
+  }
   addPackage(zone, location) {
     const slots = location === 'shelf' ? this.shelves[zone] : this.receiving;
     const index = slots.findIndex(s => !s.packageId && !s.reservedFor);
@@ -81,19 +101,45 @@ export class Shift {
   available(zone = null) {
     return [...this.packages.values()].filter(p => p.location === 'shelf' && !p.orderId && (!zone || p.zone === zone));
   }
-  spawnCustomer() {
+  spawnCustomer({type = null} = {}) {
     if (this.phase !== 'playing' || this.queue.length >= 4) return null;
+    const free = this.outbound.findIndex(s => !s.packageId && !s.reservedFor);
+    let shipping = type === 'shipping' || (!type && !this.practice && this.orderSerial > 0 && this.random() < this.shippingChance);
+    if (shipping && free < 0) { if (type) return null; shipping = false; }
     const choices = this.available();
-    if (!choices.length) return null;
-    const pkg = this.orderSerial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
+    if (!shipping && !choices.length) return null;
     const serial = this.orderSerial++;
-    const order = {id: `O${serial + 1}`, packageId: pkg.id, code: pkg.code, zone: pkg.zone,
-      appearance: serial % 3, patience: serial === 0 ? 60 : 48 + Math.floor(this.random() * 10),
-      maxPatience: serial === 0 ? 60 : 58, status: 'waiting', revealed: false};
-    pkg.orderId = order.id;
-    this.queue.push(order); this.orders.push(order);
-    this.emit('customer', {order: {...order}});
-    return order;
+    let pkg;
+    if (shipping) {
+      const id = `S${++this.serial}`;
+      pkg = {id,kind:'shipping',code:id,zone:null,location:'customer',index:free,orderId:null,origin:null};
+      this.packages.set(id,pkg); this.outbound[free].reservedFor = id;
+    } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
+    const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
+      appearance:serial%3,patience:serial===0?60:48+Math.floor(this.random()*10),maxPatience:serial===0?60:58,
+      status:'waiting',revealed:false};
+    pkg.orderId=order.id; this.queue.push(order); this.orders.push(order);
+    this.emit('customer',{order:{...order}}); return order;
+  }
+  acceptShipping(order) {
+    order.revealed = true;
+    if (this.held) return {ok:false,message:'先完成手上貨物，再接收寄貨'};
+    const p = this.packages.get(order.packageId);
+    if (this.outbound[p.index].reservedFor !== p.id) return {ok:false,message:'寄貨位已不可用'};
+    p.location='held'; p.origin={type:'outbound',zone:null,index:p.index}; p.orderId=null; this.held=p.id;
+    order.status='accepted'; this.queue.shift(); this.emit('shippingAccepted',{order:{...order}});
+    return {ok:true,message:'已接收寄貨，請放到紫色寄貨區'};
+  }
+  storeShipping() {
+    if (!this.canWork() || !this.isHoldingShipping()) return {ok:false,message:'手上沒有待寄貨物'};
+    const p=this.packages.get(this.held),index=p.origin.index,s=this.outbound[index];
+    if (s.packageId || s.reservedFor!==p.id) return {ok:false,message:'寄貨位暫時不可用'};
+    s.packageId=p.id; s.reservedFor=null; p.location='outbound'; p.index=index; p.origin=null; this.held=null;
+    const order=this.orders.find(o=>o.packageId===p.id);if(order)order.status='completed';
+    const earned=12; this.stats.shipped++; this.stats.revenue+=earned; this.totalRevenue+=earned;
+    this.emit('shipped',{packageId:p.id,earned});
+    if(this.phase==='stocking' && this.receivingCount()===0) this.nextDay();
+    return {ok:true,message:'寄貨入庫成功'};
   }
   take(id) {
     if (!this.canWork()) return {ok: false, message: '班次已暫停或結束'};
@@ -116,6 +162,7 @@ export class Shift {
   returnHeld() {
     if (!this.canWork() || !this.held) return {ok: false, message: '手上沒有包裹'};
     const p = this.packages.get(this.held), origin = p.origin;
+    if (p.kind === 'shipping') return {ok:false,message:'寄貨只能放到紫色寄貨區'};
     if (!origin) return {ok: false, message: '沒有可退回的位置'};
     const s = this.slots(origin)[origin.index];
     if (s.packageId || s.reservedFor !== p.id) return {ok: false, message: '原位暫時不可用'};
@@ -127,6 +174,7 @@ export class Shift {
   stock(zone) {
     if (!this.canWork() || !this.held) return {ok: false, message: '先從收貨區拿起包裹'};
     const p = this.packages.get(this.held);
+    if (p.kind === 'shipping') return {ok:false,message:'寄貨不能放上貨架'};
     if (!ZONES.includes(zone)) return {ok: false, message: '請選擇 A／B／C 貨架'};
     if (p.origin.type === 'shelf' && p.origin.zone === zone) return this.returnHeld();
     const index = this.shelves[zone].findIndex(s => !s.packageId && !s.reservedFor);
@@ -139,13 +187,14 @@ export class Shift {
     p.origin = null; this.held = null;
     if (fresh) this.stats.stocked++;
     this.emit('stock', {packageId: p.id});
-    if (this.phase === 'stocking' && this.receivingCount() === 0) this.nextDay();
+    if (this.phase === 'stocking' && this.receivingCount() === 0 && !this.isHoldingShipping()) this.nextDay();
     return {ok: true, message: `${p.code} 已上架 · ${zone} 區`};
   }
   deliver() {
     if (this.phase !== 'playing') return {ok: false, message: '班次尚未開始或已結束'};
     const order = this.queue[0];
     if (!order) return {ok: false, message: '暫時沒有客人，趁空檔上架新貨'};
+    if (order.type === 'shipping') return this.acceptShipping(order);
     if (!order.revealed) {
       order.revealed = true;
       order.zone = this.packages.get(order.packageId).zone;
@@ -170,30 +219,56 @@ export class Shift {
     order.status = 'missed'; this.queue = this.queue.filter(o => o !== order);
     const p = this.packages.get(order.packageId);
     if (p.orderId === order.id) p.orderId = null;
+    if (order.type === 'shipping') this.cancelShipping(p);
     this.stats.missed++; this.emit('missed', {order: {...order}});
   }
-  tick(dt) {
-    if (this.phase !== 'playing' || !Number.isFinite(dt) || dt <= 0) return;
-    this.elapsed += dt;
-    if (this.practice) return;
-    const activeTime = Math.min(dt, this.remaining);
-    this.remaining = Math.max(0, this.remaining - activeTime);
-    if (this.remaining === 0) {
-      this.closeDay(); return;
-    }
-    for (const order of [...this.queue]) {
-      order.patience -= activeTime;
-      if (order.patience <= 0) this.expire(order);
-    }
-    this.customerTimer -= activeTime; this.deliveryTimer -= activeTime;
-    if (this.customerTimer <= 0) { this.spawnCustomer(); this.customerTimer = 9 + this.random() * 5; }
-    if (this.deliveryTimer <= 0) {
-      let count = 0;
-      for (let i = 0; i < 2; i++) {
-        if (this.addPackage(null, 'receiving')) count++;
+  requestCourier() {
+    if (this.phase!=='playing' || this.practice || this.courier) return false;
+    this.courier={id:++this.courierSerial,x:COURIER_ROUTE[0].x,y:COURIER_ROUTE[0].y,
+      stage:'arriving',carrying:true,face:'down',moving:true,travel:0,route:COURIER_ROUTE.map(p=>({...p})),next:1,unloadRemaining:.6};
+    return true;
+  }
+  turnCourierAround() {
+    const c=this.courier;
+    // Return via the visited part of the public route, never through the divider.
+    c.route=[{x:c.x,y:c.y},...COURIER_ROUTE.slice(0,Math.min(c.next,COURIER_ROUTE.length)).reverse().map(p=>({...p}))];
+    c.next=1;c.stage='leaving';c.moving=true;
+  }
+  advanceCourier(dt) {
+    let remaining=dt;
+    while(this.courier && remaining>0){
+      const c=this.courier;
+      if(c.stage==='waiting'||c.stage==='unloading'){
+        c.moving=false;c.face='up';
+        const capacity=this.receiving.filter(s=>!s.packageId&&!s.reservedFor).length;
+        if(capacity<2){c.stage='waiting';return;}
+        c.stage='unloading';const used=Math.min(remaining,c.unloadRemaining);c.unloadRemaining-=used;remaining-=used;
+        if(c.unloadRemaining>0)return;
+        let count=0;for(let i=0;i<2;i++)if(this.addPackage(null,'receiving'))count++;
+        c.carrying=false;this.emit('arrival',{count,courierId:c.id});this.turnCourierAround();continue;
       }
-      if (count) this.emit('arrival', {count});
-      this.deliveryTimer = 25;
+      const target=c.route[c.next];
+      if(!target){
+        if(c.stage==='leaving'){this.courier=null;return;}
+        c.stage='waiting';continue;
+      }
+      const dx=target.x-c.x,dy=target.y-c.y,d=Math.hypot(dx,dy);
+      if(d<.001){c.next++;continue;}
+      c.moving=true;c.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+      const step=Math.min(d,remaining*54);c.x+=dx/d*step;c.y+=dy/d*step;c.travel+=step;remaining-=step/54;
+      if(step>=d-.001)c.next++;
     }
+  }
+  tick(dt) {
+    if (!this.canWork() || !Number.isFinite(dt) || dt<=0) return;
+    if(this.phase==='stocking'){this.advanceCourier(dt);return;}
+    this.elapsed+=dt;if(this.practice)return;
+    const activeTime=Math.min(dt,this.remaining);
+    this.advanceCourier(activeTime);this.remaining=Math.max(0,this.remaining-activeTime);
+    if(this.remaining===0){this.closeDay();return;}
+    for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
+    this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;
+    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=9+this.random()*5;}
+    if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25;}
   }
 }
