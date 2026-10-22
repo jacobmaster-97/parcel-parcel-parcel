@@ -96,7 +96,7 @@ function handleResult(result, animation=null){
  processEvents();canvas.focus({preventScroll:true});
 }
 function interact(){
- const target=closestTarget();if(!target){if(canWork()&&!dialogOpen())toast('行近貨架、櫃檯或收貨區，再按互動。');return;}
+ const target=closestTarget();if(!target)return;
  faceToward(target);
  if(target.type==='counter'){
   if(shift.phase==='stocking'){toast('今日已停止接客，先整理新貨或按「下一天」開門。');return;}
@@ -284,7 +284,7 @@ function draw(){
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,46);
- pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,79,204,'#8d693f');pill('交貨櫃檯',300,161);
+ pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,79,204,'#8d693f');
  const first=shift.queue[0],actor=actors.get(first?.id);
  if(first?.revealed&&actor&&!actor.moving){pill(first.code,actor.x,actor.y-54,'#8c5834');}
  if(target){
@@ -311,10 +311,11 @@ function updateUI(){
  $('patience-text').textContent=stocking?'不計時':order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
  $('held-code').textContent=held?`${held.code} · ${held.zone?`${held.zone} 區`:'自選貨架'}`:'空手 · 可以取件';
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
- $('instruction').textContent=stocking?(held?'行到任一有空位的 A／B／C 貨架，按互動上架。':'收貨區清空後自動開下一天；亦可按「下一天」提早開門。'):
+ $('instruction').textContent=stocking?(held?'行到任一有空位的 A／B／C 貨架，按互動上架。':''):
   order&&!known?'先到交貨櫃檯與客人互動，登記提貨碼。':
   held?(held.zone===null?'自由選 A／B／C 貨架上架，系統會記錄位置。':known&&order.packageId===held.id?'帶到交貨櫃檯，按互動交畀客人。':`核對編號；可帶返 ${held.zone} 區退回，或移到其他貨架。`):
   known?`去 ${shift.packages.get(order.packageId).zone} 區貨架揀 ${order.code}，再返櫃檯交貨。`:'冇客時補貨：去收貨區拿新貨自由上架。';
+ $('instruction').hidden=stocking&&!held;
  if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('completed').textContent=String(shift.stats.completed);$('revenue').textContent=`$${shift.stats.revenue}`;
  const signature=shift.phase+'|'+shift.queue.slice(1).map(o=>`${o.id}:${Math.ceil(o.patience)}`).join('|');
