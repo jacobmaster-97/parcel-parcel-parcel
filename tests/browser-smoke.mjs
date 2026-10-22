@@ -12,6 +12,7 @@ async function setup(options){
  page.on('pageerror',e=>failures.push(e.message));
  page.on('console',m=>{if(m.type()==='error')failures.push(m.text());});
  page.on('response',r=>{if(r.status()>=400)failures.push(`${r.status()} ${r.url()}`);});
+ await page.addInitScript(()=>{window.__drawnCodes=[];const draw=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){if(/^\d{4}$/.test(String(text)))window.__drawnCodes.push(String(text));return draw.call(this,text,...args);};});
  await page.goto(`${base}/?qa=1`);await page.locator('#practice-button:enabled').waitFor();
  return {context,page};
 }
@@ -36,8 +37,8 @@ async function keyTo(page,key,axis,target){
   const p=window.__parcelQA.snapshot().player[axis];return positive?p>=target-1:p<=target+1;
  },{axis,target,positive},{timeout:7000});}finally{await page.keyboard.up(key);}
 }
-async function choose(page,code,touch=false){
- const choice=page.getByRole('button',{name:`包裹 ${code}，A 區`});
+async function choose(page,code,touch=false,zone='A'){
+ const choice=page.getByRole('button',{name:`包裹 ${code}，${zone==='receiving'?'待上架':`${zone} 區`}`});
  await (touch?choice.tap():choice.click());
  await (touch?page.locator('#inventory-confirm').tap():page.locator('#inventory-confirm').click());
  await readyAction(page);
@@ -45,6 +46,14 @@ async function choose(page,code,touch=false){
 try{
  const {page,context}=await setup({viewport:{width:1440,height:1000}});
  await page.locator('#practice-button').click();
+ await page.waitForFunction(()=>document.querySelector('#order-code').textContent==='待接待');
+ assert.ok(!(await page.locator('body').innerText()).includes('4826'));
+ assert.deepEqual(await page.evaluate(()=>window.__drawnCodes),[]);
+ await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');await readyAction(page);
+ assert.equal(await page.locator('#order-code').textContent(),'4826');
+ assert.ok((await page.locator('#instruction').textContent()).includes('A 區'));
+ await page.waitForFunction(()=>window.__drawnCodes.includes('4826'));
+ results.push('Before greeting: no visible pickup code or shelf hint in HUD, tutorial, queue or canvas; first interaction reveals request.');
  await keyTo(page,'a','x',96);await keyTo(page,'w','y',132);await page.keyboard.press('e');
  await choose(page,'4863');
  await keyTo(page,'s','y',195);await keyTo(page,'d','x',300);await page.keyboard.press('e');
@@ -58,9 +67,9 @@ try{
  await page.keyboard.down('e');await page.waitForTimeout(550);await page.keyboard.up('e');
  assert.equal((await snapshot(page)).stats.completed,1);
  await keyTo(page,'a','x',116);await keyTo(page,'s','y',263);await page.keyboard.press('e');
- await choose(page,'5048');await keyTo(page,'w','y',132);await keyTo(page,'a','x',96);
+ await choose(page,'5048',false,'receiving');await keyTo(page,'w','y',132);await keyTo(page,'d','x',228);
  await page.keyboard.press('e');await page.locator('#practice-done-dialog[open]').waitFor();
- state=await snapshot(page);assert.equal(state.stats.stocked,1);assert.equal(state.remaining,180);
+ state=await snapshot(page);assert.equal(state.stats.stocked,1);assert.equal(state.remaining,180);assert.equal(state.packages.find(p=>p.code==='5048').zone,'B');
  results.push('Desktop keyboard: wrong parcel, return, correct delivery, input-repeat guard, receiving and stock completed.');
  await page.locator('#practice-to-shift').click();await page.waitForTimeout(200);
  await page.keyboard.press('Escape');const paused=await snapshot(page);await page.waitForTimeout(400);
@@ -75,11 +84,32 @@ try{
  await timed.clock.fastForward(10000);
  const afterGap=(await snapshot(timed)).remaining;assert.ok(afterGap>=169&&afterGap<=171,`Real elapsed time: ${afterGap}`);
  await timed.clock.fastForward(171000);
- await timed.locator('#result-dialog[open]').waitFor();assert.equal((await snapshot(timed)).phase,'ended');
+ await timed.locator('#result-dialog[open]').waitFor();assert.equal((await snapshot(timed)).phase,'closing');
  await timed.screenshot({path:screenshotDir+'prototype-result.png'});
  await timed.locator('#play-again').click();state=await snapshot(timed);
- assert.equal(state.stats.completed,0);assert.equal(state.held,null);assert.equal(state.queue[0].code,'4826');
- results.push('Full timed shift: countdown, customer expiry, stock arrival, result and clean restart; pause freezes time.');
+ assert.equal(state.phase,'stocking');assert.equal(state.queue.length,0);await timed.waitForFunction(()=>document.querySelector('#clock').textContent==='不限時');
+ const preserved=state.packages.filter(p=>p.location==='shelf').map(p=>[p.id,p.zone]);
+ const remainingGoods=state.receivingCount;
+ await timed.clock.fastForward(600000);assert.equal((await snapshot(timed)).phase,'stocking');
+ await timed.locator('#pause-button').click();await timed.locator('#resume-button').click();assert.equal((await snapshot(timed)).phase,'stocking');
+ await timed.locator('#next-day').click();state=await snapshot(timed);
+ assert.equal(state.day,2);assert.equal(state.phase,'playing');assert.equal(state.remaining,180);assert.equal(state.receivingCount,remainingGoods);
+ assert.deepEqual(state.packages.filter(p=>p.location==='shelf').map(p=>[p.id,p.zone]),preserved);
+ assert.equal(state.queue[0].revealed,false);await timed.waitForFunction(()=>document.querySelector('#order-code').textContent==='待接待');
+ results.push('Daily close: untimed stocking survives ten simulated minutes and pause/resume; manual next day retains inventory and hides new request.');
+ await timed.clock.fastForward(181000);await timed.locator('#result-dialog[open]').waitFor();await timed.locator('#play-again').click();
+ const incoming=(await snapshot(timed)).packages.filter(p=>p.location==='receiving');
+ assert.equal(incoming.length,3);
+ for(const [i,p] of incoming.entries()){
+  await keyTo(timed,'a','x',116);await keyTo(timed,'s','y',263);await timed.keyboard.press('e');
+  await choose(timed,p.code,false,'receiving');await keyTo(timed,'w','y',132);
+  await keyTo(timed,'d','x',i<2?360:228);await timed.keyboard.press('e');await readyAction(timed);
+ }
+ state=await snapshot(timed);assert.equal(state.day,3);assert.equal(state.phase,'playing');assert.equal(state.receivingCount,0);
+ assert.equal(state.packages.find(p=>p.id===incoming[0].id).zone,'C');
+ assert.equal(state.packages.find(p=>p.id===incoming[2].id).zone,'B');
+ results.push('Actual keyboard stocking: freely placed goods on C/C/B, last receiving parcel automatically opens day three.');
+ results.push('Full timed shift: countdown, customer expiry, stock arrival, result and next day; pause freezes time.');
  await timedContext.close();
 
  const mobile=await setup({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
@@ -96,6 +126,8 @@ try{
   },{axis,target,positive},{timeout:7000});}
   finally{await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
  }
+ await touchTo('y',195);await touchTo('x',300);await mp.locator('#touch-action').tap();await readyAction(mp);
+ assert.equal(await mp.locator('#order-code').textContent(),'4826');
  await touchTo('x',96);await touchTo('y',132);
  // Keep a left thumb on the joystick while tapping interact with a second finger.
  const joy=await mp.locator('#joystick').boundingBox(),button=await mp.locator('#touch-action').boundingBox();
@@ -108,9 +140,9 @@ try{
  await choose(mp,'4826',true);
  await touchTo('y',195);await touchTo('x',300);await mp.locator('#touch-action').tap();await readyAction(mp);
  assert.equal((await snapshot(mp)).stats.completed,1);
- await touchTo('x',116);await touchTo('y',263);await mp.locator('#touch-action').tap();await choose(mp,'5048',true);
- await touchTo('y',132);await touchTo('x',96);await mp.locator('#touch-action').tap();
- await mp.locator('#practice-done-dialog[open]').waitFor();assert.equal((await snapshot(mp)).stats.stocked,1);
+ await touchTo('x',116);await touchTo('y',263);await mp.locator('#touch-action').tap();await choose(mp,'5048',true,'receiving');
+ await touchTo('y',132);await touchTo('x',228);await mp.locator('#touch-action').tap();
+ await mp.locator('#practice-done-dialog[open]').waitFor();assert.equal((await snapshot(mp)).stats.stocked,1);assert.equal((await snapshot(mp)).packages.find(p=>p.code==='5048').zone,'B');
  results.push('Mobile touch: two-finger interaction, parcel selection, delivery and replenishment without keyboard.');
  await mp.locator('#practice-to-shift').tap();
  await assertControlsInsideViewport(mp);

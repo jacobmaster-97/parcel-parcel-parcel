@@ -12,18 +12,18 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#" aria-label="集運小店"><span class="brand-mark">▦</span><span>集運小店<small>PARCEL POINT / 今日當值</small></span></a>
-    <div class="shift-hud"><span class="open-sign" id="mode-label">準備開檔</span><div class="timer-block"><small>距離收工</small><strong id="clock">03:00</strong></div><button id="pause-button" class="icon-button" disabled aria-label="暫停遊戲">Ⅱ</button></div>
+    <div class="shift-hud"><span class="open-sign" id="mode-label">準備開檔</span><div class="timer-block"><small id="clock-label">距離收工</small><strong id="clock">03:00</strong></div><button id="next-day" class="day-button" hidden>下一天 →</button><button id="pause-button" class="icon-button" disabled aria-label="暫停遊戲">Ⅱ</button></div>
   </header>
   <main class="workspace">
     <section class="scene-panel" aria-label="店面工作區">
-      <div class="scene-toolbar"><span><i class="live-dot"></i> 街坊集運 · 01 號店</span><span id="scene-status">等你開檔</span></div>
+      <div class="scene-toolbar"><span><i class="live-dot"></i> <span id="store-day">街坊集運 · 第 1 天</span></span><span id="scene-status">等你開檔</span></div>
       <div class="canvas-wrap" id="canvas-wrap"><canvas id="shop" tabindex="0" aria-label="店員工作區。用 WASD 或方向鍵移動，E 互動；手機使用下方搖桿。"></canvas><div class="scene-vignette"></div><div id="toast" class="toast" role="status" aria-live="polite"></div></div>
       <div class="touch-controls" id="touch-controls">
         <div class="joystick" id="joystick" role="group" aria-label="移動搖桿"><div class="joystick-cross"></div><span class="joystick-knob" id="joystick-knob"></span></div>
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.1</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.2</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -34,18 +34,18 @@
         <div class="held-card"><span class="held-icon">▣</span><div><small>店員手上</small><strong id="held-code">空手 · 可以取件</strong></div></div>
       </section>
       <section class="queue-card"><div class="card-heading"><h2>門口仲有…</h2><span class="small-tag">等候隊列</span></div><div id="queue-list" class="queue-list"><p class="quiet">街坊就嚟到。</p></div></section>
-      <section class="notes-card"><span class="note-pin"></span><span class="eyebrow">店長留低張紙</span><h2>忙，都可以有條不紊。</h2><p id="guide">睇清提貨碼先揀貨。空檔記得將收貨區新貨，放返對應 A／B／C 貨架。</p><div class="shift-progress"><span>已完成 <strong id="completed">0</strong> 單</span><span>收入 <strong id="revenue">$0</strong></span></div><button id="help-button" class="text-button">操作小抄 ↗</button></section>
+      <section class="notes-card"><span class="note-pin"></span><span class="eyebrow">店長留低張紙</span><h2>忙，都可以有條不紊。</h2><p id="guide">睇清提貨碼先揀貨。空檔記得將收貨區新貨，自由選 A／B／C 貨架上架。</p><div class="shift-progress"><span>已完成 <strong id="completed">0</strong> 單</span><span>收入 <strong id="revenue">$0</strong></span></div><button id="help-button" class="text-button">操作小抄 ↗</button></section>
     </aside>
   </main>
   <dialog id="welcome-dialog" class="game-dialog welcome-dialog" aria-labelledby="welcome-title">
     <span class="eyebrow">一間小店 · 一個繁忙班次</span><h2 id="welcome-title">今日，<br>輪到你當值。</h2><p>幫街坊搵返佢哋嘅包裹。睇單、揀貨、交貨，仲要抽空幫新貨上架。</p>
     <div class="welcome-art" aria-hidden="true"><img src="assets/environment/props/parcel_medium.png" alt=""><span>睇清編號<br><b>唔好交錯貨。</b></span><img class="welcome-clerk" src="assets/characters/clerk_idle.png" alt=""></div>
-    <ol class="welcome-steps"><li><b>行到貨架</b><span>鍵盤移動／手機搖桿</span></li><li><b>揀返指定貨</b><span>E／互動鍵 → 選貨 → 確認</span></li><li><b>交貨兼上架</b><span>客人等緊，新貨又到喇</span></li></ol>
+    <ol class="welcome-steps"><li><b>先接待客人</b><span>行到櫃檯按 E／互動鍵</span></li><li><b>揀返指定貨</b><span>E／互動鍵 → 選貨 → 確認</span></li><li><b>交貨兼上架</b><span>客人等緊，新貨又到喇</span></li></ol>
     <p class="loading-status" id="loading-status">正在準備店面素材…</p><div class="dialog-actions"><button id="practice-button" class="button button-secondary" disabled>先試一轉 · 不計時</button><button id="start-button" class="button button-primary" disabled>開檔！3 分鐘班次 →</button></div><small class="save-note">本原型重新整理後會重開班次。</small>
   </dialog>
-  <dialog id="inventory-dialog" class="game-dialog inventory-dialog" aria-labelledby="inventory-title"><div class="dialog-top"><div><span class="eyebrow">睇清楚，先落手</span><h2 id="inventory-title">貨架</h2></div><button id="inventory-close" class="icon-button" aria-label="關閉選貨面板">×</button></div><p id="inventory-request" class="inventory-request"></p><div id="parcel-grid" class="parcel-grid"></div><p id="inventory-feedback" role="status"></p><div class="dialog-actions"><button id="inventory-pause" class="button button-secondary">暫停</button><button id="inventory-confirm" class="button button-primary" disabled>確認取件</button></div><p class="dialog-footnote">選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回</p></dialog>
-  <dialog id="pause-dialog" class="game-dialog pause-dialog" aria-labelledby="pause-title"><span class="eyebrow">歇一歇，唔使急</span><h2 id="pause-title">班次已暫停</h2><p id="pause-reason">所有客人耐性及班次時間已停止。</p><div class="control-guide"><p><kbd>WASD</kbd> / 方向鍵：移動</p><p><kbd>E</kbd>：揀貨、上架、退回或交貨</p><p>手機：左下搖桿，右下互動按鈕</p><p>揀錯貨？帶返原貨架，按互動退回。</p></div><div class="dialog-actions"><button id="restart-button" class="button button-secondary">重新開檔</button><button id="resume-button" class="button button-primary">繼續當值 →</button></div></dialog>
-  <dialog id="result-dialog" class="game-dialog result-dialog" aria-labelledby="result-title"><span class="eyebrow">辛苦晒，今日收工！</span><h2 id="result-title">你嘅當值成績</h2><p id="result-comment"></p><div class="result-grid" id="result-grid"></div><p class="result-note">未完成嘅訂單唔會額外扣分。再試一轉，搵出你嘅工作節奏。</p><div class="dialog-actions"><button id="result-practice" class="button button-secondary">返去練習</button><button id="play-again" class="button button-primary">再開一個班次 →</button></div></dialog>
+  <dialog id="inventory-dialog" class="game-dialog inventory-dialog" aria-labelledby="inventory-title"><div class="dialog-top"><div><span class="eyebrow">睇清楚，先落手</span><h2 id="inventory-title">貨架</h2></div><button id="inventory-close" class="icon-button" aria-label="關閉選貨面板">×</button></div><p id="inventory-request" class="inventory-request"></p><div id="parcel-grid" class="parcel-grid"></div><p id="inventory-feedback" role="status"></p><div class="dialog-actions"><button id="inventory-pause" class="button button-secondary">暫停</button><button id="inventory-confirm" class="button button-primary" disabled>確認取件</button></div><p class="dialog-footnote" id="inventory-footnote">選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回</p></dialog>
+  <dialog id="pause-dialog" class="game-dialog pause-dialog" aria-labelledby="pause-title"><span class="eyebrow">歇一歇，唔使急</span><h2 id="pause-title">班次已暫停</h2><p id="pause-reason">所有客人耐性及班次時間已停止。</p><div class="control-guide"><p><kbd>WASD</kbd> / 方向鍵：移動</p><p><kbd>E</kbd>：接待、揀貨、上架、退回或交貨</p><p>手機：左下搖桿，右下互動按鈕</p><p>揀錯貨？帶返原貨架，按互動退回。</p></div><div class="dialog-actions"><button id="restart-button" class="button button-secondary">重開第 1 天</button><button id="resume-button" class="button button-primary">繼續當值 →</button></div></dialog>
+  <dialog id="result-dialog" class="game-dialog result-dialog" aria-labelledby="result-title"><span class="eyebrow">辛苦晒，今日收工！</span><h2 id="result-title">你嘅當值成績</h2><p id="result-comment"></p><div class="result-grid" id="result-grid"></div><p class="result-note">接下來係不限時上架時間。貨架位置及累計收入會保留到下一天；收貨清空後自動開門，也可提早開門。</p><div class="dialog-actions"><button id="result-practice" class="button button-secondary">返去練習</button><button id="play-again" class="button button-primary">進入不限時上架 →</button></div></dialog>
   <dialog id="practice-done-dialog" class="game-dialog" aria-labelledby="practice-done-title"><span class="eyebrow">提貨 ✓ 上架 ✓</span><h2 id="practice-done-title">識做喇，準備開檔！</h2><p>你已完成一單提貨同一件新貨上架。正式班次會有排隊客人、耐性倒數及分批到貨。</p><button id="practice-to-shift" class="button button-primary">開始正式班次 →</button></dialog>
   <script type="module" src="src/app.js"></script>
 </body>

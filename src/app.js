@@ -25,6 +25,11 @@ let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError
 let camera = {x:0,y:0,scale:2}, toastText = '', practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog'];
+const canWork = () => shift.canWork();
+const requestText = () => {
+ const o = shift.queue[0];
+ return o ? o.revealed ? `客人要：${o.code} · ${shift.packages.get(o.packageId).zone} 區` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 A／B／C；不計時。' : '暫時冇客，趁空檔上架新貨。';
+};
 const dialogOpen = () => dialogIds.some(id=>$(id).open);
 function resetPlayer(){ player={x:240,y:178,face:'down',moving:false,travel:0}; }
 resetPlayer();
@@ -54,10 +59,10 @@ function start(practice=false){
  if(!ready){if(loadError)location.reload();return;}
  closeDialogs();shift=new Shift({practice});resetPlayer();actors=new Map();departures=[];
  action=null;practiceDone=false;queueSignature='';shift.start();processEvents();
- $('guide').textContent='睇清提貨碼先揀貨。空檔記得將收貨區新貨，放返對應 A／B／C 貨架。';
+ $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 A／B／C 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=300;first.y=282;first.moving=false;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
- toast(practice?'練習不計時：先到 A 區，取 4826 交畀客人。':'開檔！睇清提貨碼，空檔記得補貨。');
+ toast(practice?'練習不計時：先到櫃檯接待客人，登記提貨要求。':'開檔！先接待客人，空檔自由上架新貨。');
 }
 function pause(reason='所有客人耐性及班次時間已停止。'){
  if(!shift.pause())return;
@@ -69,13 +74,13 @@ function resume(){
  clearInput();shift.resume();lastTime=performance.now();canvas.focus({preventScroll:true});
 }
 function closestTarget(){
- if(shift.phase!=='playing'||dialogOpen()||action)return null;
+ if(!canWork()||dialogOpen()||action)return null;
  return targets.map(t=>({...t,distance:Math.hypot(player.x-t.x,player.y-t.y)}))
   .filter(t=>t.distance<47).sort((a,b)=>a.distance-b.distance)[0]||null;
 }
 function targetLabel(target){
  if(!target)return '行近目標';
- if(target.type==='counter')return shift.held?'交付包裹':'查看訂單';
+ if(target.type==='counter')return shift.phase==='stocking'?'已停止接客':shift.queue[0]&&!shift.queue[0].revealed?'接待客人':shift.held?'交付包裹':'查看訂單';
  if(target.type==='receiving')return shift.held?'退回新貨':'揀新貨';
  if(!shift.held)return `${target.zone} 區揀貨`;
  const p=shift.packages.get(shift.held);
@@ -91,9 +96,10 @@ function handleResult(result, animation=null){
  processEvents();canvas.focus({preventScroll:true});
 }
 function interact(){
- const target=closestTarget();if(!target){if(shift.phase==='playing'&&!dialogOpen())toast('行近貨架、櫃檯或收貨區，再按互動。');return;}
+ const target=closestTarget();if(!target){if(canWork()&&!dialogOpen())toast('行近貨架、櫃檯或收貨區，再按互動。');return;}
  faceToward(target);
  if(target.type==='counter'){
+  if(shift.phase==='stocking'){toast('今日已停止接客，先整理新貨或按「下一天」開門。');return;}
   const first=actors.get(shift.queue[0]?.id);
   if(first&&Math.hypot(first.x-300,first.y-282)>12){toast('客人行緊過嚟，等佢到櫃檯先。');return;}
   handleResult(shift.deliver(),'place');
@@ -115,7 +121,8 @@ function openInventory(target){
  $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區貨架`:'收貨區 · 待上架新貨';
  $('inventory-feedback').textContent='';
  const order=shift.queue[0];
- $('inventory-request').textContent=order?`客人要：${order.code} · ${order.zone} 區`:'暫時冇客，趁空檔上架新貨。';
+ $('inventory-request').textContent=requestText();
+ $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 可隨時按上方「下一天」':'選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回';
  const list=inventoryPackages(),grid=$('parcel-grid');grid.replaceChildren();
  list.forEach((p,i)=>{
   const button=document.createElement('button');button.className='parcel-choice';button.type='button';
@@ -123,8 +130,8 @@ function openInventory(target){
   if(p){
    const img=document.createElement('img');img.src=sourceURL(sources.parcel_medium);img.alt='';
    const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small');
-   code.textContent=p.code;zone.textContent=`${p.zone} 區 · ${target.type==='shelf'?'架上包裹':'等待上架'}`;
-   label.append(code,zone);button.append(img,label);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone} 區`);
+   code.textContent=p.code;zone.textContent=p.zone?`${p.zone} 區 · 架上包裹`:'自選 A／B／C 上架';
+   label.append(code,zone);button.append(img,label);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? `${p.zone} 區` : '待上架'}`);
    button.addEventListener('click',()=>selectParcel(i));
   }else{button.textContent='空貨位';button.setAttribute('aria-label','空貨位');}
   grid.append(button);
@@ -141,7 +148,7 @@ function selectParcel(index,focus=true){
  if(focus)$('parcel-grid').children[index]?.focus({preventScroll:true});
 }
 function confirmParcel(){
- if(!selected||shift.phase!=='playing')return;
+ if(!selected||!canWork())return;
  const result=shift.take(selected);
  if(result.ok){closeInventory();handleResult(result,'pickup');}
  else $('inventory-feedback').textContent=result.message;
@@ -151,10 +158,11 @@ function closeInventory(focus=true){
  inventoryContext=null;selected=null;clearInput();if(focus)canvas.focus({preventScroll:true});
 }
 function finish(){
- closeDialogs();clearInput();const s=shift.stats;
+ closeDialogs();clearInput();action=null;const s=shift.stats;
+ $('result-title').textContent=`第 ${shift.day} 天 · 當值成績`;
  $('result-comment').textContent=s.completed>=8?'手腳俐落，街坊都收齊貨！':s.completed>0?'每一單都係進步，下次再順手啲。':'先試不計時練習，熟習貨架同交貨流程。';
  $('result-grid').replaceChildren();
- for(const [label,value] of [['完成交貨',`${s.completed} 單`],['服務收入',`$${s.revenue}`],['新貨上架',`${s.stocked} 件`],['錯件／流失',`${s.errors} / ${s.missed}`]]){
+ for(const [label,value] of [['累計收入',`$${shift.totalRevenue}`],['完成交貨',`${s.completed} 單`],['服務收入',`$${s.revenue}`],['新貨上架',`${s.stocked} 件`],['錯件／流失',`${s.errors} / ${s.missed}`]]){
   const box=document.createElement('div'),name=document.createElement('small'),number=document.createElement('strong');
   name.textContent=label;number.textContent=value;box.append(name,number);$('result-grid').append(box);
  }
@@ -164,14 +172,19 @@ function processEvents(){
  for(const event of shift.drainEvents()){
   if(event.type==='customer')actors.set(event.order.id,{id:event.order.id,appearance:event.order.appearance,
    x:462,y:311,face:'left',moving:true,travel:0,carrying:false});
-  if(event.type==='delivered'||event.type==='missed'){
+  if(event.type==='delivered'||event.type==='missed'||event.type==='closed'){
    const actor=actors.get(event.order.id);
    if(actor){actors.delete(actor.id);actor.carrying=event.type==='delivered';departures.push(actor);}
-   if(event.type==='delivered')beep(true);else toast('有客人等唔切走咗，包裹會保留喺店內。',true);
+   if(event.type==='delivered')beep(true);else if(event.type==='missed')toast('有客人等唔切走咗，包裹會保留喺店內。',true);
   }
   if(event.type==='wrong')beep(false);
   if(event.type==='arrival')toast(`新貨到！收貨區多咗 ${event.count} 件。`);
   if(event.type==='end')finish();
+  if(event.type==='stocking'){toast('收舖上架：不計時，自由選 A／B／C；也可隨時進入下一天。');}
+  if(event.type==='daystart'){
+   closeDialogs();action=null;queueSignature='';$('pause-button').disabled=false;
+   toast(`第 ${event.day} 天開門！貨架位置已保留，先到櫃檯接客。`);
+  }
  }
  if(shift.practice&&shift.stats.completed>=1&&shift.stats.stocked>=1&&!practiceDone){
   practiceDone=true;shift.pause();closeDialogs();showDialog('practice-done-dialog');
@@ -183,7 +196,7 @@ function canStand(x,y){
 }
 function updatePlayer(dt){
  player.moving=false;
- if(shift.phase!=='playing'||dialogOpen()||action)return;
+ if(!canWork()||dialogOpen()||action)return;
  let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+joystickVector.x;
  let dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0)+joystickVector.y;
  const length=Math.hypot(dx,dy);if(length<.1)return;
@@ -273,7 +286,7 @@ function draw(){
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,46);
  pill(`收貨 ${shift.receiving.filter(s=>s.packageId).length}/6`,79,204,'#8d693f');pill('交貨櫃檯',300,161);
  const first=shift.queue[0],actor=actors.get(first?.id);
- if(first&&actor&&!actor.moving){pill(first.code,actor.x,actor.y-54,'#8c5834');}
+ if(first?.revealed&&actor&&!actor.moving){pill(first.code,actor.x,actor.y-54,'#8c5834');}
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-35,target.type==='counter'?215:target.type==='receiving'?238:89,70,26);
   if(!touch)pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
@@ -281,51 +294,58 @@ function draw(){
  ctx.restore();
 }
 function updateUI(){
- const order=shift.queue[0],held=shift.held?shift.packages.get(shift.held):null;
+ const order=shift.queue[0],known=order?.revealed,held=shift.held?shift.packages.get(shift.held):null;
+ const stocking=shift.phase==='stocking'||shift.phase==='paused'&&shift.pausedPhase==='stocking';
  const seconds=Math.ceil(shift.remaining);
- $('clock').textContent=shift.practice?'練習':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
- $('clock').parentElement.classList.toggle('urgent',!shift.practice&&seconds<=30);
- $('mode-label').textContent=shift.phase==='playing'?(shift.practice?'不計時練習':'營業中'):shift.phase==='paused'?'暫停中':shift.phase==='ended'?'已收工':'準備開檔';
- $('order-code').textContent=order?order.code:shift.phase==='ready'?'準備中':'等新客';
- $('order-zone').textContent=order?order.zone:'—';
- $('queue-count').textContent=`${shift.queue.length} 人等候`;
+ $('clock').textContent=stocking?'不限時':shift.practice?'練習':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
+ $('clock-label').textContent=stocking?'上架時間':'距離收工';
+ $('store-day').textContent=`街坊集運 · 第 ${shift.day} 天`;
+ $('clock').parentElement.classList.toggle('urgent',!stocking&&!shift.practice&&seconds<=30);
+ $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':'營業中'):shift.phase==='closing'?'已收舖':'準備開檔'}`;
+ $('order-code').textContent=order?(known?order.code:'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
+ $('order-zone').textContent=known?shift.packages.get(order.packageId).zone:'—';
+ $('queue-count').textContent=stocking?`收貨 ${shift.receivingCount()} 件`:`${shift.queue.length} 人等候`;
  const ratio=order?(shift.practice?1:Math.max(0,order.patience/order.maxPatience)):0;
  $('patience-fill').style.width=`${ratio*100}%`;$('patience-fill').classList.toggle('low',ratio<.3);
  $('patience-fill').parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
- $('patience-text').textContent=order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
- $('held-code').textContent=held?`${held.code} · ${held.zone} 區`:'空手 · 可以取件';
+ $('patience-text').textContent=stocking?'不計時':order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
+ $('held-code').textContent=held?`${held.code} · ${held.zone?`${held.zone} 區`:'自選貨架'}`:'空手 · 可以取件';
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
- const text=held?(order?.packageId===held.id?'帶到交貨櫃檯，按互動交畀客人。':
-  held.origin?.type==='receiving'?`呢件新貨要放到 ${held.zone} 區貨架。`:`核對編號；揀錯可帶返 ${held.zone} 區退回。`):
-  order?`去 ${order.zone} 區貨架揀 ${order.code}，再返櫃檯交貨。`:'冇客時補貨：去收貨區拿新貨上架。';
- $('instruction').textContent=text;
- if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，再放上標籤對應嘅貨架。':'先完成一單提貨：客人要 4826，喺 A 區貨架。揀中後返櫃檯交貨。';
+ $('instruction').textContent=stocking?(held?'行到任一有空位的 A／B／C 貨架，按互動上架。':'收貨區清空後自動開下一天；亦可按「下一天」提早開門。'):
+  order&&!known?'先到交貨櫃檯與客人互動，登記提貨碼。':
+  held?(held.zone===null?'自由選 A／B／C 貨架上架，系統會記錄位置。':known&&order.packageId===held.id?'帶到交貨櫃檯，按互動交畀客人。':`核對編號；可帶返 ${held.zone} 區退回，或移到其他貨架。`):
+  known?`去 ${shift.packages.get(order.packageId).zone} 區貨架揀 ${order.code}，再返櫃檯交貨。`:'冇客時補貨：去收貨區拿新貨自由上架。';
+ if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('completed').textContent=String(shift.stats.completed);$('revenue').textContent=`$${shift.stats.revenue}`;
- const signature=shift.queue.slice(1).map(o=>`${o.id}:${Math.ceil(o.patience)}`).join('|');
+ const signature=shift.phase+'|'+shift.queue.slice(1).map(o=>`${o.id}:${Math.ceil(o.patience)}`).join('|');
  if(signature!==queueSignature){
   queueSignature=signature;const list=$('queue-list');list.replaceChildren();
   for(const o of shift.queue.slice(1)){
    const row=document.createElement('div');row.className='queue-item';
-   for(const [tag,value] of [['span',`${o.zone} 區`],['strong',o.code],['span',shift.practice?'練習':`${Math.ceil(o.patience)}s`]]){
+   for(const [tag,value] of [['span','等候接待'],['strong','—'],['span',shift.practice?'練習':`${Math.ceil(o.patience)}s`]]){
     const el=document.createElement(tag);el.textContent=value;row.append(el);
    }list.append(row);
   }
-  if(!list.childNodes.length){const el=document.createElement('p');el.className='quiet';el.textContent='暫時冇其他客，趁機補貨。';list.append(el);}
+  if(!list.childNodes.length){const el=document.createElement('p');el.className='quiet';el.textContent=stocking?'今日已停止接客。':'暫時冇其他客，趁機補貨。';list.append(el);}
  }
+ $('next-day').hidden=shift.phase!=='stocking';
  const target=closestTarget();$('touch-action').disabled=!target;$('touch-action-label').textContent=targetLabel(target);
- const destination=held&&order?.packageId===held.id?targets.find(t=>t.id==='counter'):
-  held?targets.find(t=>t.id===held.zone):order?targets.find(t=>t.id===order.zone):targets.find(t=>t.id==='receiving');
+ const destination=order&&!known?targets.find(t=>t.id==='counter'):
+  held&&known&&order.packageId===held.id?targets.find(t=>t.id==='counter'):
+  held?held.zone?targets.find(t=>t.id===held.zone):targets.filter(t=>t.type==='shelf').sort((a,b)=>Math.hypot(player.x-a.x,player.y-a.y)-Math.hypot(player.x-b.x,player.y-b.y))[0]:
+  known?targets.find(t=>t.id===shift.packages.get(order.packageId).zone):targets.find(t=>t.id==='receiving');
  const dx=destination.x-player.x,dy=destination.y-player.y;
  const arrow=Math.abs(dx)>Math.abs(dy)*2?(dx<0?'←':'→'):Math.abs(dy)>Math.abs(dx)*2?(dy<0?'↑':'↓'):
   dy<0?(dx<0?'↖':'↗'):(dx<0?'↙':'↘');
- const destinationName=destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':'收貨區';
- $('scene-status').textContent=shift.phase==='playing'?target?targetLabel(target):`${arrow} ${destinationName}`:
-  shift.phase==='paused'?'班次已暫停':shift.phase==='ended'?'辛苦晒，收工！':'等你開檔';
- if($('inventory-dialog').open){const current=shift.queue[0];$('inventory-request').textContent=current?`客人要：${current.code} · ${current.zone} 區`:'客人已離開，可先上架或退回貨物。';}
+ const destinationName=held?.zone===null?'自選 A／B／C':destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':'收貨區';
+ $('scene-status').textContent=canWork()?target?targetLabel(target):`${arrow} ${destinationName}`:
+  shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':'等你開檔';
+ if($('inventory-dialog').open)$('inventory-request').textContent=requestText();
 }
+
 function loop(now){
  const elapsed=Math.max(0,(now-(lastTime||now))/1000),dt=Math.min(.08,elapsed);lastTime=now;
- if(shift.phase==='playing'){
+ if(canWork()){
   shift.tick(elapsed);if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
@@ -345,7 +365,7 @@ window.addEventListener('keydown',e=>{
  }
  if(dialogOpen())return;
  if(['w','a','s','d','arrowleft','arrowright','arrowup','arrowdown','e','escape','p'].includes(key)){
-  e.preventDefault();if(shift.phase!=='playing')return;
+  e.preventDefault();if(!canWork())return;
   if(key==='escape'||key==='p'){if(!e.repeat)pause();return;}
   if(key==='e'){if(!e.repeat)interact();return;}keys.add(key);
  }
@@ -369,7 +389,7 @@ function moveJoystick(e){
  $('joystick-knob').style.transform=`translate(${x*radius}px,${y*radius}px)`;
 }
 joy.addEventListener('pointerdown',e=>{
- if(joystickPointer!==null||shift.phase!=='playing'||dialogOpen())return;
+ if(joystickPointer!==null||!canWork()||dialogOpen())return;
  e.preventDefault();joystickPointer=e.pointerId;joy.setPointerCapture(e.pointerId);moveJoystick(e);
 });
 joy.addEventListener('pointermove',moveJoystick);
@@ -381,7 +401,8 @@ $('touch-action').addEventListener('click',e=>{if(e.detail===0)interact();});
 $('pause-button').addEventListener('click',()=>pause());$('help-button').addEventListener('click',()=>pause('操作小抄：時間已暫停，慢慢睇。'));
 $('practice-button').addEventListener('click',()=>start(true));$('start-button').addEventListener('click',()=>start(false));
 $('resume-button').addEventListener('click',resume);$('restart-button').addEventListener('click',()=>start(shift.practice));
-$('play-again').addEventListener('click',()=>start(false));$('result-practice').addEventListener('click',()=>start(true));
+$('play-again').addEventListener('click',()=>{closeDialogs();shift.beginStocking();processEvents();$('pause-button').disabled=false;canvas.focus({preventScroll:true});});
+$('next-day').addEventListener('click',()=>{closeInventory(false);shift.nextDay();processEvents();});$('result-practice').addEventListener('click',()=>start(true));
 $('practice-to-shift').addEventListener('click',()=>start(false));
 $('inventory-close').addEventListener('click',()=>closeInventory());$('inventory-confirm').addEventListener('click',confirmParcel);
 $('inventory-pause').addEventListener('click',()=>{closeInventory(false);pause();});
@@ -402,7 +423,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({phase:shift.phase,
- practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ day:shift.day,totalRevenue:shift.totalRevenue,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

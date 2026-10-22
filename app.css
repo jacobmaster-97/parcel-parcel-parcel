@@ -21,3 +21,9 @@
  .touch-action{font-size:16px}
  .order-instruction,.held-card strong{font-size:13px}
 }
+
+/* Contextual day transition replaces the hidden desktop status sign on phones. */
+.day-button{min-height:48px;min-width:72px;border:1px solid #819b80;border-radius:7px;background:#e6ecdd;font-size:14px;font-weight:750;padding:8px}
+.day-button[hidden]{display:none}
+.order-number strong{letter-spacing:1px}
+@media(pointer:coarse),(max-width:800px){body:has(#next-day:not([hidden])) .brand small{display:none}body:has(#next-day:not([hidden])) .brand-mark{display:none}.shift-hud{gap:6px}.day-button{min-width:68px;font-size:13px;padding:5px}.order-number strong{font-size:25px}}
