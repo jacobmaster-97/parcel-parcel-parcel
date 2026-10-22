@@ -1,0 +1,11 @@
+{
+  "version": "0.3.0",
+  "game_commit": "9ec0ffe92e02ae1177dad39a33b4ecf568737563",
+  "html_sha256": "60aef9ebb2e95598b8298be545c4d0ceba69237a90dadba9c1d9a51e101bcd4c",
+  "features": [
+    "horizontal-queue",
+    "divided-counter-layout",
+    "courier-deliveries",
+    "outbound-shipping"
+  ]
+}
