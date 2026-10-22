@@ -1,11 +1,15 @@
 {
-  "version": "0.3.0",
-  "game_commit": "9ec0ffe92e02ae1177dad39a33b4ecf568737563",
-  "html_sha256": "60aef9ebb2e95598b8298be545c4d0ceba69237a90dadba9c1d9a51e101bcd4c",
+  "version": "0.3.1",
+  "html_sha256": "2d1eed19b673c1f327b7682ab59755186f97ae28eab565e880978047c72c40be",
   "features": [
     "horizontal-queue",
     "divided-counter-layout",
     "courier-deliveries",
     "outbound-shipping"
+  ],
+  "changes": [
+    "interaction label clear of terminal",
+    "open counter gate artwork",
+    "double-width entrance with no label"
   ]
 }

@@ -9,7 +9,7 @@ const people = ['customer_young', 'customer_office', 'customer_senior'];
 const characterNames = ['courier_walk','courier_carry_walk','clerk_walk','clerk_carry_walk','clerk_work','clerk_idle','clerk_carry_idle',
  ...people.flatMap(p=>[`${p}_walk`,`${p}_carry_walk`,`${p}_idle`])];
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
- 'scanner','checkout_terminal','trolley','outbound_cage'];
+ 'scanner','checkout_terminal','trolley','outbound_cage','staff_gate'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
  ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
@@ -237,9 +237,9 @@ function drawLongCounter(){
  for(const [left,right] of [[0,GATE.left],[GATE.right,world.width]]){
   for(let x=left;x<right;x+=16){const width=Math.min(16,right-x);ctx.drawImage(img,40,36,width,40,x,160,width,40);}
  }
- // Open staff swing leaf assembled from the same approved counter-top artwork.
- ctx.save();ctx.translate(GATE.left,187);ctx.rotate(Math.PI/2);
- ctx.drawImage(img,36,38,28,9,0,0,50,9);ctx.restore();
+ // Open gate stays beside the passage; precise source crop excludes transparent margins.
+ const gate=images.get('staff_gate');
+ if(gate)ctx.drawImage(gate,327,103,287,1472,GATE.left-10,182,14,58);
  drawProp('checkout_terminal',counter.x+10,164,.7);drawProp('scanner',counter.x-24,178,.65);
 }
 function pill(text,x,y,color='#315b49'){
@@ -279,7 +279,8 @@ function draw(){
  ctx.setTransform(dpr*scale,0,0,dpr*scale,Math.round((offsetX-camera.x)*dpr*scale),Math.round((offsetY-camera.y)*dpr*scale));
  ctx.save();ctx.beginPath();ctx.rect(0,0,world.width,world.height);ctx.clip();
  for(let y=0;y<world.height;y+=32)for(let x=0;x<world.width;x+=32)drawTile(y<32?4:15,x,y);
- drawTile(6,24,0);
+ // Double-width entrance, centered on the existing NPC route.
+ const tiles=images.get('tiles');if(tiles)ctx.drawImage(tiles,64,32,32,32,8,0,64,32);
  for(const point of queuePoints){
   ctx.strokeStyle='#bda879';ctx.lineWidth=1;ctx.strokeRect(point.x-13,point.y-6,26,10);
  }
@@ -304,10 +305,9 @@ function draw(){
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,280);
- pill('出入口',40,48);
  pill(`收貨 ${shift.receivingCount()}/6`,receiving.x,77,'#8d693f');
  pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/6`,310,77,'#73518b');
- pill('互動',counter.x,153);
+ pill('互動',counter.x-38,218);
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-26,target.y-12,52,20);
   if(!touch&&target.type!=='counter')pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');

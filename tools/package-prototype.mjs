@@ -15,8 +15,8 @@ html=html.replace('<link rel="stylesheet" href="app.css">',`<style>${css}</style
 html=html.replace(/src="(assets\/[^"<>]+\.png)"/g,(match,name)=>`src="${embedded[name]}"`);
 html=html.replace('<script type="module" src="src/app.js"></script>',
  `<script>window.__PACKAGED_ASSETS__=${JSON.stringify(embedded)};</script>\n<script type="module">\n${code}\n</script>`);
-const single=path.join(destination,'parcel-point-prototype-v0.3.html');fs.writeFileSync(single,html);
-const zip=path.join(destination,'parcel-point-prototype-v0.3.zip');
+const single=path.join(destination,'parcel-point-prototype-v0.3.1.html');fs.writeFileSync(single,html);
+const zip=path.join(destination,'parcel-point-prototype-v0.3.1.zip');
 const entries=['index.html','app.css','package.json','src/game.js','src/app.js','src/layout.js','src/courier-art.js','tools/serve-game.mjs',
  'tools/package-prototype.mjs','tests/game.test.mjs','tests/browser-smoke.mjs','tests/offline-smoke.mjs',
  'PROTOTYPE.md','QA_REPORT.md',...assetFiles.map(f=>path.relative(root,f))];
