@@ -1,16 +1,19 @@
 {
-  "version": "0.4.0",
-  "html_sha256": "df4d74503b03f7afb3598edf7dc6fcf2a1dd4a6a4e0ead80813f423e368eeb75",
+  "version": "0.5.0",
+  "html_sha256": "72e1ce0b3c173ac8fdd6d1e0ea6c61ccd3956bce891eb92be3b4d81620a8f938",
   "features": [
-    "horizontal-queue",
-    "divided-counter-layout",
-    "courier-deliveries",
-    "outbound-shipping"
+    "cross-day-wallet",
+    "daily-ledger",
+    "day-boundary-only-autosave",
+    "indexeddb-full-snapshot",
+    "json-import-export",
+    "validated-backup-recovery",
+    "single-tab-writer"
   ],
   "changes": [
-    "Approved order and parcel-picker UI integrated",
-    "Outbound cage moved to bottom-right staff area",
-    "Selection preserved on pause/resize",
-    "Upgrade development priorities documented"
+    "Only auto-save after stocking, immediately before next day opens",
+    "Immediate pickup/tip/shipping revenue without duplicate day-end payment",
+    "Continue paused with no offline time progression",
+    "Preserve original pixel art and keyboard/mobile controls"
   ]
 }

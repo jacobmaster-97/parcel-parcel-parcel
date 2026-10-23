@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.4.0.html')).href+'?qa=1';
+const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.5.0.html')).href+'?qa=1';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await context.setOffline(true);
@@ -41,7 +41,7 @@ try{
   results.push({viewport:[profile.width,profile.height],status:'PASS',controlsInsideViewport:true,minTouchSize:48});
  }
  // Test the exact downloaded file, without any server/network, through its end state.
- await page.reload();await page.locator('#start-button:enabled').waitFor();await page.locator('#start-button').tap();
+ await page.reload();await page.locator('#start-button:enabled').waitFor();await page.locator('#start-button').tap();await page.locator('#welcome-dialog').waitFor({state:'hidden'});
  await page.clock.fastForward(10000);
  const remaining=await page.evaluate(()=>__parcelQA.snapshot().remaining);assert.ok(remaining>=169&&remaining<=171);
  await page.clock.fastForward(171000);await page.locator('#result-dialog[open]').waitFor();
@@ -63,7 +63,7 @@ try{
   await page.screenshot({path:path.join(root,'deliverables',`stocking-${profile.width}x${profile.height}.png`)});
  }
 
- await page.locator('#next-day').tap();assert.equal(await page.evaluate(()=>__parcelQA.snapshot().day),2);
+ await page.locator('#next-day').tap();await page.locator('#checkpoint-dialog').waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>__parcelQA.snapshot().day),2);
  assert.deepEqual(errors,[]);assert.deepEqual(network,[]);
  const report={status:'PASS',offlineFile:uri.split('?')[0],externalNetworkRequests:network,browserErrors:errors,
   profiles:results,timedShift:'PASS',limitations:['Chromium mobile emulation, not physical Android/iOS verification.','Other languages, screen-reader gameplay and sustained device performance remain unverified.']};

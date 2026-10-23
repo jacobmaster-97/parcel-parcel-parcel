@@ -1,11 +1,13 @@
 import {COURIER_ROUTE} from './layout.js';
+import {Ledger} from './finance.js';
 export const ZONES = ['A', 'B', 'C'];
 export const SHIFT_SECONDS = 180;
 const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
-  constructor({practice = false, seed = 7, shippingChance = .2} = {}) {
+  constructor({practice = false, seed = 7, shippingChance = .2, deferDayStart = false} = {}) {
     this.practice = practice;
+    this.deferDayStart=deferDayStart;this.ledger=new Ledger();
     this.shippingChance = shippingChance;
     this.outbound = Array.from({length:6}, slot);
     this.courier = null;
@@ -56,6 +58,13 @@ export class Shift {
     if (this.phase !== 'stocking') return false;
     if (this.held && !this.isHoldingShipping() && !this.returnHeld().ok) return false;
     this.forwardOutbound();
+    this.ledger.seal(this.stats);
+    if(this.deferDayStart){this.phase='dayend';this.emit('checkpoint');return true;}
+    return this.openNextDay();
+  }
+  openNextDay(){
+    if(!['stocking','dayend'].includes(this.phase))return false;
+    this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
     this.day++; this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.customerTimer = 10; this.deliveryTimer = 25; this.phase = 'playing';
@@ -137,6 +146,7 @@ export class Shift {
     s.packageId=p.id; s.reservedFor=null; p.location='outbound'; p.index=index; p.origin=null; this.held=null;
     const order=this.orders.find(o=>o.packageId===p.id);if(order)order.status='completed';
     const earned=12; this.stats.shipped++; this.stats.revenue+=earned; this.totalRevenue+=earned;
+    if(!this.practice)this.ledger.service(order.id,0,0,earned,this.phase==='stocking',p.code);
     this.emit('shipped',{packageId:p.id,earned});
     if(this.phase==='stocking' && this.receivingCount()===0) this.nextDay();
     return {ok:true,message:'寄貨入庫成功'};
@@ -212,6 +222,7 @@ export class Shift {
     this.held = null; order.status = 'completed'; this.queue.shift();
     const earned = 10 + Math.min(5, Math.floor(order.patience / 10));
     this.stats.completed++; this.stats.revenue += earned; this.totalRevenue += earned;
+    if(!this.practice)this.ledger.service(order.id,10,earned-10,0,false,order.code);
     this.emit('delivered', {order: {...order}, earned});
     return {ok: true, message: `交貨成功！+$${earned}`};
   }
