@@ -1,17 +1,17 @@
 {
-  "version": "0.7.0",
-  "html_sha256": "6865cb606280fdab0c490c30ead63159b3d0dd771bfe50ad686240d36218112e",
+  "version": "0.8.0",
+  "html_sha256": "ef783accaf54545c99f0a03ef8f79f687866d1b4e8b7af2c87dc5804b1469174",
   "features": [
-    "150-second-workdays",
-    "AB-initial-shelves",
-    "purchasable-C-shelf",
-    "upper-right-receiving-cage",
-    "legacy-save-preservation"
+    "next-day-event-forecast",
+    "shopping-sale-weather-return-events",
+    "event-adjusted-arrivals-delivery-patience",
+    "deterministic-event-seed-and-busy-day-guard",
+    "schema4-full-event-snapshots"
   ],
   "changes": [
-    "New stores start with A/B; C costs $320 for 4 slots then $480/$650 for 6/8",
-    "Receiving interaction moves to (310,112), collision and NPC routes updated",
-    "Legacy C/D goods preserved; legacy in-day time scaled 150/180",
-    "Random events are framework only and do not change live customer frequency"
+    "Four event weights 70/20/5/5 after eligibility filtering",
+    "Day1 normal, sales from day4, two busy days force normal/weather",
+    "Night forecast in existing upgrade prompt/shop and current event in pause",
+    "Save/retry/reload preserves selected event and already-adjusted timers; old saves remain normal until next close"
   ]
 }

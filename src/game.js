@@ -1,15 +1,16 @@
 import {COURIER_ROUTE,shopLayout} from './layout.js';
 import {initialUpgrades,upgradeOptions} from './upgrades.js';
+import {DAY_EVENTS,initialDayEvents,previewNextEvent,advanceDayEvent,customerEventRates} from './day-events.js';
 import {Ledger} from './finance.js';
 export const ZONES = ['A', 'B'];
 export const SHIFT_SECONDS = 150;
 const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
-  constructor({practice = false, seed = 7, shippingChance = .2, deferDayStart = false} = {}) {
+  constructor({practice = false, seed = 7, shippingChance = .2, deferDayStart = false, eventSeed = seed} = {}) {
     this.practice = practice;
     this.deferDayStart=deferDayStart;this.ledger=new Ledger();this.upgrades=initialUpgrades();this.worker=null;this.selectionId=null;this.managementFrom='closing';
-    this.shippingChance = shippingChance;
+    this.shippingChance = shippingChance;this.dayEvents=initialDayEvents(eventSeed);
     this.outbound = Array.from({length:6}, slot);
     this.courier = null;
     this.courierSerial = 0;
@@ -35,6 +36,9 @@ export class Shift {
     for (const zone of ZONES) for (let i = 0; i < 2; i++) this.addPackage(zone, 'shelf');
     for (let i=0;i<3;i++) this.addPackage(null, 'receiving');
   }
+  currentEvent(){return this.practice?DAY_EVENTS.normal:DAY_EVENTS[this.dayEvents.current.id];}
+  customerRates(){return customerEventRates(this.currentEvent(),this.shippingChance);}
+  previewTomorrow(){return this.practice?{id:'normal',day:this.day+1}:previewNextEvent(this.dayEvents);}
   moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?88:80;}
   reservedWages(){return this.upgrades.workerBookedDay?60:0;}
   availableFunds(){return this.ledger.balance-this.reservedWages();}
@@ -135,9 +139,9 @@ export class Shift {
   openNextDay(){
     if(!['stocking','dayend'].includes(this.phase))return false;
     this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
-    this.day++; this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
+    this.day++;if(this.practice)this.dayEvents=initialDayEvents(this.dayEvents.seed,this.day,true);else advanceDayEvent(this.dayEvents); this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
-    this.customerTimer = 10; this.deliveryTimer = 25; this.phase = 'playing';
+    this.customerTimer = 10/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
     this.emit('daystart', {day: this.day}); this.spawnCustomer(); return true;
   }
   closeDay() {
@@ -153,7 +157,7 @@ export class Shift {
       if (order.type === 'shipping') this.cancelShipping(p);
       this.emit('closed', {order: {...order}});
     }
-    this.queue = []; this.phase = 'closing'; this.emit('end');
+    this.queue = []; this.phase = 'closing';this.previewTomorrow(); this.emit('end');
   }
   slots(origin) { return origin.type === 'shelf' ? this.shelves[origin.zone] : origin.type === 'outbound' ? this.outbound : this.receiving; }
   isHoldingShipping() { return this.held && this.packages.get(this.held).kind === 'shipping'; }
@@ -185,7 +189,7 @@ export class Shift {
   spawnCustomer({type = null} = {}) {
     if (this.phase !== 'playing' || this.queue.length >= 4) return null;
     const free = this.outbound.findIndex(s => !s.packageId && !s.reservedFor);
-    let shipping = type === 'shipping' || (!type && !this.practice && this.orderSerial > 0 && this.random() < this.shippingChance);
+    let shipping = type === 'shipping' || (!type && !this.practice && this.orderSerial > 0 && this.random() < this.customerRates().shippingChance);
     if (shipping && free < 0) { if (type) return null; shipping = false; }
     const choices = this.available();
     if (!shipping && !choices.length) return null;
@@ -196,8 +200,9 @@ export class Shift {
       pkg = {id,kind:'shipping',code:id,zone:null,location:'customer',index:free,orderId:null,origin:null};
       this.packages.set(id,pkg); this.outbound[free].reservedFor = id;
     } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
+    const basePatience=serial===0?60:48+Math.floor(this.random()*10),patienceFactor=this.currentEvent().patience;
     const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
-      appearance:serial%3,patience:serial===0?60:48+Math.floor(this.random()*10),maxPatience:serial===0?60:58,
+      appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:(serial===0?60:58)*patienceFactor,
       status:'waiting',revealed:false};
     pkg.orderId=order.id; this.queue.push(order); this.orders.push(order);
     this.emit('customer',{order:{...order}}); return order;
@@ -352,7 +357,7 @@ export class Shift {
     if(this.remaining===0){this.closeDay();return;}
     for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
     this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;
-    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=9+this.random()*5;}
-    if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25;}
+    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(9+this.random()*5)/this.customerRates().total;}
+    if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25/this.currentEvent().delivery;}
   }
 }

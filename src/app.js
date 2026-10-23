@@ -2,6 +2,7 @@ import {Shift, ZONES} from './game.js';
 import {WORLD,TARGETS,GATE,QUEUE_POINTS,ENTRANCE,canStandInShop,shopLayout} from './layout.js';
 import {COURIER_ART} from './courier-art.js';
 import {makeSave,readSave,encodeShift,decodeShift} from './save.js';
+import {DAY_EVENTS,dayEventSummary,eventSeedFromText} from './day-events.js';
 import {upgradeOptions} from './upgrades.js';
 import {SaveStore} from './storage.js';
 
@@ -27,7 +28,7 @@ let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
 let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const saveStore=new SaveStore();let campaignId=null,campaignActive=false,campaignMemory=null,campaignCatalog=null,saveBusy=false,ownershipLost=false,menuBusy=false,choiceResolve=null,pendingBoundary=null;
-let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false;
+let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false,eventInfoKey='';
 let saveStatus='只在整理完、開下一天前自動保存。';
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
@@ -61,7 +62,7 @@ function beep(success=true){
 }
 function beginSession(practice=false){
  if(!ready){if(loadError)location.reload();return;}
- closeDialogs();shift=new Shift({practice,deferDayStart:!practice});syncLayout();resetPlayer();actors=new Map();departures=[];
+ closeDialogs();shift=new Shift({practice,deferDayStart:!practice,eventSeed:eventSeedFromText(campaignId||'practice')});syncLayout();resetPlayer();actors=new Map();departures=[];
  action=null;practiceDone=false;feedback=null;queueSignature='';shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 已開放貨架 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
@@ -379,7 +380,7 @@ function updateUI(){
  $('clock-label').textContent=stocking?'上架時間':'距離收工';
  $('store-day').textContent=`街坊集運 · 第 ${shift.day} 天`;
  $('clock').parentElement.classList.toggle('urgent',!stocking&&!shift.practice&&seconds<=30);
- $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':'營業中'):shift.phase==='closing'?'已收舖':shift.phase==='upgrading'?'商店升級':'準備開檔'}`;
+ $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':shift.currentEvent().mode):shift.phase==='closing'?'已收舖':shift.phase==='upgrading'?'商店升級':'準備開檔'}`;
  $('order-title').textContent=holdingShipping?'寄貨處理中':'下一單，交畀你';
  $('order-code').textContent=holdingShipping?'寄貨':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
  $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':shift.packages.get(order.packageId).zone):'—';
@@ -406,6 +407,7 @@ function updateUI(){
  if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
  if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 已開放貨架 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
+ renderEventInfo();
  $('wallet-summary').textContent=shift.practice?'練習結果獨立，不影響正式錢包。':`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 今日收入 ${moneyText(Object.values(shift.ledger.current.income).reduce((a,b)=>a+b,0))} · 今日支出 ${moneyText(Object.values(shift.ledger.current.expense).reduce((a,b)=>a+b,0)-shift.ledger.current.refund)}`;
  document.querySelectorAll('.save-status').forEach(e=>e.textContent=saveStatus);
  $('completed').textContent=String(shift.stats.completed+shift.stats.shipped);$('revenue').textContent=`$${shift.stats.revenue}`;
@@ -651,9 +653,23 @@ function renderFinance(){
  if(ledger.archived.days){const p=document.createElement('p');p.className='report-note';p.textContent=`第1–${ledger.archived.days}天明細已合併：收入 ${moneyText(ledger.archived.income)}，淨支出 ${moneyText(ledger.archived.expense)}。錢包及累計收入保留。`;body.append(p);}
 }
 
+// Cards share one saved forecast; rendering never draws a new event.
+function fillEventCard(id,entry,label){
+ const node=$(id);node.hidden=shift.practice||!entry;if(node.hidden)return;
+ const event=DAY_EVENTS[entry.id],key=`${label}:${entry.day}:${entry.id}`;if(node.dataset.event===key)return;
+ node.dataset.event=key;node.replaceChildren();const tag=document.createElement('small'),name=document.createElement('h3'),story=document.createElement('p'),effects=document.createElement('p');
+ tag.textContent=`${label} · 第 ${entry.day} 天`;name.textContent=event.name;story.textContent=event.story;effects.className='event-effects';effects.textContent=dayEventSummary(event);node.append(tag,name,story,effects);
+}
+function renderEventInfo(){
+ const key=`${shift.practice}:${shift.dayEvents.current.day}:${shift.dayEvents.current.id}:${shift.dayEvents.next?.day}:${shift.dayEvents.next?.id}`;if(key===eventInfoKey)return;eventInfoKey=key;
+ fillEventCard('forecast-prompt',shift.dayEvents.next,'明日店況');fillEventCard('forecast-shop',shift.dayEvents.next,'明日店況');
+ fillEventCard('pause-event',shift.dayEvents.current,'今日店況');
+ const node=$('pause-event');if(!node.hidden&&shift.dayEvents.next){const key=`${shift.dayEvents.next.day}:${shift.dayEvents.next.id}`;if(node.dataset.next!==key){node.querySelector('.next-event')?.remove();const p=document.createElement('p');p.className='next-event';p.textContent=`明日 · ${DAY_EVENTS[shift.dayEvents.next.id].name}：${dayEventSummary(DAY_EVENTS[shift.dayEvents.next.id])}`;node.append(p);node.dataset.next=key;}}else{node.querySelector('.next-event')?.remove();delete node.dataset.next;}
+}
+
 // Night management deliberately does not call SaveStore.write.
 function showUpgradePrompt(){
- closeDialogs();$('upgrade-prompt-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())}`;showDialog('upgrade-prompt');
+ renderEventInfo();closeDialogs();$('upgrade-prompt-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())}`;showDialog('upgrade-prompt');
 }
 function enterStocking(){
  if(ownershipLost){campaignMenu();return;}
@@ -668,6 +684,7 @@ function openUpgradeShop(){
  closeDialogs();$('upgrade-feedback').textContent='';renderUpgrades();showDialog('upgrade-dialog');
 }
 function renderUpgrades(){
+ renderEventInfo();
  $('upgrade-wallet').textContent=`錢包 ${moneyText(shift.ledger.balance)} · 預留薪金 ${moneyText(shift.reservedWages())} · 可用 ${moneyText(shift.availableFunds())}`;
  const tabs=$('upgrade-tabs');tabs.replaceChildren();for(const category of ['工具','設備','貨架','人手']){const b=document.createElement('button');b.className='button button-secondary';b.textContent=category;b.setAttribute('aria-pressed',String(category===upgradeCategory));b.onclick=()=>{upgradeCategory=category;renderUpgrades();$('upgrade-scroll').scrollTop=0;tabs.querySelector(`[aria-pressed="true"]`).focus();};tabs.append(b);}
  const grid=$('upgrade-cards');grid.replaceChildren();
@@ -751,7 +768,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

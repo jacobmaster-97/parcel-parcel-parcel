@@ -2,7 +2,7 @@
 
 像素風集運自提點經營原型，支援鍵盤與手機觸控。
 
-**[立即遊玩 v0.7](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.7)**
+**[立即遊玩 v0.8](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.7)**
 
 每個營業日150秒（2分30秒），接待後按提貨碼找貨，亦有寄貨客人及送貨員。新貨自由選架上架；桌面WASD／方向鍵移動、E互動、Esc暫停；手機搖桿及互動按鈕。
 
@@ -28,8 +28,21 @@ npm test
 npm run build
 ```
 
-Node.js 20+，遊戲執行期無外部套件。Pages使用main的/docs，docs/index.html為自包含單檔。61項規則及Chromium桌面／手機尺寸測試通過；Android／iPhone真機及Safari仍待驗證。完整規則見PROTOTYPE.md及design/store-upgrades-v2/IMPLEMENTED.md，驗證見QA_REPORT.md。正常revert對應提交可讓Pages回滾；舊版程式無法讀取較新schema3存檔，回滾後須用相容版本或原schema1備份。
+Node.js 20+，遊戲執行期無外部套件。Pages使用main的/docs，docs/index.html為自包含單檔。72項規則及Chromium桌面／手機尺寸測試通過；Android／iPhone真機及Safari仍待驗證。完整規則見PROTOTYPE.md及design/store-upgrades-v2/IMPLEMENTED.md，驗證見QA_REPORT.md。正常revert對應提交可讓Pages回滾；舊版程式無法讀取較新schema4存檔，回滾後須用相容版本或原schema1備份。
 
 新店初始只有A/B，未購C不顯示貨架或留下碰撞。舊v0.5/v0.6進度保留已有C/D、資金及貨物，當日剩餘時間按150/180換算。收貨籠移至右上（互動310,112；腳點92），送貨員及理貨員動線一起更新。
 
-隨機事件本輪只做[文字框架](design/random-events-v1/FRAMEWORK.md)，尚未實裝或改動正式客流；倍率及權重待修訂。
+## 翌日事件（v0.8）
+
+關店後，現有升級詢問先預告翌日店況，商店及暫停頁可查看；只在開下一天前保存，重開面板／匯出／重試／重載不重抽或二次套倍率。
+
+| 事件 | 客流 | 收貨頻率 | 客人耐性 | 原始權重 |
+| --- | --- | --- | --- | --- |
+| 平常一天 | 不變 | 不變 | 不變 | 70 |
+| 購買網優惠 | 提貨／寄貨+50% | +60% | −40% | 20 |
+| 惡劣天氣 | 不變 | −40% | 不變 | 5 |
+| 退貨潮 | 寄貨+50%，提貨基準不變 | 不變 | −20% | 5 |
+
+第1天正常，第4天才加入優惠高峰；優惠／退貨連續兩日後安排正常／天氣日。候選過濾後權重正規化。頻率指生成嘗試，隊長、貨物與格位限制保留，不保證實際收入按比例增加。營業150秒、速度及基本服務費不變；小費仍按耐性公式。練習不套事件。
+
+舊schema1/2/3存檔當天維持正常，保留原派客／送貨計時及耐性，下一個關店才開始預告。詳細規則見[事件實作規則](design/random-events-v1/IMPLEMENTED.md)。

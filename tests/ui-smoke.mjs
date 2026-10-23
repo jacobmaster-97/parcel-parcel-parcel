@@ -1,6 +1,6 @@
 import {createRequire} from 'node:module';import assert from 'node:assert/strict';import fs from 'node:fs';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.7.0.html',import.meta.url).href;
+const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.8.0.html',import.meta.url).href;
 const root=new URL('../deliverables/',import.meta.url).pathname,b=await chromium.launch({args:['--no-sandbox']});const errors=[],profiles=[];
 const c=await b.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
 try{
