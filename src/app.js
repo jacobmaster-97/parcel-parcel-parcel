@@ -11,7 +11,7 @@ const characterNames = ['courier_walk','courier_carry_walk','clerk_walk','clerk_
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
  'scanner','checkout_terminal','trolley','outbound_cage'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
- ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png']]);
+ ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['ui_icons','assets/ui/ui_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 const world=WORLD,targets=TARGETS,queuePoints=QUEUE_POINTS;
 const counter=targets.find(t=>t.type==='counter'),receiving=targets.find(t=>t.type==='receiving');
@@ -20,6 +20,7 @@ let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
+let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog'];
 const canWork = () => shift.canWork();
 const requestText = () => {
@@ -33,7 +34,7 @@ resetPlayer();
 function clearInput(){
  keys.clear();joystickPointer=null;joystickVector={x:0,y:0};$('joystick-knob').style.transform='';
 }
-function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;clearInput(); }
+function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;suspendedInventory=null;clearInput(); }
 function showDialog(id){clearInput();if(!$(id).open)$(id).showModal();}
 // The floating message area is intentionally silent in every game phase.
 function toast() {}
@@ -53,7 +54,7 @@ function beep(success=true){
 function start(practice=false){
  if(!ready){if(loadError)location.reload();return;}
  closeDialogs();shift=new Shift({practice});resetPlayer();actors=new Map();departures=[];
- action=null;practiceDone=false;queueSignature='';shift.start();processEvents();
+ action=null;practiceDone=false;feedback=null;queueSignature='';shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 A／B／C 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
@@ -61,17 +62,22 @@ function start(practice=false){
 }
 function pause(reason='所有客人耐性及班次時間已停止。'){
  if(!shift.pause())return;
- if($('inventory-dialog').open)closeInventory(false);
+ if($('inventory-dialog').open){
+  const saved={target:{...inventoryContext},selected,scroll:$('inventory-scroll').scrollTop};
+  closeInventory(false);suspendedInventory=saved;
+ }
  $('pause-reason').textContent=reason;showDialog('pause-dialog');
 }
 function resume(){
  if($('pause-dialog').open)$('pause-dialog').close();
- clearInput();shift.resume();lastTime=performance.now();canvas.focus({preventScroll:true});
+ clearInput();shift.resume();lastTime=performance.now();
+ if(suspendedInventory){const saved=suspendedInventory;suspendedInventory=null;openInventory(saved.target,saved);}
+ else canvas.focus({preventScroll:true});
 }
 function closestTarget(){
  if(!canWork()||dialogOpen()||action)return null;
  return targets.map(t=>({...t,distance:Math.hypot(player.x-t.x,player.y-t.y)}))
-  .filter(t=>t.distance<38&&(t.type!=='counter'||player.y>202)&&(t.type!=='receiving'&&t.type!=='outbound'||player.y<178)).sort((a,b)=>a.distance-b.distance)[0]||null;
+  .filter(t=>t.distance<38&&(t.type!=='counter'||player.y>202)&&(t.type!=='receiving'||player.y<178)&&(t.type!=='outbound'||player.y>202)).sort((a,b)=>a.distance-b.distance)[0]||null;
 }
 function targetLabel(target){
  if(!target)return '行近目標';
@@ -87,7 +93,7 @@ function faceToward(target){
  player.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
 }
 function handleResult(result, animation=null){
- toast(result.message,!result.ok);if(!result.ok)beep(false);
+ feedback={text:result.message,error:!result.ok,remaining:5};if(!result.ok)beep(false);
  if(result.ok&&animation)action={name:animation,remaining:.4,duration:.4,face:player.face};
  processEvents();canvas.focus({preventScroll:true});
 }
@@ -114,46 +120,66 @@ function inventoryPackages(){
  const slots=inventoryContext.type==='shelf'?shift.shelves[inventoryContext.zone]:shift.receiving;
  return slots.map(s=>s.packageId?shift.packages.get(s.packageId):null);
 }
-function openInventory(target){
- inventoryContext=target;selected=null;selectedIndex=0;
- $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區貨架`:'收貨區 · 待上架新貨';
- $('inventory-feedback').textContent='';
- const order=shift.queue[0];
- $('inventory-request').textContent=requestText();
- $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 可隨時按上方「下一天」':'選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回';
- const list=inventoryPackages(),grid=$('parcel-grid');grid.replaceChildren();
+function updateInventoryRequest(){
+ const node=$('inventory-request'),text=requestText();if(node.dataset.text===text)return;
+ node.dataset.text=text;node.replaceChildren();const order=shift.queue[0];
+ if(order?.revealed&&order.type==='pickup'){
+  const label=document.createElement('span'),code=document.createElement('strong');
+  label.textContent=`客人要求 · ${shift.packages.get(order.packageId).zone} 區`;code.textContent=order.code;code.className='inventory-request-code';node.append(label,code);
+ }else node.textContent=text;
+}
+function openInventory(target,restore=null){
+ inventoryContext=target;selected=null;selectedIndex=-1;inventoryBusy=false;
+ const list=inventoryPackages();
+ $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區 · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
+ $('inventory-feedback').textContent='';$('inventory-selection').textContent='請先選一件包裹';
+ updateInventoryRequest();
+ $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 A／B／C 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
+ const grid=$('parcel-grid');grid.replaceChildren();
  list.forEach((p,i)=>{
   const button=document.createElement('button');button.className='parcel-choice';button.type='button';
   button.setAttribute('aria-pressed','false');button.dataset.index=String(i);button.disabled=!p;
   if(p){
-   const img=document.createElement('img');img.src=sourceURL(sources.parcel_medium);img.alt='';
-   const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small');
-   code.textContent=p.code;zone.textContent=p.zone?`${p.zone} 區 · 架上包裹`:'自選 A／B／C 上架';
-   label.append(code,zone);button.append(img,label);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? `${p.zone} 區` : '待上架'}`);
+   const appearance=Number(p.code.slice(-1))%3;
+   const name=['parcel_small','parcel_medium','parcel_padded'][appearance],rect=['40 60 16 16','36 56 24 20','36 64 24 12'][appearance];
+   const ns='http://www.w3.org/2000/svg',icon=document.createElementNS(ns,'svg'),img=document.createElementNS(ns,'image');
+   icon.setAttribute('viewBox',rect);icon.setAttribute('aria-hidden','true');icon.classList.add('parcel-art');
+   img.setAttribute('href',sourceURL(sources[name]));img.setAttribute('width','96');img.setAttribute('height','80');icon.append(img);
+   const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small'),mark=document.createElement('span');
+   mark.className='selection-mark';code.textContent=p.code;zone.textContent=p.zone?`${p.zone} 區 · 貨位 ${i+1}`:`待上架 · 貨位 ${i+1}`;
+   label.append(code,zone);button.append(icon,label,mark);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? `${p.zone} 區` : '待上架'}`);
    button.addEventListener('click',()=>selectParcel(i));
-  }else{button.textContent='空貨位';button.setAttribute('aria-label','空貨位');}
+  }else{button.classList.add('empty');button.textContent='＋ 空貨位';button.setAttribute('aria-label','空貨位');}
   grid.append(button);
  });
- $('inventory-confirm').disabled=true;
+ $('inventory-confirm').disabled=true;$('inventory-confirm').textContent='確認取件';
  showDialog('inventory-dialog');
- const first=list.findIndex(Boolean);if(first>=0)selectParcel(first,true);else $('inventory-close').focus();
+ const old=restore?.selected?list.findIndex(p=>p?.id===restore.selected):-1;
+ if(old>=0)selectParcel(old);else $('inventory-close').focus();
+ $('inventory-scroll').scrollTop=restore?.scroll||0;
 }
 function selectParcel(index,focus=true){
- const list=inventoryPackages();if(!list[index])return;
+ const list=inventoryPackages();if(!list[index]||inventoryBusy)return;
  selected=list[index].id;selectedIndex=index;
- $('parcel-grid').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
+ $('parcel-grid').querySelectorAll('button').forEach((b,i)=>{
+  b.setAttribute('aria-pressed',String(i===index));const mark=b.querySelector('.selection-mark');if(mark)mark.textContent=i===index?'✓ 已選':'';
+ });
+ $('inventory-selection').textContent=`已選 ${list[index].code} · ${list[index].zone?`${list[index].zone} 區`:'待上架'}`;
  $('inventory-confirm').disabled=false;
- if(focus)$('parcel-grid').children[index]?.focus({preventScroll:true});
+ if(focus){const card=$('parcel-grid').children[index];card?.focus({preventScroll:true});card?.scrollIntoView({block:'nearest'});}
 }
 function confirmParcel(){
- if(!selected||!canWork())return;
+ if(!selected||!canWork()||inventoryBusy)return;
+ const item=inventoryPackages().find(p=>p?.id===selected);
+ if(!item){selected=null;$('inventory-confirm').disabled=true;$('inventory-feedback').textContent='這件貨物已移動，請重新選擇。';return;}
+ inventoryBusy=true;$('inventory-confirm').disabled=true;$('inventory-confirm').textContent='處理中…';
  const result=shift.take(selected);
  if(result.ok){closeInventory();handleResult(result,'pickup');}
- else $('inventory-feedback').textContent=result.message;
+ else{inventoryBusy=false;$('inventory-confirm').disabled=false;$('inventory-confirm').textContent='確認取件';$('inventory-feedback').textContent=result.message;}
 }
 function closeInventory(focus=true){
  if($('inventory-dialog').open)$('inventory-dialog').close();
- inventoryContext=null;selected=null;clearInput();if(focus)canvas.focus({preventScroll:true});
+ inventoryContext=null;selected=null;inventoryBusy=false;clearInput();if(focus)canvas.focus({preventScroll:true});
 }
 function finish(){
  closeDialogs();clearInput();action=null;const s=shift.stats;
@@ -312,7 +338,8 @@ function draw(){
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,280);
  pill(`收貨 ${shift.receivingCount()}/6`,receiving.x,77,'#8d693f');
- pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/6`,310,77,'#73518b');
+ const outbound=targets.find(t=>t.type==='outbound');
+ pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/6`,outbound.x,280,'#73518b');
  pill('互動',counter.x-38,218);
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-26,target.y-12,52,20);
@@ -323,21 +350,37 @@ function draw(){
 function updateUI(){
  const order=shift.queue[0],known=order?.revealed,held=shift.held?shift.packages.get(shift.held):null;
  const stocking=shift.phase==='stocking'||shift.phase==='paused'&&shift.pausedPhase==='stocking';
+ const holdingShipping=held?.kind==='shipping';
  const seconds=Math.ceil(shift.remaining);
  $('clock').textContent=stocking?'不限時':shift.practice?'練習':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
  $('clock-label').textContent=stocking?'上架時間':'距離收工';
  $('store-day').textContent=`街坊集運 · 第 ${shift.day} 天`;
  $('clock').parentElement.classList.toggle('urgent',!stocking&&!shift.practice&&seconds<=30);
  $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':'營業中'):shift.phase==='closing'?'已收舖':'準備開檔'}`;
- $('order-code').textContent=order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
- $('order-zone').textContent=known?(order.type==='shipping'?'寄':shift.packages.get(order.packageId).zone):'—';
- $('order-kind').textContent=known&&order.type==='shipping'?'客人寄貨':'客人提貨碼';
+ $('order-title').textContent=holdingShipping?'寄貨處理中':'下一單，交畀你';
+ $('order-code').textContent=holdingShipping?'寄貨':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
+ $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':shift.packages.get(order.packageId).zone):'—';
+ $('order-kind').textContent=holdingShipping?'客人要求':known?(order.type==='shipping'?'客人要求':'客人提貨碼'):'服務狀態';
+ $('order-type').textContent=holdingShipping?'寄貨':stocking?'整理':known?(order.type==='shipping'?'寄貨':'提貨'):order?'待接待':'—';
+ $('order-location').textContent=holdingShipping?'右下角寄貨區':known?(order.type==='shipping'?'右下角寄貨區':`${shift.packages.get(order.packageId).zone} 區貨架`):order?'到櫃檯接待後顯示':stocking?'新貨可自由選架上架':'';
+ document.querySelector('.order-card').classList.toggle('pending',!known&&!holdingShipping);
  $('queue-count').textContent=stocking?`收貨 ${shift.receivingCount()} 件`:`${shift.queue.length} 人等候`;
  const ratio=order?(shift.practice?1:Math.max(0,order.patience/order.maxPatience)):0;
- $('patience-fill').style.width=`${ratio*100}%`;$('patience-fill').classList.toggle('low',ratio<.3);
- $('patience-fill').parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
- $('patience-text').textContent=stocking?'不計時':order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
- $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'送往寄貨區':held.zone?`${held.zone} 區`:'自選貨架'}`:'空手 · 可以取件';
+ const activePatience=!!order&&!stocking&&!holdingShipping;
+ $('order-patience').hidden=!activePatience;
+ const patienceState=ratio<=.2?'danger':ratio<=.4?'warn':'normal';
+ const patienceText=shift.practice?'不計時':shift.phase==='paused'?'已暫停':`${Math.ceil(order?.patience||0)} 秒 · ${ratio<=.2?'！快到時':ratio<=.4?'△ 留意':'充足'}`;
+ for(const prefix of ['','inventory-']){
+  const fill=$(prefix+'patience-fill'),text=$(prefix+'patience-text');
+  fill.style.width=`${ratio*100}%`;fill.parentElement.className=`patience-track ${patienceState}`;
+  fill.parentElement.hidden=!activePatience||shift.practice;fill.parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
+  text.textContent=activePatience?patienceText:stocking?'不計時':'—';
+ }
+ $('inventory-patience').hidden=!activePatience;
+ $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?`${held.zone} 區`: '待上架'}`:'空手';
+ $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
+ $('order-feedback').hidden=!feedback;
+ if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
  if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('completed').textContent=String(shift.stats.completed+shift.stats.shipped);$('revenue').textContent=`$${shift.stats.revenue}`;
@@ -368,13 +411,13 @@ function updateUI(){
  const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 A／B／C':destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
  $('scene-status').textContent=canWork()?target?targetLabel(target):`${arrow} ${destinationName}`:
   shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':'等你開檔';
- if($('inventory-dialog').open)$('inventory-request').textContent=requestText();
+ if($('inventory-dialog').open)updateInventoryRequest();
 }
 
 function loop(now){
  const elapsed=Math.max(0,(now-(lastTime||now))/1000),dt=Math.min(.08,elapsed);lastTime=now;
  if(canWork()){
-  shift.tick(elapsed);if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
+  shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
  draw();updateUI();requestAnimationFrame(loop);
@@ -384,9 +427,10 @@ window.addEventListener('keydown',e=>{
  const key=e.key.toLowerCase();
  if($('inventory-dialog').open){
   if(['arrowleft','arrowright','arrowup','arrowdown'].includes(key)){
-   e.preventDefault();const count=inventoryPackages().length,delta=key==='arrowleft'?-1:key==='arrowright'?1:key==='arrowup'?-2:2;
+   e.preventDefault();const count=inventoryPackages().length,columns=getComputedStyle($('parcel-grid')).gridTemplateColumns.split(' ').length,delta=key==='arrowleft'?-1:key==='arrowright'?1:key==='arrowup'?-columns:columns;
+   if(selectedIndex<0){const first=inventoryPackages().findIndex(Boolean);if(first>=0)selectParcel(first);return;}
    let index=selectedIndex;for(let n=0;n<count;n++){index=(index+delta+count)%count;if(inventoryPackages()[index]){selectParcel(index);break;}}
-  }else if(key==='enter'&&e.target.id!=='inventory-close'&&e.target.id!=='inventory-pause'){
+  }else if(key==='enter'&&e.target.id!=='inventory-close'&&e.target.id!=='inventory-pause'&&e.target.id!=='inventory-back'){
    e.preventDefault();if(!e.repeat)confirmParcel();
   }return;
  }
@@ -432,7 +476,8 @@ $('play-again').addEventListener('click',()=>{closeDialogs();shift.beginStocking
 $('next-day').addEventListener('click',()=>{closeInventory(false);shift.nextDay();processEvents();});
 $('practice-to-shift').addEventListener('click',()=>start(false));
 $('inventory-close').addEventListener('click',()=>closeInventory());$('inventory-confirm').addEventListener('click',confirmParcel);
-$('inventory-pause').addEventListener('click',()=>{closeInventory(false);pause();});
+$('inventory-pause').addEventListener('click',()=>pause());
+$('inventory-back').addEventListener('click',()=>closeInventory());
 $('inventory-dialog').addEventListener('cancel',e=>{e.preventDefault();closeInventory();});
 $('pause-dialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
 for(const id of ['welcome-dialog','result-dialog','practice-done-dialog'])$(id).addEventListener('cancel',e=>e.preventDefault());

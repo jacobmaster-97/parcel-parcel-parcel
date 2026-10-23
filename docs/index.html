@@ -36,6 +36,29 @@
 .day-button[hidden]{display:none}
 .order-number strong{letter-spacing:1px}
 @media(pointer:coarse),(max-width:800px){body:has(#next-day:not([hidden])) .brand small{display:none}body:has(#next-day:not([hidden])) .brand-mark{display:none}.shift-hud{gap:6px}.day-button{min-width:68px;font-size:13px;padding:5px}.order-number strong{font-size:25px}}
+
+/* v0.4 approved order/picker design: same cream paper and teal shop palette. */
+:root{--ink:#263c38;--teal:#176966;--paper:#faf3df;--line:#9ba58c;--red:#913c35;--shadow:4px 4px 0 #a7ae94}
+[hidden]{display:none!important}
+body{background:#eeeade}.workspace{grid-template-columns:minmax(0,1fr) 350px}
+.order-card,.queue-card,.scene-panel,.game-dialog,.notes-card{border:3px solid #284e47;border-radius:0;box-shadow:var(--shadow)}
+.order-card{padding:0;background:var(--paper);display:block}.order-card>.card-heading{padding:12px 16px;background:#284e47;color:#faf3df;border-bottom:3px solid #182f2c}.order-card h1{font-size:20px}.count-pill{border:2px solid currentColor;border-radius:0;background:transparent;font-size:14px;padding:3px 8px}.order-content{padding:18px}.order-main{display:flex;align-items:center;gap:16px;margin:0 0 18px}.zone-stamp{width:62px;height:70px;border:3px double #284e47;background:#dce4ce;border-radius:0;transform:none;font-size:38px}.order-number{display:block;min-width:0}.order-number span{font-size:14px;letter-spacing:0;color:#53614d;max-width:none;display:block}.order-number strong{display:block;color:#91491f;font-size:42px;letter-spacing:2px;margin:3px 0;line-height:1.15}.order-card.pending .order-number strong{font-size:28px;letter-spacing:0}.order-location{display:block;font-size:16px}.patience-row{font-size:14px;color:var(--ink);gap:8px}.patience-row strong{font:700 14px system-ui}.patience-track{height:16px;padding:2px;border:2px solid #284e47;border-radius:0;background:#d8dbc7;margin:8px 0 0}.patience-track>div{background:#176966;transition:none}.patience-track.warn>div{background:#8d531b}.patience-track.danger>div{background:#913c35}.held-card{padding:12px;margin-top:18px;display:flex;gap:10px;border:2px solid #8f9d81;background:#e7e8d4}.held-icon{width:32px;height:32px;flex:none;image-rendering:pixelated;background-size:128px 128px;background-position:-96px 0;background-repeat:no-repeat}.held-card small{display:block;font-size:14px;margin-bottom:2px;color:#53614d}.held-card strong{font-size:16px;overflow-wrap:anywhere}.order-feedback{font-size:14px;line-height:1.5;margin:12px 0 0;padding:8px;border:2px solid #176966;background:#e2e8d5;color:#235544}.order-feedback.error{border-color:#913c35;color:#7a302b;background:#f0ded0}.queue-card{background:var(--paper);padding:16px}.queue-card h2{font-size:18px}.small-tag,.queue-item,.quiet{font-size:14px}.queue-item strong{font-size:18px}.notes-card{background:#f1e6c7;transform:none}.note-pin{display:none}
+.game-dialog{background:var(--paper);padding:26px}.game-dialog::backdrop{background:#203c38aa;backdrop-filter:none}.button,.icon-button,.day-button{border:2px solid #284e47;border-bottom-width:5px;border-radius:0;box-shadow:none;background:#dce4ce;min-height:52px;font-size:18px;color:#263c38}.button-primary{background:#176966;color:#fff7df}.button-primary:hover:not(:disabled){background:#205d59}.button:active:not(:disabled){transform:translateY(3px);border-bottom-width:2px}button:disabled{opacity:1;color:#59604d;background:#dddcc9;border-color:#8c927b}.icon-button{min-width:48px;min-height:48px;font-size:22px}.game-dialog p{color:#53614d}
+.inventory-dialog{width:min(96vw,780px);padding:0;max-height:calc(100dvh - 24px);overflow:hidden}.inventory-dialog[open]{display:flex;flex-direction:column;gap:0}.inventory-dialog .dialog-top{padding:14px 18px;background:#284e47;color:#faf3df;flex:none;gap:12px;border-bottom:3px solid #182f2c}.inventory-dialog .eyebrow{font-size:14px;color:#faf3df;letter-spacing:0}.inventory-dialog h2{font-size:22px;line-height:1.3;margin:0}.inventory-header-actions{display:flex;gap:8px;flex:none}.inventory-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#e8e6cd;border:2px solid #9eaa8c;margin:16px 18px;padding:12px;flex:none}.game-dialog .inventory-request{background:none;border:none;padding:0;margin:0;font-size:18px;line-height:1.5;color:var(--ink);font-weight:700}.inventory-patience{min-width:160px}.inventory-scroll{overflow:auto;min-height:0;padding:2px 18px 4px;overscroll-behavior:contain}.parcel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.parcel-choice{display:flex;align-items:center;gap:12px;position:relative;padding:14px;min-height:126px;border:2px solid #96a58b;border-radius:0;background:#fffae9;box-shadow:none;text-align:left;color:#263c38}.parcel-choice .parcel-art{width:64px;height:54px;flex:none;image-rendering:pixelated}.parcel-choice strong{font:850 30px ui-monospace,monospace;letter-spacing:1px}.parcel-choice small{display:block;font-size:14px;color:#53614d;margin-top:4px}.parcel-choice:not(:disabled):not([aria-pressed=true]):hover{background:#f2eed8;border-color:#5b766c}.parcel-choice[aria-pressed=true]{padding:13px;border:3px solid #285c7d;background:#e5efea;box-shadow:inset 0 0 0 2px #faf3df}.selection-mark{position:absolute;top:5px;right:6px;background:#e9f1ef;color:#285c7d;font-size:13px;padding:1px 5px;font-weight:800}.selection-mark:empty{display:none}.parcel-choice.empty{border:2px dashed #adb299;background:#ededdc;color:#67715b;font-size:16px}.inventory-footer{padding:0 18px 14px;flex:none}.inventory-selection{font-size:16px!important;margin:12px 0 6px;min-height:24px}.game-dialog #inventory-feedback{min-height:0;margin:0;font-size:14px;color:#913c35}.inventory-dialog .dialog-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;margin-top:12px}.game-dialog .dialog-footnote{font-size:14px;line-height:1.5;margin-top:12px;color:#53614d}.inventory-dialog button:focus-visible{outline:3px solid #285c7d;outline-offset:3px}
+@media(pointer:coarse),(max-width:800px){
+ .workspace{grid-template-columns:1fr;gap:8px}.order-card{display:block;padding:0;grid-column:1;grid-row:1}.order-card>.card-heading{padding:7px 10px;gap:8px}.order-card h1{font-size:16px}.count-pill{font-size:13px;padding:2px 6px}.order-content{padding:9px 10px;display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:7px 9px}.order-main{grid-column:1;grid-row:1;display:flex;gap:7px;margin:0;min-width:0}.zone-stamp{width:38px;height:47px;font-size:27px;border-width:2px}.order-number{display:block;grid-area:auto;min-width:0}.order-number span{font-size:14px;max-width:none;letter-spacing:0}.order-number strong{font-size:30px;letter-spacing:0;margin:2px 0}.order-card.pending .order-number strong{font-size:23px}.order-location{font-size:14px;line-height:1.4}.held-card{grid-column:2;grid-row:1;margin:0;padding:6px;border:2px solid #8f9d81;gap:0}.held-icon{display:none}.held-card small{display:block;font-size:13px}.held-card strong{font-size:14px;line-height:1.4}.order-patience{grid-column:1/-1;grid-row:2}.patience-row{font-size:14px;grid-area:auto}.patience-row strong{font-size:14px}.patience-track{grid-area:auto;height:13px;margin:4px 0 0;padding:1px}.order-feedback{grid-column:1/-1;grid-row:3;margin:0;padding:5px;font-size:14px;line-height:1.35}.scene-toolbar{font-size:12px}.scene-vignette{box-shadow:none}.scene-footer{padding:3px 7px}.touch-controls{height:108px}.touch-hint{display:none}.touch-action{border-radius:0;min-height:70px;font-size:18px;background:#176966}.joystick{width:88px;height:88px}.joystick-knob{left:23px;top:23px}.game-dialog{padding:20px}.inventory-dialog{padding:0;width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.inventory-dialog .dialog-top{padding:10px;gap:8px}.inventory-dialog h2{font-size:20px}.inventory-header-actions{gap:6px}.inventory-summary{margin:10px;padding:9px;gap:8px;flex-wrap:wrap}.game-dialog .inventory-request{font-size:16px;flex:1;min-width:145px}.inventory-patience{min-width:130px;flex:1}.inventory-scroll{padding:3px 10px}.parcel-grid{gap:10px}.parcel-choice{min-height:123px;padding:10px;flex-direction:column;align-items:flex-start;gap:0}.parcel-choice[aria-pressed=true]{padding:9px}.parcel-choice .parcel-art{width:46px;height:35px}.parcel-choice strong{font-size:28px}.parcel-choice small{font-size:14px}.selection-mark{font-size:12px;right:4px;top:4px}.inventory-footer{padding:0 10px 10px}.inventory-selection{margin:8px 0 4px;font-size:15px!important;min-height:22px}.inventory-dialog .dialog-actions{gap:10px;margin-top:8px}.inventory-dialog .button{font-size:18px;padding:9px 6px;min-height:52px}.game-dialog .dialog-footnote{font-size:13px;margin-top:8px}.icon-button{font-size:21px}.welcome-dialog .button{font-size:16px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .workspace{grid-template-columns:minmax(0,1fr) 250px}.side-panel{gap:8px}.order-card{grid-column:auto;grid-row:auto}.order-card h1{font-size:16px}.order-content{display:block;padding:10px}.order-main{margin-bottom:10px}.order-number strong{font-size:30px}.held-card{margin-top:10px}.order-location{font-size:14px}.order-card .zone-stamp{width:36px;height:44px}.order-card .order-number span{font-size:14px}.queue-card{display:none}.touch-controls{height:78px}.joystick{width:64px;height:64px}.joystick-knob{left:14px;top:14px;width:32px;height:32px}.touch-action{min-height:58px;font-size:16px}.inventory-dialog{max-height:calc(100dvh - 12px)}.inventory-dialog .dialog-top{padding:7px 12px}.inventory-summary{margin:7px 12px;padding:7px 10px;flex-wrap:nowrap}.inventory-patience{flex:none;width:190px}.inventory-scroll{padding:3px 12px}.parcel-grid{grid-template-columns:repeat(4,1fr)}.parcel-choice{min-height:112px;padding:9px;flex-direction:column;align-items:flex-start;gap:0}.parcel-choice[aria-pressed=true]{padding:8px}.parcel-choice .parcel-art{width:44px;height:32px}.parcel-choice strong{font-size:27px}.inventory-footer{padding:0 12px 8px}.inventory-selection{margin:5px 0 0}.game-dialog .dialog-footnote{margin-top:6px}.inventory-dialog .dialog-actions{margin-top:5px}.inventory-dialog .button{min-height:48px}
+}
+.inventory-request>span{display:block;font-size:14px;color:#53614d;font-weight:500}.inventory-request-code{display:block;font:850 34px/1.15 ui-monospace,monospace;letter-spacing:2px;color:#91491f;margin-top:3px}
+@media(orientation:landscape) and (max-height:600px){.topbar{height:56px}.workspace{height:calc(100dvh - 67px - env(safe-area-inset-bottom))}.inventory-request-code{font-size:28px}}
+@media(orientation:landscape) and (max-height:600px){
+ .inventory-dialog .dialog-top{padding-top:4px;padding-bottom:4px}
+ .inventory-dialog .inventory-request{display:flex;align-items:center;gap:10px}
+ .inventory-request-code{margin-top:0}
+ .inventory-dialog .dialog-footnote{display:none}
+}
 </style>
 </head>
 <body>
@@ -52,17 +75,19 @@
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.3.2</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.4</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
-        <div class="card-heading"><h1 id="order-title">下一單，交畀你</h1><span id="queue-count" class="count-pill">0 人等候</span></div>
-        <div class="order-main"><div class="zone-stamp" id="order-zone">—</div><div class="order-number"><span id="order-kind">客人提貨碼</span><strong id="order-code">準備中</strong></div><span class="customer-mini" id="customer-mini"></span></div>
-        <div class="patience-row"><span id="patience-label">客人耐性</span><strong id="patience-text">—</strong></div><div class="patience-track" role="progressbar" aria-label="客人耐性" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="patience-fill"></div></div>
-
-        <div class="held-card"><span class="held-icon">▣</span><div><small>店員手上</small><strong id="held-code">空手 · 可以取件</strong></div></div>
+        <div class="card-heading"><h1 id="order-title">下一單，交畀你</h1><span id="order-type" class="count-pill">待接待</span></div>
+        <div class="order-content">
+          <div class="order-main"><div class="zone-stamp" id="order-zone">—</div><div class="order-number"><span id="order-kind">服務狀態</span><strong id="order-code">準備中</strong><b id="order-location" class="order-location"></b></div><span id="customer-mini" hidden></span></div>
+          <div id="order-patience" class="order-patience"><div class="patience-row"><span id="patience-label">客人耐性</span><strong id="patience-text">—</strong></div><div class="patience-track" role="progressbar" aria-label="客人耐性" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="patience-fill"></div></div></div>
+          <div class="held-card"><span class="held-icon" id="held-icon" aria-hidden="true"></span><div><small>店員手上</small><strong id="held-code">空手</strong></div></div>
+          <p id="order-feedback" class="order-feedback" role="status" hidden></p>
+        </div>
       </section>
-      <section class="queue-card"><div class="card-heading"><h2>門口仲有…</h2><span class="small-tag">等候隊列</span></div><div id="queue-list" class="queue-list"><p class="quiet">街坊就嚟到。</p></div></section>
+      <section class="queue-card"><div class="card-heading"><h2>門口仲有…</h2><span id="queue-count" class="small-tag">0 人等候</span></div><div id="queue-list" class="queue-list"><p class="quiet">街坊就嚟到。</p></div></section>
       <section class="notes-card"><span class="note-pin"></span><span class="eyebrow">店長留低張紙</span><h2>忙，都可以有條不紊。</h2><p id="guide">睇清提貨碼先揀貨。空檔記得將收貨區新貨，自由選 A／B／C 貨架上架。</p><div class="shift-progress"><span>已完成 <strong id="completed">0</strong> 單</span><span>收入 <strong id="revenue">$0</strong></span></div><button id="help-button" class="text-button">操作小抄 ↗</button></section>
     </aside>
   </main>
@@ -72,7 +97,12 @@
     <ol class="welcome-steps"><li><b>先接待客人</b><span>行到櫃檯按 E／互動鍵</span></li><li><b>揀返指定貨</b><span>E／互動鍵 → 選貨 → 確認</span></li><li><b>交貨兼上架</b><span>橫向排隊、寄貨及送貨員到貨</span></li></ol>
     <p class="loading-status" id="loading-status">正在準備店面素材…</p><div class="dialog-actions"><button id="practice-button" class="button button-secondary" disabled>先試一轉 · 不計時</button><button id="start-button" class="button button-primary" disabled>開檔！3 分鐘班次 →</button></div><small class="save-note">本原型重新整理後會重開班次。</small>
   </dialog>
-  <dialog id="inventory-dialog" class="game-dialog inventory-dialog" aria-labelledby="inventory-title"><div class="dialog-top"><div><span class="eyebrow">睇清楚，先落手</span><h2 id="inventory-title">貨架</h2></div><button id="inventory-close" class="icon-button" aria-label="關閉選貨面板">×</button></div><p id="inventory-request" class="inventory-request"></p><div id="parcel-grid" class="parcel-grid"></div><p id="inventory-feedback" role="status"></p><div class="dialog-actions"><button id="inventory-pause" class="button button-secondary">暫停</button><button id="inventory-confirm" class="button button-primary" disabled>確認取件</button></div><p class="dialog-footnote" id="inventory-footnote">選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回</p></dialog>
+  <dialog id="inventory-dialog" class="game-dialog inventory-dialog" aria-labelledby="inventory-title">
+    <div class="dialog-top"><div><span class="eyebrow">貨架選貨</span><h2 id="inventory-title">貨架</h2></div><div class="inventory-header-actions"><button id="inventory-pause" class="icon-button" aria-label="暫停選貨">Ⅱ</button><button id="inventory-close" class="icon-button" aria-label="關閉選貨面板">×</button></div></div>
+    <div class="inventory-summary"><p id="inventory-request" class="inventory-request"></p><div class="inventory-patience" id="inventory-patience"><div class="patience-row"><span>客人耐性</span><strong id="inventory-patience-text">—</strong></div><div class="patience-track" role="progressbar" aria-label="選貨時客人耐性" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="inventory-patience-fill"></div></div></div></div>
+    <div class="inventory-scroll" id="inventory-scroll"><div id="parcel-grid" class="parcel-grid"></div></div>
+    <div class="inventory-footer"><p id="inventory-selection" class="inventory-selection" aria-live="polite">請先選一件包裹</p><p id="inventory-feedback" role="status"></p><div class="dialog-actions"><button id="inventory-back" class="button button-secondary">返回</button><button id="inventory-confirm" class="button button-primary" disabled>確認取件</button></div><p class="dialog-footnote" id="inventory-footnote">選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回</p></div>
+  </dialog>
   <dialog id="pause-dialog" class="game-dialog pause-dialog" aria-labelledby="pause-title"><span class="eyebrow">歇一歇，唔使急</span><h2 id="pause-title">班次已暫停</h2><p id="pause-reason">所有客人耐性及班次時間已停止。</p><div class="control-guide"><p><kbd>WASD</kbd> / 方向鍵：移動</p><p><kbd>E</kbd>：接待、揀貨、上架、退回或交貨</p><p>手機：左下搖桿，右下互動按鈕</p><p>揀錯貨？帶返原貨架，按互動退回。</p></div><div class="dialog-actions"><button id="restart-button" class="button button-secondary">重開第 1 天</button><button id="resume-button" class="button button-primary">繼續當值 →</button></div></dialog>
   <dialog id="result-dialog" class="game-dialog result-dialog" aria-labelledby="result-title"><span class="eyebrow">辛苦晒，今日收工！</span><h2 id="result-title">你嘅當值成績</h2><p id="result-comment"></p><div class="result-grid" id="result-grid"></div><p class="result-note">接下來係不限時上架時間。貨架位置及累計收入會保留到下一天；收貨清空後自動開門，也可提早開門。</p><div class="dialog-actions"><button id="play-again" class="button button-primary">貨物上架</button></div></dialog>
   <dialog id="practice-done-dialog" class="game-dialog" aria-labelledby="practice-done-title"><span class="eyebrow">提貨 ✓ 上架 ✓</span><h2 id="practice-done-title">識做喇，準備開檔！</h2><p>你已完成一單提貨同一件新貨上架。正式班次有隨機寄貨客人；將接收嘅貨物放到紫色寄貨區。送貨員會親自將新貨送到收貨區。</p><button id="practice-to-shift" class="button button-primary">開始正式班次 →</button></dialog>
@@ -85,14 +115,14 @@ const TARGETS = [
  ...['A','B','C'].map((zone,i)=>({id:zone,type:'shelf',zone,x:70+i*70,y:260,footY:330})),
  {id:'counter',type:'counter',x:174,y:218,footY:200},
  {id:'receiving',type:'receiving',x:240,y:156,footY:136},
- {id:'outbound',type:'outbound',x:310,y:156,footY:136}
+ {id:'outbound',type:'outbound',x:310,y:260,footY:330}
 ];
 const QUEUE_POINTS = [174,132,90,48].map(x=>({x,y:142}));
 const ENTRANCE = {x:40,y:-18};
 const COURIER_ROUTE = [ENTRANCE,{x:40,y:64},{x:202,y:64},{x:202,y:156},{x:240,y:156}];
 const OBSTACLES = [
  {x:0,y:182,w:GATE.left,h:20},{x:GATE.right,y:182,w:WORLD.width-GATE.right,h:20},
- ...[240,310].map(x=>({x:x-24,y:112,w:48,h:26})),
+ {x:216,y:112,w:48,h:26},{x:286,y:300,w:48,h:30},
  ...TARGETS.filter(t=>t.type==='shelf').map(t=>({x:t.x-34,y:285,w:68,h:49}))
 ];
 function canStandAt(x,y){
@@ -390,7 +420,7 @@ const characterNames = ['courier_walk','courier_carry_walk','clerk_walk','clerk_
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
  'scanner','checkout_terminal','trolley','outbound_cage'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
- ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png']]);
+ ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['ui_icons','assets/ui/ui_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 const world=WORLD,targets=TARGETS,queuePoints=QUEUE_POINTS;
 const counter=targets.find(t=>t.type==='counter'),receiving=targets.find(t=>t.type==='receiving');
@@ -399,6 +429,7 @@ let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
+let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog'];
 const canWork = () => shift.canWork();
 const requestText = () => {
@@ -412,7 +443,7 @@ resetPlayer();
 function clearInput(){
  keys.clear();joystickPointer=null;joystickVector={x:0,y:0};$('joystick-knob').style.transform='';
 }
-function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;clearInput(); }
+function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;suspendedInventory=null;clearInput(); }
 function showDialog(id){clearInput();if(!$(id).open)$(id).showModal();}
 // The floating message area is intentionally silent in every game phase.
 function toast() {}
@@ -432,7 +463,7 @@ function beep(success=true){
 function start(practice=false){
  if(!ready){if(loadError)location.reload();return;}
  closeDialogs();shift=new Shift({practice});resetPlayer();actors=new Map();departures=[];
- action=null;practiceDone=false;queueSignature='';shift.start();processEvents();
+ action=null;practiceDone=false;feedback=null;queueSignature='';shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 A／B／C 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
@@ -440,17 +471,22 @@ function start(practice=false){
 }
 function pause(reason='所有客人耐性及班次時間已停止。'){
  if(!shift.pause())return;
- if($('inventory-dialog').open)closeInventory(false);
+ if($('inventory-dialog').open){
+  const saved={target:{...inventoryContext},selected,scroll:$('inventory-scroll').scrollTop};
+  closeInventory(false);suspendedInventory=saved;
+ }
  $('pause-reason').textContent=reason;showDialog('pause-dialog');
 }
 function resume(){
  if($('pause-dialog').open)$('pause-dialog').close();
- clearInput();shift.resume();lastTime=performance.now();canvas.focus({preventScroll:true});
+ clearInput();shift.resume();lastTime=performance.now();
+ if(suspendedInventory){const saved=suspendedInventory;suspendedInventory=null;openInventory(saved.target,saved);}
+ else canvas.focus({preventScroll:true});
 }
 function closestTarget(){
  if(!canWork()||dialogOpen()||action)return null;
  return targets.map(t=>({...t,distance:Math.hypot(player.x-t.x,player.y-t.y)}))
-  .filter(t=>t.distance<38&&(t.type!=='counter'||player.y>202)&&(t.type!=='receiving'&&t.type!=='outbound'||player.y<178)).sort((a,b)=>a.distance-b.distance)[0]||null;
+  .filter(t=>t.distance<38&&(t.type!=='counter'||player.y>202)&&(t.type!=='receiving'||player.y<178)&&(t.type!=='outbound'||player.y>202)).sort((a,b)=>a.distance-b.distance)[0]||null;
 }
 function targetLabel(target){
  if(!target)return '行近目標';
@@ -466,7 +502,7 @@ function faceToward(target){
  player.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
 }
 function handleResult(result, animation=null){
- toast(result.message,!result.ok);if(!result.ok)beep(false);
+ feedback={text:result.message,error:!result.ok,remaining:5};if(!result.ok)beep(false);
  if(result.ok&&animation)action={name:animation,remaining:.4,duration:.4,face:player.face};
  processEvents();canvas.focus({preventScroll:true});
 }
@@ -493,46 +529,66 @@ function inventoryPackages(){
  const slots=inventoryContext.type==='shelf'?shift.shelves[inventoryContext.zone]:shift.receiving;
  return slots.map(s=>s.packageId?shift.packages.get(s.packageId):null);
 }
-function openInventory(target){
- inventoryContext=target;selected=null;selectedIndex=0;
- $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區貨架`:'收貨區 · 待上架新貨';
- $('inventory-feedback').textContent='';
- const order=shift.queue[0];
- $('inventory-request').textContent=requestText();
- $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 可隨時按上方「下一天」':'選貨時仍會計時 · 方向鍵選擇，Enter 確認，Esc 返回';
- const list=inventoryPackages(),grid=$('parcel-grid');grid.replaceChildren();
+function updateInventoryRequest(){
+ const node=$('inventory-request'),text=requestText();if(node.dataset.text===text)return;
+ node.dataset.text=text;node.replaceChildren();const order=shift.queue[0];
+ if(order?.revealed&&order.type==='pickup'){
+  const label=document.createElement('span'),code=document.createElement('strong');
+  label.textContent=`客人要求 · ${shift.packages.get(order.packageId).zone} 區`;code.textContent=order.code;code.className='inventory-request-code';node.append(label,code);
+ }else node.textContent=text;
+}
+function openInventory(target,restore=null){
+ inventoryContext=target;selected=null;selectedIndex=-1;inventoryBusy=false;
+ const list=inventoryPackages();
+ $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區 · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
+ $('inventory-feedback').textContent='';$('inventory-selection').textContent='請先選一件包裹';
+ updateInventoryRequest();
+ $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 A／B／C 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
+ const grid=$('parcel-grid');grid.replaceChildren();
  list.forEach((p,i)=>{
   const button=document.createElement('button');button.className='parcel-choice';button.type='button';
   button.setAttribute('aria-pressed','false');button.dataset.index=String(i);button.disabled=!p;
   if(p){
-   const img=document.createElement('img');img.src=sourceURL(sources.parcel_medium);img.alt='';
-   const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small');
-   code.textContent=p.code;zone.textContent=p.zone?`${p.zone} 區 · 架上包裹`:'自選 A／B／C 上架';
-   label.append(code,zone);button.append(img,label);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? `${p.zone} 區` : '待上架'}`);
+   const appearance=Number(p.code.slice(-1))%3;
+   const name=['parcel_small','parcel_medium','parcel_padded'][appearance],rect=['40 60 16 16','36 56 24 20','36 64 24 12'][appearance];
+   const ns='http://www.w3.org/2000/svg',icon=document.createElementNS(ns,'svg'),img=document.createElementNS(ns,'image');
+   icon.setAttribute('viewBox',rect);icon.setAttribute('aria-hidden','true');icon.classList.add('parcel-art');
+   img.setAttribute('href',sourceURL(sources[name]));img.setAttribute('width','96');img.setAttribute('height','80');icon.append(img);
+   const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small'),mark=document.createElement('span');
+   mark.className='selection-mark';code.textContent=p.code;zone.textContent=p.zone?`${p.zone} 區 · 貨位 ${i+1}`:`待上架 · 貨位 ${i+1}`;
+   label.append(code,zone);button.append(icon,label,mark);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? `${p.zone} 區` : '待上架'}`);
    button.addEventListener('click',()=>selectParcel(i));
-  }else{button.textContent='空貨位';button.setAttribute('aria-label','空貨位');}
+  }else{button.classList.add('empty');button.textContent='＋ 空貨位';button.setAttribute('aria-label','空貨位');}
   grid.append(button);
  });
- $('inventory-confirm').disabled=true;
+ $('inventory-confirm').disabled=true;$('inventory-confirm').textContent='確認取件';
  showDialog('inventory-dialog');
- const first=list.findIndex(Boolean);if(first>=0)selectParcel(first,true);else $('inventory-close').focus();
+ const old=restore?.selected?list.findIndex(p=>p?.id===restore.selected):-1;
+ if(old>=0)selectParcel(old);else $('inventory-close').focus();
+ $('inventory-scroll').scrollTop=restore?.scroll||0;
 }
 function selectParcel(index,focus=true){
- const list=inventoryPackages();if(!list[index])return;
+ const list=inventoryPackages();if(!list[index]||inventoryBusy)return;
  selected=list[index].id;selectedIndex=index;
- $('parcel-grid').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
+ $('parcel-grid').querySelectorAll('button').forEach((b,i)=>{
+  b.setAttribute('aria-pressed',String(i===index));const mark=b.querySelector('.selection-mark');if(mark)mark.textContent=i===index?'✓ 已選':'';
+ });
+ $('inventory-selection').textContent=`已選 ${list[index].code} · ${list[index].zone?`${list[index].zone} 區`:'待上架'}`;
  $('inventory-confirm').disabled=false;
- if(focus)$('parcel-grid').children[index]?.focus({preventScroll:true});
+ if(focus){const card=$('parcel-grid').children[index];card?.focus({preventScroll:true});card?.scrollIntoView({block:'nearest'});}
 }
 function confirmParcel(){
- if(!selected||!canWork())return;
+ if(!selected||!canWork()||inventoryBusy)return;
+ const item=inventoryPackages().find(p=>p?.id===selected);
+ if(!item){selected=null;$('inventory-confirm').disabled=true;$('inventory-feedback').textContent='這件貨物已移動，請重新選擇。';return;}
+ inventoryBusy=true;$('inventory-confirm').disabled=true;$('inventory-confirm').textContent='處理中…';
  const result=shift.take(selected);
  if(result.ok){closeInventory();handleResult(result,'pickup');}
- else $('inventory-feedback').textContent=result.message;
+ else{inventoryBusy=false;$('inventory-confirm').disabled=false;$('inventory-confirm').textContent='確認取件';$('inventory-feedback').textContent=result.message;}
 }
 function closeInventory(focus=true){
  if($('inventory-dialog').open)$('inventory-dialog').close();
- inventoryContext=null;selected=null;clearInput();if(focus)canvas.focus({preventScroll:true});
+ inventoryContext=null;selected=null;inventoryBusy=false;clearInput();if(focus)canvas.focus({preventScroll:true});
 }
 function finish(){
  closeDialogs();clearInput();action=null;const s=shift.stats;
@@ -691,7 +747,8 @@ function draw(){
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,280);
  pill(`收貨 ${shift.receivingCount()}/6`,receiving.x,77,'#8d693f');
- pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/6`,310,77,'#73518b');
+ const outbound=targets.find(t=>t.type==='outbound');
+ pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/6`,outbound.x,280,'#73518b');
  pill('互動',counter.x-38,218);
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-26,target.y-12,52,20);
@@ -702,21 +759,37 @@ function draw(){
 function updateUI(){
  const order=shift.queue[0],known=order?.revealed,held=shift.held?shift.packages.get(shift.held):null;
  const stocking=shift.phase==='stocking'||shift.phase==='paused'&&shift.pausedPhase==='stocking';
+ const holdingShipping=held?.kind==='shipping';
  const seconds=Math.ceil(shift.remaining);
  $('clock').textContent=stocking?'不限時':shift.practice?'練習':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
  $('clock-label').textContent=stocking?'上架時間':'距離收工';
  $('store-day').textContent=`街坊集運 · 第 ${shift.day} 天`;
  $('clock').parentElement.classList.toggle('urgent',!stocking&&!shift.practice&&seconds<=30);
  $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':'營業中'):shift.phase==='closing'?'已收舖':'準備開檔'}`;
- $('order-code').textContent=order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
- $('order-zone').textContent=known?(order.type==='shipping'?'寄':shift.packages.get(order.packageId).zone):'—';
- $('order-kind').textContent=known&&order.type==='shipping'?'客人寄貨':'客人提貨碼';
+ $('order-title').textContent=holdingShipping?'寄貨處理中':'下一單，交畀你';
+ $('order-code').textContent=holdingShipping?'寄貨':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
+ $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':shift.packages.get(order.packageId).zone):'—';
+ $('order-kind').textContent=holdingShipping?'客人要求':known?(order.type==='shipping'?'客人要求':'客人提貨碼'):'服務狀態';
+ $('order-type').textContent=holdingShipping?'寄貨':stocking?'整理':known?(order.type==='shipping'?'寄貨':'提貨'):order?'待接待':'—';
+ $('order-location').textContent=holdingShipping?'右下角寄貨區':known?(order.type==='shipping'?'右下角寄貨區':`${shift.packages.get(order.packageId).zone} 區貨架`):order?'到櫃檯接待後顯示':stocking?'新貨可自由選架上架':'';
+ document.querySelector('.order-card').classList.toggle('pending',!known&&!holdingShipping);
  $('queue-count').textContent=stocking?`收貨 ${shift.receivingCount()} 件`:`${shift.queue.length} 人等候`;
  const ratio=order?(shift.practice?1:Math.max(0,order.patience/order.maxPatience)):0;
- $('patience-fill').style.width=`${ratio*100}%`;$('patience-fill').classList.toggle('low',ratio<.3);
- $('patience-fill').parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
- $('patience-text').textContent=stocking?'不計時':order?(shift.practice?'不計時':`${Math.ceil(order.patience)}s`):'—';
- $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'送往寄貨區':held.zone?`${held.zone} 區`:'自選貨架'}`:'空手 · 可以取件';
+ const activePatience=!!order&&!stocking&&!holdingShipping;
+ $('order-patience').hidden=!activePatience;
+ const patienceState=ratio<=.2?'danger':ratio<=.4?'warn':'normal';
+ const patienceText=shift.practice?'不計時':shift.phase==='paused'?'已暫停':`${Math.ceil(order?.patience||0)} 秒 · ${ratio<=.2?'！快到時':ratio<=.4?'△ 留意':'充足'}`;
+ for(const prefix of ['','inventory-']){
+  const fill=$(prefix+'patience-fill'),text=$(prefix+'patience-text');
+  fill.style.width=`${ratio*100}%`;fill.parentElement.className=`patience-track ${patienceState}`;
+  fill.parentElement.hidden=!activePatience||shift.practice;fill.parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
+  text.textContent=activePatience?patienceText:stocking?'不計時':'—';
+ }
+ $('inventory-patience').hidden=!activePatience;
+ $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?`${held.zone} 區`: '待上架'}`:'空手';
+ $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
+ $('order-feedback').hidden=!feedback;
+ if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
  if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('completed').textContent=String(shift.stats.completed+shift.stats.shipped);$('revenue').textContent=`${shift.stats.revenue}`;
@@ -747,13 +820,13 @@ function updateUI(){
  const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 A／B／C':destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
  $('scene-status').textContent=canWork()?target?targetLabel(target):`${arrow} ${destinationName}`:
   shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':'等你開檔';
- if($('inventory-dialog').open)$('inventory-request').textContent=requestText();
+ if($('inventory-dialog').open)updateInventoryRequest();
 }
 
 function loop(now){
  const elapsed=Math.max(0,(now-(lastTime||now))/1000),dt=Math.min(.08,elapsed);lastTime=now;
  if(canWork()){
-  shift.tick(elapsed);if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
+  shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
  draw();updateUI();requestAnimationFrame(loop);
@@ -763,9 +836,10 @@ window.addEventListener('keydown',e=>{
  const key=e.key.toLowerCase();
  if($('inventory-dialog').open){
   if(['arrowleft','arrowright','arrowup','arrowdown'].includes(key)){
-   e.preventDefault();const count=inventoryPackages().length,delta=key==='arrowleft'?-1:key==='arrowright'?1:key==='arrowup'?-2:2;
+   e.preventDefault();const count=inventoryPackages().length,columns=getComputedStyle($('parcel-grid')).gridTemplateColumns.split(' ').length,delta=key==='arrowleft'?-1:key==='arrowright'?1:key==='arrowup'?-columns:columns;
+   if(selectedIndex<0){const first=inventoryPackages().findIndex(Boolean);if(first>=0)selectParcel(first);return;}
    let index=selectedIndex;for(let n=0;n<count;n++){index=(index+delta+count)%count;if(inventoryPackages()[index]){selectParcel(index);break;}}
-  }else if(key==='enter'&&e.target.id!=='inventory-close'&&e.target.id!=='inventory-pause'){
+  }else if(key==='enter'&&e.target.id!=='inventory-close'&&e.target.id!=='inventory-pause'&&e.target.id!=='inventory-back'){
    e.preventDefault();if(!e.repeat)confirmParcel();
   }return;
  }
@@ -811,7 +885,8 @@ $('play-again').addEventListener('click',()=>{closeDialogs();shift.beginStocking
 $('next-day').addEventListener('click',()=>{closeInventory(false);shift.nextDay();processEvents();});
 $('practice-to-shift').addEventListener('click',()=>start(false));
 $('inventory-close').addEventListener('click',()=>closeInventory());$('inventory-confirm').addEventListener('click',confirmParcel);
-$('inventory-pause').addEventListener('click',()=>{closeInventory(false);pause();});
+$('inventory-pause').addEventListener('click',()=>pause());
+$('inventory-back').addEventListener('click',()=>closeInventory());
 $('inventory-dialog').addEventListener('cancel',e=>{e.preventDefault();closeInventory();});
 $('pause-dialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
 for(const id of ['welcome-dialog','result-dialog','practice-done-dialog'])$(id).addEventListener('cancel',e=>e.preventDefault());

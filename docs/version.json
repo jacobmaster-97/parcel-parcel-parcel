@@ -1,6 +1,6 @@
 {
-  "version": "0.3.2",
-  "html_sha256": "39ede42d507b8c8c977e5fa56b7cbf9c661d5c0c73922d2fb616d1de8e559979",
+  "version": "0.4.0",
+  "html_sha256": "df4d74503b03f7afb3598edf7dc6fcf2a1dd4a6a4e0ead80813f423e368eeb75",
   "features": [
     "horizontal-queue",
     "divided-counter-layout",
@@ -8,7 +8,9 @@
     "outbound-shipping"
   ],
   "changes": [
-    "Gate composed from original counter artwork; unified map pixel style",
-    "Separate gate asset no longer loaded or packaged"
+    "Approved order and parcel-picker UI integrated",
+    "Outbound cage moved to bottom-right staff area",
+    "Selection preserved on pause/resize",
+    "Upgrade development priorities documented"
   ]
 }

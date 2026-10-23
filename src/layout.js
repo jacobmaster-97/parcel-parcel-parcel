@@ -5,14 +5,14 @@ export const TARGETS = [
  ...['A','B','C'].map((zone,i)=>({id:zone,type:'shelf',zone,x:70+i*70,y:260,footY:330})),
  {id:'counter',type:'counter',x:174,y:218,footY:200},
  {id:'receiving',type:'receiving',x:240,y:156,footY:136},
- {id:'outbound',type:'outbound',x:310,y:156,footY:136}
+ {id:'outbound',type:'outbound',x:310,y:260,footY:330}
 ];
 export const QUEUE_POINTS = [174,132,90,48].map(x=>({x,y:142}));
 export const ENTRANCE = {x:40,y:-18};
 export const COURIER_ROUTE = [ENTRANCE,{x:40,y:64},{x:202,y:64},{x:202,y:156},{x:240,y:156}];
 export const OBSTACLES = [
  {x:0,y:182,w:GATE.left,h:20},{x:GATE.right,y:182,w:WORLD.width-GATE.right,h:20},
- ...[240,310].map(x=>({x:x-24,y:112,w:48,h:26})),
+ {x:216,y:112,w:48,h:26},{x:286,y:300,w:48,h:30},
  ...TARGETS.filter(t=>t.type==='shelf').map(t=>({x:t.x-34,y:285,w:68,h:49}))
 ];
 export function canStandAt(x,y){

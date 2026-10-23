@@ -23,6 +23,7 @@ async function keyTo(page,axis,target){
 }
 async function act(page,touch=false){await(touch?page.locator('#touch-action').tap():page.keyboard.press('e'));await page.clock.runFor(450);}
 async function choose(page,code,zone,touch=false){
+ assert.equal(await page.locator('#inventory-confirm').isDisabled(),true);
  const choice=page.getByRole('button',{name:`包裹 ${code}，${zone==='receiving'?'待上架':`${zone} 區`}`});
  await(touch?choice.tap():choice.click());await(touch?page.locator('#inventory-confirm').tap():page.locator('#inventory-confirm').click());await page.clock.runFor(450);
 }
@@ -90,9 +91,10 @@ try{
   await shipMove('y',260);await shipMove('x',x);await act(sp,useTouch);await choose(sp,p.code,p.zone,useTouch);await shipMove('y',218);await shipMove('x',174);await act(sp,useTouch);
  }
  assert.ok(accepted,'Random shipping customer must appear in seeded playable shift');state=await snapshot(sp);assert.equal(state.held.kind,'shipping');
- const before=state.totalRevenue;await shipMove('x',310);await shipMove('y',156);await act(sp,useTouch);state=await snapshot(sp);
+ assert.equal(await sp.locator('#order-code').innerText(),'寄貨');assert.match(await sp.locator('#order-location').innerText(),/右下角/);
+ const before=state.totalRevenue;await shipMove('x',310);await shipMove('y',260);await act(sp,useTouch);state=await snapshot(sp);
  assert.equal(state.held,null);assert.equal(state.stats.shipped,1);assert.equal(state.totalRevenue,before+12);await act(sp,useTouch);assert.equal((await snapshot(sp)).totalRevenue,before+12);
- assert.ok(state.actors.every(a=>a.y<=142));await sp.screenshot({path:output+(useTouch?'prototype-shipping-mobile.png':'prototype-shipping.png')});results.push((useTouch?'Mobile touch: ':'Desktop: ')+'Real random shipping sender: accepts parcel, leaves empty, clerk crosses staff gate, deposits into purple cage and earns once; customers stay in public zone.');await shipping.context.close();
+ assert.ok(state.actors.every(a=>a.y<=142));await sp.screenshot({path:output+(useTouch?'prototype-shipping-mobile.png':'prototype-shipping.png')});results.push((useTouch?'Mobile touch: ':'Desktop: ')+'Real random shipping sender: accepts parcel, leaves empty, clerk walks directly to bottom-right purple cage, deposits and earns once; customers stay in public zone.');await shipping.context.close();
 
  }
  const timed=await setup(),tp=timed.page;await tp.locator('#start-button').click();await tp.clock.runFor(25100);state=await snapshot(tp);const count=state.receivingCount;
