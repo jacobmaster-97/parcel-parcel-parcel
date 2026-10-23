@@ -1,4 +1,5 @@
-import {COURIER_ROUTE} from './layout.js';
+import {COURIER_ROUTE,shopLayout} from './layout.js';
+import {initialUpgrades,upgradeOptions} from './upgrades.js';
 import {Ledger} from './finance.js';
 export const ZONES = ['A', 'B', 'C'];
 export const SHIFT_SECONDS = 180;
@@ -7,7 +8,7 @@ const slot = () => ({packageId: null, reservedFor: null});
 export class Shift {
   constructor({practice = false, seed = 7, shippingChance = .2, deferDayStart = false} = {}) {
     this.practice = practice;
-    this.deferDayStart=deferDayStart;this.ledger=new Ledger();
+    this.deferDayStart=deferDayStart;this.ledger=new Ledger();this.upgrades=initialUpgrades();this.worker=null;this.selectionId=null;this.managementFrom='closing';
     this.shippingChance = shippingChance;
     this.outbound = Array.from({length:6}, slot);
     this.courier = null;
@@ -34,6 +35,75 @@ export class Shift {
     for (const zone of ZONES) for (let i = 0; i < 2; i++) this.addPackage(zone, 'shelf');
     for (const zone of ZONES) this.addPackage(zone, 'receiving');
   }
+  moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?88:80;}
+  reservedWages(){return this.upgrades.workerBookedDay?60:0;}
+  availableFunds(){return this.ledger.balance-this.reservedWages();}
+  canUpgrade(){return !this.practice&&(this.phase==='closing'||this.phase==='stocking'||this.phase==='upgrading');}
+  purchaseUpgrade(id){
+    if(!this.canUpgrade())return{ok:false,message:'只可在關店後升級'};
+    const item=upgradeOptions(this).find(i=>i.id===id);
+    if(!item||item.blocked)return{ok:false,message:item?.blocked||'此升級未開放'};
+    if(this.availableFunds()<item.price)return{ok:false,message:'可用資金不足（已扣除預留薪金）'};
+    if(id==='worker'){this.upgrades.workerBookedDay=this.day+1;return{ok:true,message:'已預留明日薪金 $60，開門時扣款一次'};}
+    const level=id.startsWith('shelf:')?this.upgrades.shelfLevels[id.slice(-1)]:this.upgrades[id+'Level'];
+    const tx=id==='shoes'?`upgrade:shoes:${this.day}`:`upgrade:${id}:${level===undefined?'new':level+1}`;
+    const ledger=Ledger.fromJSON(this.ledger.toJSON());
+    if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
+    this.ledger=ledger;
+    if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
+    else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
+    else{this.upgrades[id+'Level']++;this[id].push(slot(),slot());}
+    this.emit('upgrade',{id});return{ok:true,message:'已購買，本頁生效；開下一天前保存'};
+  }
+  cancelWorkerBooking(){if(!this.canUpgrade())return false;this.upgrades.workerBookedDay=0;return true;}
+  setWorkerZones(zones){
+    if(!this.canUpgrade()||!Array.isArray(zones)||!zones.length||new Set(zones).size!==zones.length||zones.some(z=>!this.shelves[z]))return false;
+    this.upgrades.workerZones=[...zones];return true;
+  }
+  beginWorkerDay(){
+    this.worker=null;
+    if(this.upgrades.workerBookedDay!==this.day)return;
+    if(!this.ledger.post(`salary:${this.day}`,'operating',60,'worker',false,'理貨店員薪金'))throw new Error('預留薪金不足，未開門');
+    this.upgrades.workerBookedDay=0;
+    this.worker={x:250,y:218,face:'down',moving:false,travel:0,route:[],next:0,task:null};
+  }
+  returnWorkerCargo(){
+    const task=this.worker?.task;if(!task)return;
+    const p=this.packages.get(task.packageId),dest=this.shelves[task.zone][task.index];
+    if(dest.reservedFor===p.id)dest.reservedFor=null;
+    if(task.carrying){const origin=this.receiving[task.originIndex];origin.packageId=p.id;origin.reservedFor=null;p.location='receiving';p.index=task.originIndex;p.origin=null;}
+    this.worker.task=null;
+  }
+  advanceWorker(dt){
+    const w=this.worker;if(!w||this.phase!=='playing')return;
+    if(this.workerAvoid&&Math.hypot(w.x-this.workerAvoid.x,w.y-this.workerAvoid.y)<24){w.moving=false;return;}
+    if(!w.task){
+      const p=[...this.packages.values()].find(p=>p.location==='receiving'&&p.id!==this.selectionId);
+      const zone=this.upgrades.workerZones.find(z=>this.shelves[z]?.some(s=>!s.packageId&&!s.reservedFor));
+      if(!p||!zone){w.moving=false;return;}
+      const index=this.shelves[zone].findIndex(s=>!s.packageId&&!s.reservedFor);
+      w.task={packageId:p.id,zone,index,originIndex:p.index,carrying:false};this.shelves[zone][index].reservedFor=p.id;
+      w.route=[{x:270,y:w.y},{x:270,y:218},{x:310,y:218},{x:310,y:156},{x:240,y:156}];w.next=0;
+    }
+    let remaining=Math.min(dt,180);
+    while(remaining>0&&w.task){
+      const t=w.route[w.next];
+      if(t){const dx=t.x-w.x,dy=t.y-w.y,d=Math.hypot(dx,dy);if(d<.001){w.next++;continue;}
+        w.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');w.moving=true;
+        const step=Math.min(d,remaining*64);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/64;if(step>=d-.001)w.next++;continue;}
+      const task=w.task,p=this.packages.get(task.packageId);
+      if(!task.carrying){
+        const origin=this.receiving[task.originIndex];if(origin.packageId!==p.id){this.returnWorkerCargo();return;}
+        origin.packageId=null;origin.reservedFor=p.id;p.location='worker';p.index=null;p.origin={type:'receiving',zone:null,index:task.originIndex};task.carrying=true;
+        const target=shopLayout(this.shelves).targets.find(t=>t.id===task.zone);
+        w.route=[{x:310,y:156},{x:310,y:218},{x:270,y:218},{x:270,y:target.y},{x:target.x,y:target.y}];w.next=0;
+      }else{
+        const dest=this.shelves[task.zone][task.index];if(dest.packageId||dest.reservedFor!==p.id){this.returnWorkerCargo();return;}
+        this.receiving[task.originIndex].reservedFor=null;dest.reservedFor=null;dest.packageId=p.id;p.location='shelf';p.zone=task.zone;p.index=task.index;p.origin=null;
+        this.stats.stocked++;w.task=null;w.moving=false;this.emit('workerStock',{packageId:p.id});
+      }
+    }
+  }
   random() {
     this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
     return this.seed / 4294967296;
@@ -49,7 +119,7 @@ export class Shift {
   canWork() { return this.phase === 'playing' || this.phase === 'stocking'; }
   receivingCount() { return this.receiving.filter(s => s.packageId || s.reservedFor).length; }
   beginStocking() {
-    if (this.phase !== 'closing') return false;
+    if (!['closing','upgrading'].includes(this.phase)) return false;
     this.phase = 'stocking'; this.emit('stocking');
     if (this.receivingCount() === 0 && !this.isHoldingShipping()) this.nextDay();
     return true;
@@ -65,13 +135,14 @@ export class Shift {
   openNextDay(){
     if(!['stocking','dayend'].includes(this.phase))return false;
     this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
-    this.day++; this.remaining = SHIFT_SECONDS; this.elapsed = 0;
+    this.day++; this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.customerTimer = 10; this.deliveryTimer = 25; this.phase = 'playing';
     this.emit('daystart', {day: this.day}); this.spawnCustomer(); return true;
   }
   closeDay() {
     if (this.phase !== 'playing') return;
+    this.returnWorkerCargo();this.worker=null;
     if (this.held && !this.isHoldingShipping()) this.returnHeld();
     this.forwardOutbound();
     if (this.courier && this.courier.stage !== 'leaving') this.turnCourierAround();
@@ -155,6 +226,7 @@ export class Shift {
     if (!this.canWork()) return {ok: false, message: '班次已暫停或結束'};
     if (this.held) return {ok: false, message: '先交貨、上架或退回手上包裹'};
     const p = this.packages.get(id);
+    if(this.worker?.task?.packageId===id)return{ok:false,message:'理貨店員已預留此件，請選其他貨物'};
     if (!p || !['shelf', 'receiving'].includes(p.location)) return {ok: false, message: '這件貨物已不在原位'};
     const origin = {type: p.location, zone: p.zone, index: p.index};
     const s = this.slots(origin)[origin.index];
@@ -185,7 +257,7 @@ export class Shift {
     if (!this.canWork() || !this.held) return {ok: false, message: '先從收貨區拿起包裹'};
     const p = this.packages.get(this.held);
     if (p.kind === 'shipping') return {ok:false,message:'寄貨不能放上貨架'};
-    if (!ZONES.includes(zone)) return {ok: false, message: '請選擇 A／B／C 貨架'};
+    if (!this.shelves[zone]) return {ok: false, message: '請選擇 A／B／C 貨架'};
     if (p.origin.type === 'shelf' && p.origin.zone === zone) return this.returnHeld();
     const index = this.shelves[zone].findIndex(s => !s.packageId && !s.reservedFor);
     if (index < 0) return {ok: false, message: `${zone} 區已滿，請選其他貨架${this.phase === 'stocking' ? '，或提早開下一天' : '，或先交貨騰出空位'}`};
@@ -275,7 +347,7 @@ export class Shift {
     if(this.phase==='stocking'){this.advanceCourier(dt);return;}
     this.elapsed+=dt;if(this.practice)return;
     const activeTime=Math.min(dt,this.remaining);
-    this.advanceCourier(activeTime);this.remaining=Math.max(0,this.remaining-activeTime);
+    this.advanceCourier(activeTime);this.advanceWorker(activeTime);this.remaining=Math.max(0,this.remaining-activeTime);
     if(this.remaining===0){this.closeDay();return;}
     for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
     this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;

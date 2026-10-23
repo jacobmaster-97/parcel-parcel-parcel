@@ -101,9 +101,9 @@ try{
  assert.ok(state.courier?.carrying);await tp.clock.runFor(7000);assert.equal((await snapshot(tp)).receivingCount,count);
  await tp.clock.runFor(1000);state=await snapshot(tp);assert.equal(state.receivingCount,count+2);assert.equal(state.courier.carrying,false);await tp.screenshot({path:output+'prototype-courier.png'});
  await tp.locator('#pause-button').click();const frozen=JSON.stringify((await snapshot(tp)).courier);await tp.clock.runFor(1000);assert.equal(JSON.stringify((await snapshot(tp)).courier),frozen);await tp.locator('#resume-button').click();
- await tp.clock.fastForward(181000);await tp.locator('#result-dialog[open]').waitFor();await tp.locator('#play-again').click();await tp.clock.runFor(50);assert.equal((await snapshot(tp)).phase,'stocking');
+ await tp.clock.fastForward(181000);await tp.locator('#result-dialog[open]').waitFor();await tp.locator('#play-again').click();await tp.locator('#upgrade-skip').click();await tp.clock.runFor(50);assert.equal((await snapshot(tp)).phase,'stocking');
  await tp.clock.fastForward(600000);assert.equal((await snapshot(tp)).phase,'stocking');await tp.locator('#next-day').click();await tp.locator('#checkpoint-dialog').waitFor({state:'hidden'});await tp.clock.runFor(50);assert.equal((await snapshot(tp)).day,2);
- await tp.clock.fastForward(181000);await tp.locator('#result-dialog[open]').waitFor();await tp.locator('#play-again').click();await tp.clock.runFor(50);
+ await tp.clock.fastForward(181000);await tp.locator('#result-dialog[open]').waitFor();await tp.locator('#play-again').click();await tp.locator('#upgrade-skip').click();await tp.clock.runFor(50);
  const incoming=(await snapshot(tp)).packages.filter(p=>p.location==='receiving');
  for(const p of incoming){
   let s=await snapshot(tp);if(s.player.y>=182){await keyTo(tp,'x',310);await keyTo(tp,'y',156);}await keyTo(tp,'x',240);await act(tp);await choose(tp,p.code,'receiving');

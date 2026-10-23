@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.5.0.html')).href+'?qa=1';
+const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.6.0.html')).href+'?qa=1';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await context.setOffline(true);
@@ -46,7 +46,7 @@ try{
  const remaining=await page.evaluate(()=>__parcelQA.snapshot().remaining);assert.ok(remaining>=169&&remaining<=171);
  await page.clock.fastForward(171000);await page.locator('#result-dialog[open]').waitFor();
  assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'closing');
- await page.locator('#play-again').tap();assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'stocking');
+ await page.locator('#play-again').tap();await page.locator('#upgrade-skip').tap();assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'stocking');
  await page.clock.fastForward(600000);assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'stocking');
  for(const profile of profiles){
   await page.setViewportSize({width:profile.width,height:profile.height});

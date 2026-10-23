@@ -19,3 +19,14 @@ export function canStandAt(x,y){
  return x>=15&&x<=WORLD.width-15&&y>=42&&y<=WORLD.height-14&&
   !OBSTACLES.some(o=>x+8>o.x&&x-8<o.x+o.w&&y>o.y&&y-8<o.y+o.h);
 }
+// Buying D adds one lower row; existing coordinates and public route stay fixed.
+export function shopLayout(shelves={}){
+ const extra=!!shelves.D;
+ return{world:{width:350,height:extra?484:340},targets:extra?[...TARGETS,{id:'D',type:'shelf',zone:'D',x:70,y:404,footY:474}]:TARGETS};
+}
+export function canStandInShop(x,y,shelves={}){
+ const layout=shopLayout(shelves);
+ return x>=15&&x<=335&&y>=42&&y<=layout.world.height-14&&
+ !OBSTACLES.some(o=>x+8>o.x&&x-8<o.x+o.w&&y>o.y&&y-8<o.y+o.h)&&
+ !(shelves.D&&x+8>36&&x-8<104&&y>429&&y-8<478);
+}

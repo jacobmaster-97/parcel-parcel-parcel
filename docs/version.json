@@ -1,19 +1,20 @@
 {
-  "version": "0.5.0",
-  "html_sha256": "72e1ce0b3c173ac8fdd6d1e0ea6c61ccd3956bce891eb92be3b4d81620a8f938",
+  "version": "0.6.0",
+  "html_sha256": "8b9df06cb2104760b36a18f4aaea748aafae44a96ecc9f75a36dff1614afe20b",
   "features": [
-    "cross-day-wallet",
-    "daily-ledger",
-    "day-boundary-only-autosave",
-    "indexeddb-full-snapshot",
-    "json-import-export",
-    "validated-backup-recovery",
-    "single-tab-writer"
+    "night-upgrade-prompt-before-stocking",
+    "three-workday-shoes",
+    "individual-shelf-capacity-upgrades",
+    "new-D-shelf",
+    "receiving-outbound-capacity-upgrades",
+    "daily-paid-AI-stock-clerk",
+    "schema1-save-compatibility",
+    "day-boundary-only-autosave"
   ],
   "changes": [
-    "Only auto-save after stocking, immediately before next day opens",
-    "Immediate pickup/tip/shipping revenue without duplicate day-end payment",
-    "Continue paused with no offline time progression",
-    "Preserve original pixel art and keyboard/mobile controls"
+    "Optional nightly upgrade window appears even when receiving is empty",
+    "Shoes $80; shelves $480/$650; new shelf $320; cages $200 per two slots",
+    "Worker $60 per booked day, reserves wages and stocks assigned zones",
+    "Purchases and wages persist together at next-day boundary only; branches and lockers deferred"
   ]
 }
