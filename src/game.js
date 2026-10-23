@@ -1,8 +1,8 @@
 import {COURIER_ROUTE,shopLayout} from './layout.js';
 import {initialUpgrades,upgradeOptions} from './upgrades.js';
 import {Ledger} from './finance.js';
-export const ZONES = ['A', 'B', 'C'];
-export const SHIFT_SECONDS = 180;
+export const ZONES = ['A', 'B'];
+export const SHIFT_SECONDS = 150;
 const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
@@ -33,7 +33,7 @@ export class Shift {
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.events = [];
     for (const zone of ZONES) for (let i = 0; i < 2; i++) this.addPackage(zone, 'shelf');
-    for (const zone of ZONES) this.addPackage(zone, 'receiving');
+    for (let i=0;i<3;i++) this.addPackage(null, 'receiving');
   }
   moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?88:80;}
   reservedWages(){return this.upgrades.workerBookedDay?60:0;}
@@ -83,7 +83,7 @@ export class Shift {
       if(!p||!zone){w.moving=false;return;}
       const index=this.shelves[zone].findIndex(s=>!s.packageId&&!s.reservedFor);
       w.task={packageId:p.id,zone,index,originIndex:p.index,carrying:false};this.shelves[zone][index].reservedFor=p.id;
-      w.route=[{x:270,y:w.y},{x:270,y:218},{x:310,y:218},{x:310,y:156},{x:240,y:156}];w.next=0;
+      w.route=[{x:270,y:w.y},{x:270,y:218},{x:310,y:218},{x:310,y:112}];w.next=0;
     }
     let remaining=Math.min(dt,180);
     while(remaining>0&&w.task){
@@ -96,7 +96,7 @@ export class Shift {
         const origin=this.receiving[task.originIndex];if(origin.packageId!==p.id){this.returnWorkerCargo();return;}
         origin.packageId=null;origin.reservedFor=p.id;p.location='worker';p.index=null;p.origin={type:'receiving',zone:null,index:task.originIndex};task.carrying=true;
         const target=shopLayout(this.shelves).targets.find(t=>t.id===task.zone);
-        w.route=[{x:310,y:156},{x:310,y:218},{x:270,y:218},{x:270,y:target.y},{x:target.x,y:target.y}];w.next=0;
+        w.route=[{x:310,y:112},{x:310,y:218},{x:270,y:218},{x:270,y:target.y},{x:target.x,y:target.y}];w.next=0;
       }else{
         const dest=this.shelves[task.zone][task.index];if(dest.packageId||dest.reservedFor!==p.id){this.returnWorkerCargo();return;}
         this.receiving[task.originIndex].reservedFor=null;dest.reservedFor=null;dest.packageId=p.id;p.location='shelf';p.zone=task.zone;p.index=task.index;p.origin=null;
@@ -169,6 +169,7 @@ export class Shift {
   }
   addPackage(zone, location) {
     const slots = location === 'shelf' ? this.shelves[zone] : this.receiving;
+    if(!slots)return null;
     const index = slots.findIndex(s => !s.packageId && !s.reservedFor);
     if (index < 0) return null;
     const serial = this.serial++;
@@ -234,7 +235,7 @@ export class Shift {
     s.packageId = null; s.reservedFor = id;
     p.origin = origin; p.location = 'held'; p.index = null; this.held = id;
     this.emit('take', {packageId: id});
-    return {ok: true, message: `已拿起 ${p.code}${p.zone ? ` · ${p.zone} 區` : ' · 自選 A／B／C 上架'}`};
+    return {ok: true, message: `已拿起 ${p.code}${p.zone ? ` · ${p.zone} 區` : ' · 自選已開放貨架上架'}`};
   }
   freeOrigin(p) {
     if (!p.origin) return;
@@ -257,7 +258,7 @@ export class Shift {
     if (!this.canWork() || !this.held) return {ok: false, message: '先從收貨區拿起包裹'};
     const p = this.packages.get(this.held);
     if (p.kind === 'shipping') return {ok:false,message:'寄貨不能放上貨架'};
-    if (!this.shelves[zone]) return {ok: false, message: '請選擇 A／B／C 貨架'};
+    if (!this.shelves[zone]) return {ok: false, message: '請選擇已開放貨架'};
     if (p.origin.type === 'shelf' && p.origin.zone === zone) return this.returnHeld();
     const index = this.shelves[zone].findIndex(s => !s.packageId && !s.reservedFor);
     if (index < 0) return {ok: false, message: `${zone} 區已滿，請選其他貨架${this.phase === 'stocking' ? '，或提早開下一天' : '，或先交貨騰出空位'}`};

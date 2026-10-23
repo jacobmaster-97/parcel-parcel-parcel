@@ -20,6 +20,7 @@ let world=WORLD,targets=TARGETS;const queuePoints=QUEUE_POINTS;
 function syncLayout(){const layout=shopLayout(shift.shelves);world=layout.world;targets=layout.targets;}
 const counter=targets.find(t=>t.type==='counter'),receiving=targets.find(t=>t.type==='receiving');
 let shift = new Shift(), player, actors = new Map(), departures = [], lastTime = 0;
+syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
@@ -32,7 +33,7 @@ const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-di
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const requestText = () => {
  const o = shift.queue[0];
- return o ? o.type==='shipping'&&o.revealed?'客人寄貨：請將手上貨物放到寄貨區':o.revealed ? `客人要：${o.code} · ${shift.packages.get(o.packageId).zone} 區` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 A／B／C；不計時。' : '暫時冇客，趁空檔上架新貨。';
+ return o ? o.type==='shipping'&&o.revealed?'客人寄貨：請將手上貨物放到寄貨區':o.revealed ? `客人要：${o.code} · ${shift.packages.get(o.packageId).zone} 區` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 已開放貨架；不計時。' : '暫時冇客，趁空檔上架新貨。';
 };
 const dialogOpen = () => dialogIds.some(id=>$(id).open);
 function resetPlayer(){ player={x:174,y:232,face:'down',moving:false,travel:0}; }
@@ -62,7 +63,7 @@ function beginSession(practice=false){
  if(!ready){if(loadError)location.reload();return;}
  closeDialogs();shift=new Shift({practice,deferDayStart:!practice});syncLayout();resetPlayer();actors=new Map();departures=[];
  action=null;practiceDone=false;feedback=null;queueSignature='';shift.start();processEvents();
- $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 A／B／C 上架。';
+ $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 已開放貨架 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
  toast(practice?'練習不計時：先到櫃檯接待客人，登記提貨要求。':'開檔！先接待客人，空檔自由上架新貨。');
@@ -145,7 +146,7 @@ function openInventory(target,restore=null){
  $('inventory-title').textContent=target.type==='shelf'?`${target.zone} 區 · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
  $('inventory-feedback').textContent='';$('inventory-selection').textContent='請先選一件包裹';
  updateInventoryRequest();
- $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 A／B／C 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
+ $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 已開放貨架 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
  const grid=$('parcel-grid');grid.replaceChildren();
  list.forEach((p,i)=>{
   const button=document.createElement('button');button.className='parcel-choice';button.type='button';
@@ -216,7 +217,7 @@ function processEvents(){
   if(event.type==='wrong')beep(false);
   if(event.type==='arrival')toast(`新貨到！收貨區多咗 ${event.count} 件。`);
   if(event.type==='end')finish();
-  if(event.type==='stocking'){toast('收舖上架：不計時，自由選 A／B／C；也可隨時進入下一天。');}
+  if(event.type==='stocking'){toast('收舖上架：不計時，自由選 已開放貨架；也可隨時進入下一天。');}
   if(event.type==='daystart'){
    closeDialogs();action=null;queueSignature='';$('pause-button').disabled=false;
    toast(`第 ${event.day} 天開門！貨架位置已保留，先到櫃檯接客。`);
@@ -359,7 +360,7 @@ function draw(){
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
  for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區 · ${shift.shelves[shelf.zone].length}`,shelf.x,shelf.footY-72);
- pill(`收貨 ${shift.receivingCount()}/${shift.receiving.length}`,receiving.x,77,'#8d693f');
+ pill(`收貨 ${shift.receivingCount()}/${shift.receiving.length}`,receiving.x,receiving.footY-59,'#8d693f');
  const outbound=targets.find(t=>t.type==='outbound');
  pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/${shift.outbound.length}`,outbound.x,280,'#73518b');
  pill('互動',counter.x-38,218);
@@ -404,7 +405,7 @@ function updateUI(){
  $('order-feedback').hidden=!feedback;
  if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
- if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 A／B／C 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
+ if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 已開放貨架 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼及貨架位置。';
  $('wallet-summary').textContent=shift.practice?'練習結果獨立，不影響正式錢包。':`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 今日收入 ${moneyText(Object.values(shift.ledger.current.income).reduce((a,b)=>a+b,0))} · 今日支出 ${moneyText(Object.values(shift.ledger.current.expense).reduce((a,b)=>a+b,0)-shift.ledger.current.refund)}`;
  document.querySelectorAll('.save-status').forEach(e=>e.textContent=saveStatus);
  $('completed').textContent=String(shift.stats.completed+shift.stats.shipped);$('revenue').textContent=`$${shift.stats.revenue}`;
@@ -432,7 +433,7 @@ function updateUI(){
  const dx=destination.x-player.x,dy=destination.y-player.y;
  const arrow=Math.abs(dx)>Math.abs(dy)*2?(dx<0?'←':'→'):Math.abs(dy)>Math.abs(dx)*2?(dy<0?'↑':'↓'):
   dy<0?(dx<0?'↖':'↗'):(dx<0?'↙':'↘');
- const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 A／B／C':destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
+ const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 已開放貨架':destination.type==='shelf'?`${destination.zone} 區貨架`:destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
  $('scene-status').textContent=canWork()?target?targetLabel(target):`${arrow} ${destinationName}`:
   shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':shift.phase==='upgrading'?'商店升級':'等你開檔';
  if($('inventory-dialog').open)updateInventoryRequest();
@@ -696,7 +697,7 @@ async function buyUpgrade(id){
   const message=`${item.before} → ${item.after}\n${id==='worker'?'預留明日薪金':'價格'} ${moneyText(item.price)} · ${id==='worker'?'預約':'購買'}後可用 ${moneyText(shift.availableFunds()-item.price)}\n${id==='worker'?'翌日開門扣款一次，不自動續聘。':'本頁即時生效，開下一天前才保存。'}`;
   if(!await askCampaign(item.name,message,id==='worker'?'確認排班':'確認購買'))return;
   if(ownershipLost||!await saveStore.isOwner())throw new Error('另一分頁已接管，沒有扣款。');
-  const result=shift.purchaseUpgrade(id);syncLayout();$('upgrade-feedback').textContent=result.message;processEvents();
+  const result=shift.purchaseUpgrade(id);syncLayout();if(result.ok&&!canStand(player.x,player.y)){const safe=targets.find(t=>t.id===id.split(':')[1])||counter;player.x=safe.x;player.y=safe.y;player.moving=false;clearInput();}$('upgrade-feedback').textContent=result.message;processEvents();
  }catch(e){$('upgrade-feedback').textContent=e.message;}
  finally{upgradeBusy=false;renderUpgrades();button=$('upgrade-cards').querySelector(`[data-upgrade="${id}"]`);if(button&&!button.disabled)button.focus();else $('upgrade-done').focus();}
 }

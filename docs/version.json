@@ -1,20 +1,17 @@
 {
-  "version": "0.6.0",
-  "html_sha256": "8b9df06cb2104760b36a18f4aaea748aafae44a96ecc9f75a36dff1614afe20b",
+  "version": "0.7.0",
+  "html_sha256": "6865cb606280fdab0c490c30ead63159b3d0dd771bfe50ad686240d36218112e",
   "features": [
-    "night-upgrade-prompt-before-stocking",
-    "three-workday-shoes",
-    "individual-shelf-capacity-upgrades",
-    "new-D-shelf",
-    "receiving-outbound-capacity-upgrades",
-    "daily-paid-AI-stock-clerk",
-    "schema1-save-compatibility",
-    "day-boundary-only-autosave"
+    "150-second-workdays",
+    "AB-initial-shelves",
+    "purchasable-C-shelf",
+    "upper-right-receiving-cage",
+    "legacy-save-preservation"
   ],
   "changes": [
-    "Optional nightly upgrade window appears even when receiving is empty",
-    "Shoes $80; shelves $480/$650; new shelf $320; cages $200 per two slots",
-    "Worker $60 per booked day, reserves wages and stocks assigned zones",
-    "Purchases and wages persist together at next-day boundary only; branches and lockers deferred"
+    "New stores start with A/B; C costs $320 for 4 slots then $480/$650 for 6/8",
+    "Receiving interaction moves to (310,112), collision and NPC routes updated",
+    "Legacy C/D goods preserved; legacy in-day time scaled 150/180",
+    "Random events are framework only and do not change live customer frequency"
   ]
 }

@@ -38,7 +38,7 @@ test('wrong parcel is retained and can be returned even when all other slots are
 test('receiving parcels have no zone and can be stocked in any chosen zone',()=>{
  const s=playing();const p=[...s.packages.values()].find(p=>p.location==='receiving');
  for(let i=0;i<10;i++)s.spawnCustomer();assert.ok(!s.queue.some(o=>o.packageId===p.id));
- assert.equal(p.zone,null);s.take(p.id);assert.equal(s.stock('C').ok,true);assert.equal(p.zone,'C');assert.equal(p.location,'shelf');assert.equal(s.stats.stocked,1);invariant(s);
+ assert.equal(p.zone,null);s.take(p.id);assert.equal(s.stock('B').ok,true);assert.equal(p.zone,'B');assert.equal(p.location,'shelf');assert.equal(s.stats.stocked,1);invariant(s);
 });
 test('expiry while parcel held clears reservation, then returning makes it requestable',()=>{
  const s=playing();const o=s.queue[0];s.take(o.packageId);o.patience=.01;s.tick(.1);
@@ -49,7 +49,7 @@ test('expiry while parcel held clears reservation, then returning makes it reque
 test('pause freezes countdown, patience and incoming work',()=>{
  const s=playing();s.pause();const before=JSON.stringify([s.remaining,s.queue,s.packages.size]);
  s.tick(60);assert.equal(JSON.stringify([s.remaining,s.queue,s.packages.size]),before);
- assert.equal(s.take(s.queue[0].packageId).ok,false);s.resume();s.tick(1);assert.equal(s.remaining,179);
+ assert.equal(s.take(s.queue[0].packageId).ok,false);s.resume();s.tick(1);assert.equal(s.remaining,149);
 });
 test('queue and receiving capacity remain bounded and stock never double-books',()=>{
  const s=playing();for(let i=0;i<100;i++)s.spawnCustomer();assert.equal(s.queue.length,4);
@@ -62,14 +62,14 @@ test('end freezes commands and stops additional penalties',()=>{
 });
 test('practice supports complete delivery and stock loop without time pressure',()=>{
  const s=playing({practice:true});const p=s.packages.get(s.queue[0].packageId);
- s.tick(1000);assert.equal(s.remaining,180);assert.equal(s.queue[0].patience,60);
+ s.tick(1000);assert.equal(s.remaining,150);assert.equal(s.queue[0].patience,60);
  s.take(p.id);s.deliver();const fresh=[...s.packages.values()].find(p=>p.location==='receiving');
  s.take(fresh.id);s.stock('B');assert.equal(s.stats.completed,1);assert.equal(s.stats.stocked,1);invariant(s);
 });
 test('new shift restores independent clean state',()=>{
  const first=playing();first.take(first.queue[0].packageId);first.deliver();
  const next=playing();assert.equal(next.stats.completed,0);assert.equal(next.held,null);
- assert.equal(next.queue[0].code,'4826');assert.equal(next.remaining,180);invariant(next);
+ assert.equal(next.queue[0].code,'4826');assert.equal(next.remaining,150);invariant(next);
 });
 
 test('each customer needs a first interaction before code reveal and delivery',()=>{
@@ -84,9 +84,9 @@ test('recorded shelf location follows relocation and is used by customer orders'
  s.take(p.id);s.deliver();assert.equal(o.status,'completed');invariant(s);
 });
 test('full destination preserves held parcel and reservation, including in stocking phase',()=>{
- const s=playing();while(s.addPackage('C','shelf')){}
+ const s=playing();while(s.addPackage('B','shelf')){}
  s.tick(180);s.beginStocking();const p=[...s.packages.values()].find(p=>p.location==='receiving');s.take(p.id);
- assert.equal(s.stock('C').ok,false);assert.equal(s.held,p.id);assert.equal(p.zone,null);
+ assert.equal(s.stock('B').ok,false);assert.equal(s.held,p.id);assert.equal(p.zone,null);
  assert.equal(s.returnHeld().ok,true);invariant(s);
 });
 test('stocking is untimed and paused stocking resumes to stocking',()=>{
@@ -99,9 +99,9 @@ test('last receiving parcel starts next day automatically and preserves chosen l
  const s=playing();s.take(s.queue[0].packageId);s.deliver();const earned=s.totalRevenue;
  s.tick(180);s.beginStocking();
  const fresh=[...s.packages.values()].filter(p=>p.location==='receiving');
- for(const [i,p] of fresh.entries()) {s.take(p.id);assert.equal(s.stock(ZONES[i%3]).ok,true);}
- assert.equal(s.day,2);assert.equal(s.phase,'playing');assert.equal(s.remaining,180);assert.equal(s.totalRevenue,earned);
- for(const [i,p] of fresh.entries()){assert.equal(p.zone,ZONES[i%3]);assert.equal(p.location,'shelf');}
+ for(const [i,p] of fresh.entries()) {s.take(p.id);assert.equal(s.stock(ZONES[i%ZONES.length]).ok,true);}
+ assert.equal(s.day,2);assert.equal(s.phase,'playing');assert.equal(s.remaining,150);assert.equal(s.totalRevenue,earned);
+ for(const [i,p] of fresh.entries()){assert.equal(p.zone,ZONES[i%ZONES.length]);assert.equal(p.location,'shelf');}
  assert.equal(s.stats.revenue,0);assert.equal(s.queue[0].revealed,false);invariant(s);
 });
 test('manual next day safely returns held parcels and retains unstocked receiving goods',()=>{
@@ -162,7 +162,7 @@ test('manual next day retains accepted shipping and its reserved destination',()
 test('courier is visible carrying before drop, adds parcels once, then leaves empty handed',()=>{
  const s=playing();const count=s.receivingCount();assert.equal(s.requestCourier(),true);assert.equal(s.requestCourier(),false);
  s.advanceCourier(6.9);assert.equal(s.receivingCount(),count);assert.equal(s.courier.carrying,true);
- s.advanceCourier(1);assert.equal(s.receivingCount(),count+2);assert.equal(s.courier.carrying,false);assert.equal(s.courier.stage,'leaving');
+ s.advanceCourier(3);assert.equal(s.receivingCount(),count+2);assert.equal(s.courier.carrying,false);assert.equal(s.courier.stage,'leaving');
  s.advanceCourier(60);assert.equal(s.courier,null);assert.equal(s.receivingCount(),count+2);
 });
 test('full receiving makes courier wait with cargo and no inventory loss',()=>{
@@ -182,5 +182,5 @@ test('closing turns undelivered courier back without dropping cargo during stock
 });
 test('scheduled arrivals dispatch courier rather than materialize receiving parcels',()=>{
  const s=playing(),count=s.receivingCount();s.tick(25);assert.ok(s.courier);assert.equal(s.receivingCount(),count);
- s.tick(1);assert.equal(s.receivingCount(),count);s.tick(7);assert.equal(s.receivingCount(),count+2);
+ s.tick(1);assert.equal(s.receivingCount(),count);s.tick(10);assert.equal(s.receivingCount(),count+2);
 });

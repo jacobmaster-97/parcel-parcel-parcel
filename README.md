@@ -2,17 +2,17 @@
 
 像素風集運自提點經營原型，支援鍵盤與手機觸控。
 
-**[立即遊玩 v0.6](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.6)**
+**[立即遊玩 v0.7](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.7)**
 
-每個營業日180秒，接待後按提貨碼找貨，亦有寄貨客人及送貨員。新貨自由選架上架；桌面WASD／方向鍵移動、E互動、Esc暫停；手機搖桿及互動按鈕。
+每個營業日150秒（2分30秒），接待後按提貨碼找貨，亦有寄貨客人及送貨員。新貨自由選架上架；桌面WASD／方向鍵移動、E互動、Esc暫停；手機搖桿及互動按鈕。
 
 關店後：收支摘要→自提點升級（可跳過）→不限時貨物上架→保存→下一天。整理時可重開商店，零收貨亦先提供升級機會。
 
 | 升級 | 價格與效果 |
 | --- | --- |
 | 工作鞋 | $80，移速80→88，當晚及接下來3個營業日有效，不疊加 |
-| A/B/C貨架 | 各自4→6格$480，6→8格$650 |
-| 新增D區 | $320取得4格，之後同價加層至8格；下方新一排，店寬不變 |
+| A/B貨架 | 各自4→6格$480，6→8格$650 |
+| 新增C／D區 | $320取得4格，之後同價加層至8格；C在原右側位置，D在下方新一排 |
 | 收／寄貨籠 | 各自每次$200加2格，最高12格 |
 | 理貨店員 | $60／營業日，夜間預約翌日、先預留，翌日扣一次；不自動續聘。可選允許分區及優先區，只上架 |
 
@@ -28,4 +28,8 @@ npm test
 npm run build
 ```
 
-Node.js 20+，遊戲執行期無外部套件。Pages使用main的/docs，docs/index.html為自包含單檔。54項規則及Chromium桌面／手機尺寸測試通過；Android／iPhone真機及Safari仍待驗證。完整規則見PROTOTYPE.md及design/store-upgrades-v2/IMPLEMENTED.md，驗證見QA_REPORT.md。正常revert對應提交可讓Pages回滾；舊版程式無法讀取較新schema2存檔，回滾後須用相容版本或原schema1備份。
+Node.js 20+，遊戲執行期無外部套件。Pages使用main的/docs，docs/index.html為自包含單檔。61項規則及Chromium桌面／手機尺寸測試通過；Android／iPhone真機及Safari仍待驗證。完整規則見PROTOTYPE.md及design/store-upgrades-v2/IMPLEMENTED.md，驗證見QA_REPORT.md。正常revert對應提交可讓Pages回滾；舊版程式無法讀取較新schema3存檔，回滾後須用相容版本或原schema1備份。
+
+新店初始只有A/B，未購C不顯示貨架或留下碰撞。舊v0.5/v0.6進度保留已有C/D、資金及貨物，當日剩餘時間按150/180換算。收貨籠移至右上（互動310,112；腳點92），送貨員及理貨員動線一起更新。
+
+隨機事件本輪只做[文字框架](design/random-events-v1/FRAMEWORK.md)，尚未實裝或改動正式客流；倍率及權重待修訂。
