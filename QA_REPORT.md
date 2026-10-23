@@ -1,4 +1,15 @@
-# 原型 v0.8.0 驗收紀錄
+# 原型 v0.9.0 驗收紀錄
+
+## v0.9 美術接入
+- npm test：72/72 PASS，遊戲規則及經濟測試不因貼圖替換改動。
+- art-smoke：桌面1440×1000、手機390×844／844×390，從schema4完整檔載入玩家與持貨理貨員；錢包、貨物預留及事件一致；A區8格及C/D擴充仍顯示；繪圖實際使用player/worker獨立圖集、interior tiles、counter repeat、gate與decor overlay。無舊clerk圖集繪圖、無裝飾新目標。畫面已目視。
+- offline-smoke：五手機尺寸、純離線、無外部請求、操作≥48px及不限時整理PASS。
+- storage-smoke：原生IndexedDB、只換日前保存、匯出匯入、完整恢復、壞主檔與有效備份、原子故障及多分頁擁有權PASS。
+- upgrade-smoke：v0.5檔遷移、購買／薪金、舊完整進度保存、故障重試與五手機尺寸PASS。
+- 工作動作修正：首次問提貨碼只接待，不播放含包裹的放貨格；寄貨客接收採pickup，交貨／存籠才place。所有金額仍由原規則層決定，沒有音效／動畫派錢。
+- 實機Android／iPhone／Safari、長時間效能與讀屏仍未驗；自動化為Chromium模擬。
+
+---
 
 2026-10-23。範圍：跨日錢包、收支、完整快照、換日前唯一自動保存、恢復與資料轉移；原有美術與玩法回歸。瀏覽器報告及截圖放 deliverables/。
 

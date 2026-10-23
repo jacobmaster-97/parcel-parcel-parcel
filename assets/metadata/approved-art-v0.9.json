@@ -1,0 +1,568 @@
+{
+  "release": "0.9.0",
+  "source": "user-approved review-black-red-v1 and review-counter-decor-v1",
+  "characters": [
+    {
+      "name": "player_walk",
+      "image": "characters/player_walk.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "fps": 12,
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "left": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "right": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "up": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      },
+      "idle": "characters/player_idle.png"
+    },
+    {
+      "name": "player_carry_walk",
+      "image": "characters/player_carry_walk.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "fps": 12,
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "left": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "right": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "up": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      },
+      "idle": "characters/player_carry_idle.png"
+    },
+    {
+      "name": "worker_walk",
+      "image": "characters/worker_walk.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "fps": 12,
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "left": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "right": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "up": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      },
+      "idle": "characters/worker_idle.png"
+    },
+    {
+      "name": "worker_carry_walk",
+      "image": "characters/worker_carry_walk.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "fps": 12,
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "left": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "right": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "up": [
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31
+        ]
+      },
+      "idle": "characters/worker_carry_idle.png"
+    },
+    {
+      "name": "player_work",
+      "image": "characters/player_work.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "fps": 10,
+      "pickup": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "place": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "note": "Per-direction 4 generated pickup poses; place uses reverse order. Package is baked into contact/lift poses; runtime overlay must not draw a second parcel."
+    },
+    {
+      "name": "worker_work",
+      "image": "characters/worker_work.png",
+      "cell": [
+        32,
+        48
+      ],
+      "columns": 8,
+      "rows": 4,
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "fps": 10,
+      "pickup": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "place": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "note": "Per-direction 4 generated pickup poses; place uses reverse order. Package is baked into contact/lift poses; runtime overlay must not draw a second parcel."
+    }
+  ],
+  "counterDecor": {
+    "status": "review-only",
+    "purpose": "countertop_decoration",
+    "interactive": false,
+    "collision": false,
+    "filter": "nearest",
+    "surface": {
+      "counterY": 160,
+      "counterTopBottom": 173,
+      "contactY": 170
+    },
+    "items": [
+      {
+        "name": "kumquat",
+        "label": "盆桔",
+        "image": "props/kumquat.png",
+        "size": [
+          22,
+          27
+        ],
+        "anchor": [
+          11,
+          27
+        ],
+        "contactPixel": [
+          11,
+          26
+        ],
+        "placement": {
+          "x": 20,
+          "y": 170
+        },
+        "source": "raw/counter_decor.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "notice_stand",
+        "label": "告示座",
+        "image": "props/notice_stand.png",
+        "size": [
+          14,
+          14
+        ],
+        "anchor": [
+          7,
+          14
+        ],
+        "contactPixel": [
+          7,
+          13
+        ],
+        "placement": {
+          "x": 47,
+          "y": 170
+        },
+        "source": "raw/counter_decor.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "pen_cup",
+        "label": "筆筒",
+        "image": "props/pen_cup.png",
+        "size": [
+          11,
+          18
+        ],
+        "anchor": [
+          5,
+          18
+        ],
+        "contactPixel": [
+          5,
+          17
+        ],
+        "placement": {
+          "x": 67,
+          "y": 170
+        },
+        "source": "raw/counter_decor.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "desk_bell",
+        "label": "櫃檯鈴",
+        "image": "props/desk_bell.png",
+        "size": [
+          9,
+          10
+        ],
+        "anchor": [
+          4,
+          10
+        ],
+        "contactPixel": [
+          4,
+          9
+        ],
+        "placement": {
+          "x": 84,
+          "y": 170
+        },
+        "source": "raw/counter_decor.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "scanner",
+        "label": "掃碼器",
+        "image": "props/scanner.png",
+        "size": [
+          12,
+          18
+        ],
+        "anchor": [
+          6,
+          18
+        ],
+        "contactPixel": [
+          6,
+          17
+        ],
+        "placement": {
+          "x": 205,
+          "y": 170
+        },
+        "source": "../review-black-red-v1/environment/props/scanner.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "scale",
+        "label": "電子磅",
+        "image": "props/scale.png",
+        "size": [
+          22,
+          14
+        ],
+        "anchor": [
+          16,
+          14
+        ],
+        "contactPixel": [
+          16,
+          13
+        ],
+        "placement": {
+          "x": 230,
+          "y": 170
+        },
+        "source": "../review-black-red-v1/environment/props/scale.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "printer",
+        "label": "打印機",
+        "image": "props/printer.png",
+        "size": [
+          18,
+          21
+        ],
+        "anchor": [
+          8,
+          21
+        ],
+        "contactPixel": [
+          8,
+          20
+        ],
+        "placement": {
+          "x": 260,
+          "y": 170
+        },
+        "source": "../review-black-red-v1/environment/props/printer.png",
+        "interactive": false,
+        "collision": false
+      },
+      {
+        "name": "checkout_terminal",
+        "label": "朝向玩家的電腦螢幕",
+        "image": "props/checkout_terminal.png",
+        "size": [
+          21,
+          21
+        ],
+        "anchor": [
+          10,
+          21
+        ],
+        "contactPixel": [
+          10,
+          20
+        ],
+        "placement": {
+          "x": 174,
+          "y": 170
+        },
+        "source": "../review-black-red-v1/environment/props/checkout_terminal.png",
+        "interactive": false,
+        "collision": false
+      }
+    ],
+    "atlas": {
+      "image": "counter_decor_atlas.png",
+      "cell": [
+        32,
+        32
+      ],
+      "columns": 4,
+      "rows": 2,
+      "anchor": [
+        16,
+        32
+      ],
+      "unusedCells": []
+    },
+    "overlay": {
+      "image": "countertop_decor_overlay.png",
+      "size": [
+        278,
+        32
+      ],
+      "anchor": [
+        0,
+        32
+      ],
+      "placement": {
+        "x": 0,
+        "y": 170
+      },
+      "note": "Eight decorations including the south-facing screen; no counter or people."
+    }
+  },
+  "layoutChanges": false,
+  "saveSchemaChanges": false
+}

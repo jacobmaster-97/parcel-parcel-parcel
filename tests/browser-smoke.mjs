@@ -60,7 +60,7 @@ try{
   const b=await mp.locator('#joystick').boundingBox(),sign=target>before?1:-1;
   const point={x:b.x+b.width/2+(axis==='x'?sign*b.width*.33:0),y:b.y+b.height/2+(axis==='y'?sign*b.height*.33:0),id:1};
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[point]});await mp.clock.runFor(Math.ceil(Math.abs(target-before)/80*1000));await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-  assert.ok(Math.abs((await snapshot(mp)).player[axis]-target)<3);
+  const landed=(await snapshot(mp)).player[axis];assert.ok(Math.abs(landed-target)<3,`Touch ${axis}: target ${target}, actual ${landed}`);
  }
  await act(mp,true);await touchTo('y',260);await touchTo('x',70);
  const joy=await mp.locator('#joystick').boundingBox(),button=await mp.locator('#touch-action').boundingBox();const finger={x:joy.x+joy.width/2,y:joy.y+joy.height/2,id:1};

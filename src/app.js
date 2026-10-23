@@ -10,12 +10,12 @@ const $ = id => document.getElementById(id);
 const canvas = $('shop'), ctx = canvas.getContext('2d');
 const images = new Map(), keys = new Set();
 const people = ['customer_young', 'customer_office', 'customer_senior'];
-const characterNames = ['courier_walk','courier_carry_walk','clerk_walk','clerk_carry_walk','clerk_work','clerk_idle','clerk_carry_idle',
+const characterNames = ['courier_walk','courier_carry_walk',...['player','worker'].flatMap(p=>['walk','carry_walk','work','idle','carry_idle'].map(a=>`${p}_${a}`)),
  ...people.flatMap(p=>[`${p}_walk`,`${p}_carry_walk`,`${p}_idle`])];
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
- 'scanner','checkout_terminal','trolley','outbound_cage'];
+ 'scanner','checkout_terminal','trolley','outbound_cage','counter_repeat','gate_open','countertop_decor','info_screen','warm_lamp','festive_decoration'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
- ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['ui_icons','assets/ui/ui_icons.png']]);
+ ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 let world=WORLD,targets=TARGETS;const queuePoints=QUEUE_POINTS;
 function syncLayout(){const layout=shopLayout(shift.shelves);world=layout.world;targets=layout.targets;}
@@ -117,7 +117,8 @@ function interact(){
   if(shift.phase==='stocking'){toast('今日已停止接客，先整理新貨或按「下一天」開門。');return;}
   const first=actors.get(shift.queue[0]?.id);
   if(first&&Math.hypot(first.x-queuePoints[0].x,first.y-queuePoints[0].y)>12){toast('客人行緊過嚟，等佢到櫃檯先。');return;}
-  handleResult(shift.deliver(),'place');
+  const wasHolding=!!shift.held,result=shift.deliver();
+  handleResult(result,!wasHolding&&shift.held?'pickup':wasHolding&&!shift.held?'place':null);
  }else if(target.type==='outbound'){
   handleResult(shift.storeShipping(),'place');
  }else if(target.type==='shelf'){
@@ -266,26 +267,20 @@ function updateActors(dt){
  });
  departures=departures.filter(actor=>!followRoute(actor,dt));
 }
-function drawTile(index,x,y){const img=images.get('tiles');if(img)ctx.drawImage(img,index%4*32,Math.floor(index/4)*32,32,32,x,y,32,32);}
+function drawTile(index,x,y){const img=images.get('interior_tiles');if(img)ctx.drawImage(img,index%4*32,Math.floor(index/4)*32,32,32,x,y,32,32);}
 function drawProp(name,x,y,scale=1){
  const img=images.get(name);if(!img)return;
  ctx.drawImage(img,x-48*scale,y-76*scale,96*scale,80*scale);
 }
 function drawLongCounter(){
- const img=images.get('counter');if(!img)return;
+ const img=images.get('counter_repeat');if(!img)return;
  for(const [left,right] of [[0,GATE.left],[GATE.right,world.width]]){
-  for(let x=left;x<right;x+=16){const width=Math.min(16,right-x);ctx.drawImage(img,40,36,width,40,x,160,width,40);}
+  for(let x=left;x<right;x+=16){const width=Math.min(16,right-x);ctx.drawImage(img,0,0,width,40,x,160,width,40);}
  }
- // Build the open counter leaf from the SAME pixels as the fixed counter.
- // Same cream top, teal front, charcoal edging and pixel density; no separate art.
- ctx.save();ctx.translate(GATE.left-6,184);ctx.rotate(Math.PI/2);
- ctx.drawImage(img,40,44,16,30,0,-10,54,20);ctx.restore();
- // Small flush hinges and pull, using the counter's existing cream/edge palette.
- ctx.fillStyle='#253b38';ctx.fillRect(GATE.left-8,185,5,3);ctx.fillRect(GATE.left-8,222,5,3);
- ctx.fillStyle='#e9d9b9';ctx.fillRect(GATE.left-6,186,3,1);ctx.fillRect(GATE.left-6,223,3,1);
- ctx.fillStyle='#253b38';ctx.fillRect(GATE.left-3,228,3,6);
- ctx.fillStyle='#e9d9b9';ctx.fillRect(GATE.left-2,229,1,4);
- drawProp('checkout_terminal',counter.x+10,164,.7);drawProp('scanner',counter.x-24,178,.65);
+ // Approved matching gate; geometry and 64px staff passage stay unchanged.
+ const gate=images.get('gate_open');if(gate)ctx.drawImage(gate,40,28,16,48,GATE.left-4,184,16,48);
+ // Eight decorative props, including the front-facing screen. Feet contact y170.
+ const decor=images.get('countertop_decor');if(decor)ctx.drawImage(decor,0,138);
 }
 function pill(text,x,y,color='#315b49'){
  ctx.font='bold 11px system-ui';const width=ctx.measureText(text).width+14;
@@ -295,22 +290,21 @@ function pill(text,x,y,color='#315b49'){
 const directionIndex=face=>['down','left','right','up'].indexOf(face);
 function drawActor(actor,isPlayer=false){
  const isWorker=actor.id==='worker';
- const prefix=isPlayer||isWorker?'clerk':actor.id==='courier'?'courier':people[actor.appearance];
+ const prefix=isPlayer?'player':isWorker?'worker':actor.id==='courier'?'courier':people[actor.appearance];
  const carrying=isPlayer?!!shift.held:actor.carrying;
  let image,frame,row=directionIndex(actor.face),work=false;
  if(prefix==='courier'){
   image=images.get(carrying?'courier_carry_walk':'courier_walk');frame=actor.moving?Math.floor(actor.travel/4.5)%8:0;
   if(image)ctx.drawImage(image,frame*32,row*48,32,48,Math.round(actor.x)-16,Math.round(actor.y)-44,32,48);return;
  }
- if(isPlayer&&action){image=images.get('clerk_work');row=directionIndex(action.face);
+ if(isPlayer&&action){image=images.get('player_work');row=directionIndex(action.face);
   frame=(action.name==='place'?4:0)+Math.min(3,Math.floor((1-action.remaining/action.duration)*4));work=true;
  }else if(actor.moving){image=images.get(`${prefix}${carrying?'_carry':''}_walk`);frame=Math.floor(actor.travel/6.7)%8;}
- else if(carrying&&(isPlayer||isWorker)){image=images.get('clerk_carry_idle');frame=row;row=0;}
+ else if(carrying&&(isPlayer||isWorker)){image=images.get(`${prefix}_carry_idle`);frame=row;row=0;}
  else if(carrying){image=images.get(`${prefix}_carry_walk`);frame=2;}
  else{image=images.get(`${prefix}_idle`);frame=row;row=0;}
  if(isPlayer){ctx.fillStyle='#31554842';ctx.beginPath();ctx.ellipse(Math.round(actor.x),Math.round(actor.y-1),10,3,0,0,Math.PI*2);ctx.fill();}
  if(image)ctx.drawImage(image,frame*32,row*48,32,48,Math.round(actor.x)-16,Math.round(actor.y)-44,32,48);
- if(isWorker){ctx.fillStyle='#e8dfae';ctx.fillRect(actor.x+4,actor.y-23,3,3);}
  if(isPlayer){ctx.fillStyle='#f4edc9';ctx.beginPath();ctx.moveTo(actor.x,actor.y-51);ctx.lineTo(actor.x-3,actor.y-56);ctx.lineTo(actor.x+3,actor.y-56);ctx.closePath();ctx.fill();}
 }
 function draw(){
@@ -325,9 +319,12 @@ function draw(){
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#bdc6af';ctx.fillRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
  ctx.setTransform(dpr*scale,0,0,dpr*scale,Math.round((offsetX-camera.x)*dpr*scale),Math.round((offsetY-camera.y)*dpr*scale));
  ctx.save();ctx.beginPath();ctx.rect(0,0,world.width,world.height);ctx.clip();
- for(let y=0;y<world.height;y+=32)for(let x=0;x<world.width;x+=32)drawTile(y<32?4:15,x,y);
+ for(let y=0;y<world.height;y+=32)for(let x=0;x<world.width;x+=32)drawTile(y<32?4:(x/32+y/32)%4,x,y);
  // Double-width entrance, centered on the existing NPC route.
  const tiles=images.get('tiles');if(tiles)ctx.drawImage(tiles,64,32,32,32,8,0,64,32);
+ drawProp('info_screen',230,30,.5);
+ for(const x of[110,175,285])drawProp('warm_lamp',x,13,.45);
+ for(const x of[96,310])drawProp('festive_decoration',x,29,.45);
  for(const point of queuePoints){
   ctx.strokeStyle='#bda879';ctx.lineWidth=1;ctx.strokeRect(point.x-13,point.y-6,26,10);
  }

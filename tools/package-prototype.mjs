@@ -15,10 +15,10 @@ html=html.replace('<link rel="stylesheet" href="app.css">',()=>`<style>${css}</s
 html=html.replace(/src="(assets\/[^"<>]+\.png)"/g,(match,name)=>`src="${embedded[name]}"`);
 html=html.replace('<script type="module" src="src/app.js"></script>',
  ()=>`<script>window.__PACKAGED_ASSETS__=${JSON.stringify(embedded)};</script>\n<script type="module">\n${code}\n</script>`);
-const single=path.join(destination,'parcel-point-prototype-v0.8.0.html');fs.writeFileSync(single,html);
-const zip=path.join(destination,'parcel-point-prototype-v0.8.0.zip');
+const single=path.join(destination,'parcel-point-prototype-v0.9.0.html');fs.writeFileSync(single,html);
+const zip=path.join(destination,'parcel-point-prototype-v0.9.0.zip');
 const entries=['index.html','app.css','package.json','src/day-events.js','src/upgrades.js','src/finance.js','src/save.js','src/storage.js','src/game.js','src/app.js','src/layout.js','src/courier-art.js','tools/serve-game.mjs',
- 'tools/package-prototype.mjs','tests/shop-revision-smoke.mjs','tests/shop-revision.test.mjs','tests/day-events-smoke.mjs','tests/day-events.test.mjs','tests/game.test.mjs','tests/upgrade-smoke.mjs','tests/upgrades.test.mjs','tests/finance.test.mjs','tests/save.test.mjs','tests/storage-smoke.mjs','tests/browser-smoke.mjs','tests/offline-smoke.mjs','tests/ui-smoke.mjs',
+ 'tools/package-prototype.mjs','tests/art-smoke.mjs','assets/metadata/approved-art-v0.9.json','tests/shop-revision-smoke.mjs','tests/shop-revision.test.mjs','tests/day-events-smoke.mjs','tests/day-events.test.mjs','tests/game.test.mjs','tests/upgrade-smoke.mjs','tests/upgrades.test.mjs','tests/finance.test.mjs','tests/save.test.mjs','tests/storage-smoke.mjs','tests/browser-smoke.mjs','tests/offline-smoke.mjs','tests/ui-smoke.mjs',
  'PROTOTYPE.md','QA_REPORT.md','design/UPGRADE_PRIORITIES.md','design/store-upgrades-v2/IMPLEMENTED.md','design/random-events-v1/FRAMEWORK.md','design/random-events-v1/IMPLEMENTED.md',...assetFiles.map(f=>path.relative(root,f))];
 // Standard ZIP assembly with built-in Node facilities: no runtime dependencies
 // or subprocess required. Visible artwork is reused unchanged.

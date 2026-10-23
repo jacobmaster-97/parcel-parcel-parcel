@@ -1,10 +1,17 @@
-# 集運小店：可玩原型 v0.8.0
+# 集運小店：可玩原型 v0.9.0
 
-像素風集運自提點，支援鍵盤及手機觸控。線上入口：https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.8 。本版加入翌日隨機事件，並保留關店升級、三日工作鞋、貨架／貨籠擴容、C/D區及電腦理貨店員，保留原美術及鍵盤／觸控操作。
+## v0.9 已確認美術實裝
+角色組與場景組已由使用者確認，正式替換runtime：玩家短髮黑紅制服、理貨員馬尾／手套／棕鞋，空手／持貨／站立獨立圖集；取放貨使用新工作動作。牆與地板換為米白／淺灰，長櫃檯及活動門採同款灰白材質；櫃面八件裝飾包含正面朝向玩家、原尺寸的電腦螢幕，底座接觸y170。裝飾不互動、不加碰撞或目標。
+
+立即遊玩：https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.9 。離線檔deliverables/parcel-point-prototype-v0.9.0.html，ZIP同版。150秒、AB初始／C及D購買、貨架及收寄貨位置、150秒客流／事件、價格、薪金、schema4和僅換日前自動保存規則不變。v0.8有效檔直接續玩，沒有重新配貨或重開新店。
+
+---
+
+像素風集運自提點，支援鍵盤及手機觸控。線上入口：https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.9 。本版加入翌日隨機事件，並保留關店升級、三日工作鞋、貨架／貨籠擴容、C/D區及電腦理貨店員，保留原美術及鍵盤／觸控操作。
 
 ## 遊玩及開發
 
-下載 deliverables/parcel-point-prototype-v0.8.0.html 可直接開啟；ZIP 內 PLAY-OFFLINE.html 相同。手機檔案預覽器可能不執行 JavaScript，建議直接用正式 Pages 網址。Node.js 20+，無遊戲執行期第三方依賴。
+下載 deliverables/parcel-point-prototype-v0.9.0.html 可直接開啟；ZIP 內 PLAY-OFFLINE.html 相同。手機檔案預覽器可能不執行 JavaScript，建議直接用正式 Pages 網址。Node.js 20+，無遊戲執行期第三方依賴。
 
 ```sh
 npm start

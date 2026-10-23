@@ -1,17 +1,18 @@
 {
-  "version": "0.8.0",
-  "html_sha256": "ef783accaf54545c99f0a03ef8f79f687866d1b4e8b7af2c87dc5804b1469174",
+  "version": "0.9.0",
+  "html_sha256": "a4e2d8ef63bc83b0a1d739a9e5fb2f286d90d8649862af1eca721285a9b3a103",
   "features": [
-    "next-day-event-forecast",
-    "shopping-sale-weather-return-events",
-    "event-adjusted-arrivals-delivery-patience",
-    "deterministic-event-seed-and-busy-day-guard",
-    "schema4-full-event-snapshots"
+    "approved-player-and-worker-sprites",
+    "ivory-grey-interior-tiles",
+    "matching-grey-counter-and-gate",
+    "eight-noninteractive-counter-decorations",
+    "player-facing-same-size-monitor",
+    "schema4-save-compatible"
   ],
   "changes": [
-    "Four event weights 70/20/5/5 after eligibility filtering",
-    "Day1 normal, sales from day4, two busy days force normal/weather",
-    "Night forecast in existing upgrade prompt/shop and current event in pause",
-    "Save/retry/reload preserves selected event and already-adjusted timers; old saves remain normal until next close"
+    "Distinct short-haired player and ponytail stock clerk use independent walk/carry/idle/work atlases",
+    "Grey counter repeat and matching gate preserve existing layout and collisions",
+    "Decor overlay rests on surface y170; monitor native artwork remains32x32",
+    "150 seconds, upgrades, events, economy and pre-opening autosave unchanged"
   ]
 }
