@@ -1,12 +1,12 @@
 {
-  "version": "0.12.0",
-  "html_sha256": "9d6f2224828b203b9d34f90e0d5af109165266dca8aea4fe07d5f2333f6cfcbe",
+  "version": "0.13.0",
+  "html_sha256": "63d8de7adb367d4fde541119a823e8e29700a8d4c5eadb12df53ab766036afda",
   "features": [
-    "approved32-npc-lines",
-    "context-aware-customer-worker-courier-dialogue",
-    "one-cosmetic-bubble-every12to20seconds",
-    "no-occlusion-with-offscreen-and-pause-suppression",
-    "independent-cosmetic-rng-no-save-schema-change"
-  ],
-  "dialogue": "implemented; same schema7 and gameplay rules"
+    "60-second-base-patience",
+    "sale36-returns48-weather60",
+    "900-permanent-cargo-management",
+    "zone-hints-only-after-purchase-and-reception",
+    "schema8-migrate1to7-preserve-patience",
+    "only-pre-opening-autosave"
+  ]
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Shift,ZONES} from '../src/game.js';
 
 function playing(options){const s=new Shift({shippingChance:0,...options});s.start();s.deliver();return s;}
-test('45-second base patience with event multipliers and no random variation',()=>{const s=playing();assert.equal(s.queue[0].maxPatience,45);for(let i=0;i<3;i++)s.spawnCustomer();assert.ok(s.queue.every(o=>o.maxPatience===45));});
+test('60-second base patience with event multipliers and no random variation',()=>{const s=playing();assert.equal(s.queue[0].maxPatience,60);for(let i=0;i<3;i++)s.spawnCustomer();assert.ok(s.queue.every(o=>o.maxPatience===60));});
 test('burst can add2 through5 at once, but never exceeds five or fabricates cargo',()=>{for(const n of[2,3,4,5]){const s=playing({shippingChance:1});s.expire(s.queue[0]);let calls=0;s.random=()=>++calls===1?0:calls===2?(n-2+.1)/4:0;const arrivals=s.spawnCustomerBatch();assert.equal(arrivals.length,n);assert.equal(s.queue.length,n);s.random=()=>0;s.spawnCustomerBatch();assert.ok(s.queue.length<=5);assert.equal(new Set(s.queue.map(o=>o.packageId)).size,s.queue.length);for(const o of s.queue)assert.ok(s.packages.has(o.packageId));}const s=playing({shippingChance:1});s.random=()=>.9;assert.equal(s.spawnCustomerBatch().length,1);});
 test('closing fills expanded receiving only once without losing existing cargo or ledger',()=>{const s=playing();s.ledger.post('fixture-cash','pickup',1000,'test');s.totalRevenue=1000;s.stats.revenue=1000;s.closeDay();s.purchaseUpgrade('receiving');s.purchaseUpgrade('receiving');s.beginStocking();s.nextDay();const ids=s.receiving.filter(x=>x.packageId).map(x=>x.packageId),balance=s.ledger.balance;s.closeDay();assert.equal(s.receivingCount(),10);for(const id of ids)assert.ok(s.receiving.some(x=>x.packageId===id));assert.equal(s.ledger.balance,balance);const serial=s.serial;s.closeDay();assert.equal(s.serial,serial);});
 function invariant(s){
@@ -65,7 +65,7 @@ test('end freezes commands and stops additional penalties',()=>{
 });
 test('practice supports complete delivery and stock loop without time pressure',()=>{
  const s=playing({practice:true});const p=s.packages.get(s.queue[0].packageId);
- s.tick(1000);assert.equal(s.remaining,120);assert.equal(s.queue[0].patience,45);
+ s.tick(1000);assert.equal(s.remaining,120);assert.equal(s.queue[0].patience,60);
  s.take(p.id);s.deliver();const fresh=[...s.packages.values()].find(p=>p.location==='receiving');
  s.take(fresh.id);s.stock('B');assert.equal(s.stats.completed,1);assert.equal(s.stats.stocked,1);invariant(s);
 });

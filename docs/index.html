@@ -99,7 +99,7 @@ body{background:#eeeade}.workspace{grid-template-columns:minmax(0,1fr) 350px}
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.12</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.13</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -283,9 +283,10 @@ function validDayEvents(s,day,phase){
 // Approved shop upgrades; prices are incremental purchases, not cumulative totals.
 const BASE_ZONES=['A','B'];
 const ALL_ZONES=['A','B','C','D'];
-function initialUpgrades(){return{shoeThroughDay:0,shelfLevels:{A:0,B:0},receivingLevel:0,outboundLevel:0,workerBookedDay:0,workerBookedTier:'basic',workerAdvancedUnlocked:false,workerZones:['A','B']};}
+function initialUpgrades(){return{cargoManagement:false,shoeThroughDay:0,shelfLevels:{A:0,B:0},receivingLevel:0,outboundLevel:0,workerBookedDay:0,workerBookedTier:'basic',workerAdvancedUnlocked:false,workerZones:['A','B']};}
 function upgradeOptions(game){
  const u=game.upgrades,items=[{id:'shoes',category:'工具',name:'輕便工作鞋',price:80,before:game.upgrades.shoeThroughDay>=game.day?'輕快步伐生效中':'一般步伐',after:'提升步行速度 · 下一個營業日起連續3日',note:`當晚整理即可使用，不疊加。${u.shoeThroughDay?`現有有效至第 ${u.shoeThroughDay} 天整理結束。`:''}`,blocked:u.shoeThroughDay>game.day?'仍在有效期內':''}];
+ items.push({id:'management',category:'工具',name:'貨物管理系統',price:900,before:u.cargoManagement?'已啟用':'未啟用',after:'恢復貨架區名及提貨位置提示',note:'每件貨物上架後會自動記錄位置，客人取貨時可更快速找到',blocked:u.cargoManagement?'已購買':''});
  for(const z of ALL_ZONES){const level=u.shelfLevels[z],exists=level!==undefined;items.push({id:`shelf:${z}`,category:'貨架',name:exists?`${z} 區貨架加層`:`新增 ${z} 區貨架`,price:exists?(level===0?480:650):320,before:exists?`${game.shelves[z].length} 格`:'尚未設置',after:exists?`${Math.min(8,6+level*2)} 格`:`新增4格 · ${z==='C'?'原下排右側位置':'店面下方新一排'}`,note:exists?'原貨物及格號保留，新增空格，不附送貨物。':'沿用原貨架美術，保持原店寬度及主要動線。',blocked:level===2?'已滿級':''});}
  for(const type of ['receiving','outbound'])items.push({id:type,category:'設備',name:type==='receiving'?'收貨籠擴容':'寄貨籠擴容',price:200,before:`${game[type].length} 格`,after:`${Math.min(12,game[type].length+2)} 格`,note:'每次增加2格，上限12格；不改客流、到貨頻率或服務費。',blocked:game[type].length>=12?'已滿級':''});
  items.push({id:'worker',category:'人手',name:'聘請明日理貨店員',price:60,before:u.workerBookedDay?'已預約明日':'明日未排班',after:`第 ${game.day+1} 天 · $60／日`,note:'先預留薪金，翌日開門扣款。只上架，每晚自行決定續聘；可取消未開始排班。',blocked:u.workerBookedDay?'明日已排班':''});items.push({id:'workerUnlock',category:'人手',name:'解鎖進階理貨員',price:180,before:u.workerAdvancedUnlocked?'已解鎖':'未解鎖',after:'永久開放進階排班',note:'一次性解鎖；進階理貨員仍須按日預約及支付薪金。',blocked:u.workerAdvancedUnlocked?'已解鎖':''},{id:'workerAdvanced',category:'人手',name:'聘請明日進階理貨員',price:85,before:u.workerBookedDay?'已預約明日':'明日未排班',after:`第 ${game.day+1} 天 · $85／日`,note:'步行更快，只上架；翌日扣薪一次，不自動續聘。',blocked:!u.workerAdvancedUnlocked?'先付$180解鎖':u.workerBookedDay?'明日已排班':''});return items;
@@ -347,7 +348,8 @@ class Shift {
     const ledger=Ledger.fromJSON(this.ledger.toJSON());
     if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
     this.ledger=ledger;
-    if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
+    if(id==='management')this.upgrades.cargoManagement=true;
+    else if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
     else if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
     else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
     else{this.upgrades[id+'Level']++;this[id].push(slot(),slot());}
@@ -503,7 +505,7 @@ class Shift {
       pkg = {id,kind:'shipping',code:id,zone:null,location:'customer',index:free,orderId:null,origin:null};
       this.packages.set(id,pkg); this.outbound[free].reservedFor = id;
     } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
-    const basePatience=45,patienceFactor=this.currentEvent().patience;
+    const basePatience=60,patienceFactor=this.currentEvent().patience;
     const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
       appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:basePatience*patienceFactor,
       status:'waiting',revealed:false};
@@ -670,7 +672,7 @@ class Shift {
 
 
 
-const SAVE_SCHEMA=7;
+const SAVE_SCHEMA=8;
 const savedFields=['shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
@@ -703,7 +705,7 @@ function decodeShift(value){
  const occupancy=new Map(),reserved=new Map();
  saveCheck(['closing','stocking'].includes(value.managementFrom));
  const u=value.upgrades;
- saveCheck(u&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&typeof u.workerAdvancedUnlocked==='boolean'&&['basic','advanced'].includes(u.workerBookedTier)&&(u.workerBookedTier!=='advanced'||u.workerAdvancedUnlocked)&&ledger.balance>=(u.workerBookedDay?(u.workerBookedTier==='advanced'?85:60):0));
+ saveCheck(u&&typeof u.cargoManagement==='boolean'&&u.cargoManagement===ledger.paid.includes('upgrade:management:new')&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&typeof u.workerAdvancedUnlocked==='boolean'&&['basic','advanced'].includes(u.workerBookedTier)&&(u.workerBookedTier!=='advanced'||u.workerAdvancedUnlocked)&&ledger.balance>=(u.workerBookedDay?(u.workerBookedTier==='advanced'?85:60):0));
  saveCheck(value.shelves&&Object.keys(value.shelves).sort().join()===Object.keys(u.shelfLevels).sort().join()&&Array.isArray(value.receiving)&&value.receiving.length===6+u.receivingLevel*2&&Array.isArray(value.outbound)&&value.outbound.length===6+u.outboundLevel*2);
  const groups=[...Object.keys(value.shelves).map(z=>['shelf',z,value.shelves[z]]),['receiving',null,value.receiving],['outbound',null,value.outbound]];
  const worker=value.worker;
@@ -738,11 +740,11 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.12.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.13.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,7,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);
@@ -754,6 +756,7 @@ function readSave(record){
  if(record.schemaVersion<4){const old=payload.shift;old.dayEvents=initialDayEvents(eventSeedFromText(record.profileId),old.day,true);if(['closing','stocking','dayend','upgrading'].includes(old.phase))previewNextEvent(old.dayEvents);}
  if(record.schemaVersion<5){const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=150&&saveFinite(old.elapsed)&&old.elapsed>=0);old.remaining=old.remaining*120/150;old.elapsed=old.elapsed*120/150;if(record.schemaVersion===4)old.dayEvents.legacyDrawThroughDay=old.dayEvents.next?.day||old.day;}
  if(record.schemaVersion<7){const u=payload.shift.upgrades;u.workerAdvancedUnlocked=false;u.workerBookedTier='basic';if(payload.shift.worker)payload.shift.worker.tier='basic';}
+ if(record.schemaVersion<8)payload.shift.upgrades.cargoManagement=false;
  const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=5&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
  const game=decodeShift(payload.shift);view.actors.forEach(validateActor);view.departures.forEach(validateActor);saveCheck(new Set(view.actors.map(a=>a.id)).size===view.actors.length&&view.actors.length===game.queue.length&&view.actors.every(a=>game.queue.some(o=>o.id===a.id)));
  return{game,view:structuredClone(view),settings:structuredClone(settings)};
@@ -916,9 +919,11 @@ let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false,eventInfoK
 let saveStatus='只在整理完、開下一天前自動保存。';
 const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
+const rackHints = () => shift.upgrades.cargoManagement;
+const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
 const requestText = () => {
  const o = shift.queue[0];
- return o ? o.type==='shipping'&&o.revealed?'客人寄貨：請將手上貨物放到寄貨區':o.revealed ? `客人要：${o.code} · 請逐架尋找` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 已開放貨架；不計時。' : '暫時冇客，趁空檔上架新貨。';
+ return o ? o.type==='shipping'&&o.revealed?'客人寄貨：請將手上貨物放到寄貨區':o.revealed ? `客人要：${o.code} · ${rackHints()?`${o.zone} 區貨架`:"請逐架尋找"}` : '未接待：先到櫃檯與客人互動。' : shift.phase === 'stocking' ? '收舖整理：新貨可自由放到 已開放貨架；不計時。' : '暫時冇客，趁空檔上架新貨。';
 };
 const dialogOpen = () => dialogIds.some(id=>$(id).open);
 function resetPlayer(){ player={x:174,y:232,face:'down',moving:false,travel:0}; }
@@ -981,7 +986,7 @@ function targetLabel(target){
  if(target.type==='counter')return shift.phase==='stocking'?'已停止接客':shift.queue[0]&&!shift.queue[0].revealed?'接待客人':shift.held?'交付包裹':'查看訂單';
  if(target.type==='outbound')return shift.isHoldingShipping()?'放入寄貨':'寄貨區';
  if(target.type==='receiving')return shift.held?'退回新貨':'揀新貨';
- if(!shift.held)return '查看貨架';
+ if(!shift.held)return rackHints()?`查看 ${target.zone} 區貨架`:'查看貨架';
  const p=shift.packages.get(shift.held);
  return p.origin?.type==='shelf'&&p.origin.zone===target.zone?'退回原位':'貨物上架';
 }
@@ -990,7 +995,7 @@ function faceToward(target){
  player.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
 }
 function handleResult(result, animation=null){
- feedback={text:result.message.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架'),error:!result.ok,remaining:5};if(!result.ok)beep(false);
+ feedback={text:rackMessage(result.message),error:!result.ok,remaining:5};if(!result.ok)beep(false);
  if(result.ok&&animation)action={name:animation,remaining:.4,duration:.4,face:player.face};
  processEvents();canvas.focus({preventScroll:true});
 }
@@ -1023,13 +1028,13 @@ function updateInventoryRequest(){
  node.dataset.text=text;node.replaceChildren();const order=shift.queue[0];
  if(order?.revealed&&order.type==='pickup'){
   const label=document.createElement('span'),code=document.createElement('strong');
-  label.textContent='客人要求';code.textContent=order.code;code.className='inventory-request-code';node.append(label,code);
+  label.textContent='客人要求';code.textContent=order.code;code.className='inventory-request-code';node.append(label,code);if(rackHints()){const location=document.createElement("span");location.textContent=`${order.zone} 區貨架`;node.append(location);}
  }else node.textContent=text;
 }
 function openInventory(target,restore=null){
  inventoryContext=target;selected=null;selectedIndex=-1;inventoryBusy=false;
  const list=inventoryPackages();
- $('inventory-title').textContent=target.type==='shelf'?`貨架 · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
+ $('inventory-title').textContent=target.type==='shelf'?`${rackHints()?`${target.zone} 區貨架`:"貨架"} · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
  $('inventory-feedback').textContent='';$('inventory-selection').textContent='請先選一件包裹';
  updateInventoryRequest();
  $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 已開放貨架 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
@@ -1044,8 +1049,8 @@ function openInventory(target,restore=null){
    icon.setAttribute('viewBox',rect);icon.setAttribute('aria-hidden','true');icon.classList.add('parcel-art');
    img.setAttribute('href',sourceURL(sources[name]));img.setAttribute('width','96');img.setAttribute('height','80');icon.append(img);
    const label=document.createElement('span'),code=document.createElement('strong'),zone=document.createElement('small'),mark=document.createElement('span');
-   mark.className='selection-mark';code.textContent=p.code;zone.textContent=p.zone?`貨位 ${i+1}`:`待上架 · 貨位 ${i+1}`;
-   label.append(code,zone);button.append(icon,label,mark);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? '貨架' : '待上架'}`);
+   mark.className='selection-mark';code.textContent=p.code;zone.textContent=p.zone?`${rackHints()?`${p.zone} 區 · `:""}貨位 ${i+1}`:`待上架 · 貨位 ${i+1}`;
+   label.append(code,zone);button.append(icon,label,mark);button.setAttribute('aria-label',`包裹 ${p.code}，${p.zone ? (rackHints()?`${p.zone} 區貨架`:'貨架') : '待上架'}`);
    button.addEventListener('click',()=>selectParcel(i));
   }else{button.classList.add('empty');button.textContent='＋ 空貨位';button.setAttribute('aria-label','空貨位');}
   grid.append(button);
@@ -1062,7 +1067,7 @@ function selectParcel(index,focus=true){
  $('parcel-grid').querySelectorAll('button').forEach((b,i)=>{
   b.setAttribute('aria-pressed',String(i===index));const mark=b.querySelector('.selection-mark');if(mark)mark.textContent=i===index?'✓ 已選':'';
  });
- $('inventory-selection').textContent=`已選 ${list[index].code} · ${list[index].zone?'貨架包裹':'待上架'}`;
+ $('inventory-selection').textContent=`已選 ${list[index].code} · ${list[index].zone?(rackHints()?`${list[index].zone} 區貨架`:'貨架包裹'):'待上架'}`;
  $('inventory-confirm').disabled=false;
  if(focus){const card=$('parcel-grid').children[index];card?.focus({preventScroll:true});card?.scrollIntoView({block:'nearest'});}
 }
@@ -1073,7 +1078,7 @@ function confirmParcel(){
  inventoryBusy=true;$('inventory-confirm').disabled=true;$('inventory-confirm').textContent='處理中…';
  const result=shift.take(selected);
  if(result.ok){closeInventory();handleResult(result,'pickup');}
- else{inventoryBusy=false;$('inventory-confirm').disabled=false;$('inventory-confirm').textContent='確認取件';$('inventory-feedback').textContent=result.message.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');}
+ else{inventoryBusy=false;$('inventory-confirm').disabled=false;$('inventory-confirm').textContent='確認取件';$('inventory-feedback').textContent=rackMessage(result.message);}
 }
 function closeInventory(focus=true){
  if($('inventory-dialog').open)$('inventory-dialog').close();
@@ -1277,6 +1282,7 @@ function draw(elapsed=0){
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
 
+ if(rackHints())for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,shelf.footY-49);
  pill(`收貨 ${shift.receivingCount()}/${shift.receiving.length}`,receiving.x,receiving.footY-59,'#8d693f');
  const outbound=targets.find(t=>t.type==='outbound');
  pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/${shift.outbound.length}`,outbound.x,280,'#73518b');
@@ -1301,10 +1307,10 @@ function updateUI(){
  $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':shift.currentEvent().mode):shift.phase==='closing'?'已收舖':shift.phase==='upgrading'?'商店升級':'準備開檔'}`;
  $('order-title').textContent=holdingShipping?'寄貨處理中':'下一單，交畀你';
  $('order-code').textContent=holdingShipping?'寄貨':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
- $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':'取'):'—';
+ $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':rackHints()?order.zone:'取'):'—';
  $('order-kind').textContent=holdingShipping?'客人要求':known?(order.type==='shipping'?'客人要求':'客人提貨碼'):'服務狀態';
  $('order-type').textContent=holdingShipping?'寄貨':stocking?'整理':known?(order.type==='shipping'?'寄貨':'提貨'):order?'待接待':'—';
- $('order-location').textContent=holdingShipping?'右下角寄貨區':known?(order.type==='shipping'?'右下角寄貨區':'按提貨碼逐架尋找'):order?'到櫃檯接待後顯示':stocking?'新貨可自由選架上架':'';
+ $('order-location').textContent=holdingShipping?'右下角寄貨區':known?(order.type==='shipping'?'右下角寄貨區':rackHints()?`${order.zone} 區貨架`:'按提貨碼逐架尋找'):order?'到櫃檯接待後顯示':stocking?'新貨可自由選架上架':'';
  document.querySelector('.order-card').classList.toggle('pending',!known&&!holdingShipping);
  $('queue-count').textContent=stocking?`收貨 ${shift.receivingCount()} 件`:`${shift.queue.length} 人等候`;
  const ratio=order?(shift.practice?1:Math.max(0,order.patience/order.maxPatience)):0;
@@ -1319,7 +1325,7 @@ function updateUI(){
   text.textContent=activePatience?patienceText:stocking?'不計時':'—';
  }
  $('inventory-patience').hidden=!activePatience;
- $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?'架上貨物': '待上架'}`:'空手';
+ $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?(rackHints()?`${held.zone} 區貨架`:'架上貨物'): '待上架'}`:'空手';
  $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
  $('order-feedback').hidden=!feedback;
  if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
@@ -1353,8 +1359,8 @@ function updateUI(){
  const dx=destination.x-player.x,dy=destination.y-player.y;
  const arrow=Math.abs(dx)>Math.abs(dy)*2?(dx<0?'←':'→'):Math.abs(dy)>Math.abs(dx)*2?(dy<0?'↑':'↓'):
   dy<0?(dx<0?'↖':'↗'):(dx<0?'↙':'↘');
- const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 已開放貨架':destination.type==='shelf'?'貨架':destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
- $('scene-status').textContent=canWork()?target?targetLabel(target):destination.type==='search'?'按提貨碼逐架尋找':`${arrow} ${destinationName}`:
+ const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 已開放貨架':destination.type==='shelf'?(rackHints()?`${destination.zone} 區貨架`:'貨架'):destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
+ $('scene-status').textContent=canWork()?target?targetLabel(target):destination.type==='search'?(rackHints()?`前往 ${order.zone} 區貨架`:'按提貨碼逐架尋找'):`${arrow} ${destinationName}`:
   shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':shift.phase==='upgrading'?'商店升級':'等你開檔';
  if($('inventory-dialog').open)updateInventoryRequest();
 }

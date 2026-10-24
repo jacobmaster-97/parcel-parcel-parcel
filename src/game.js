@@ -54,7 +54,8 @@ export class Shift {
     const ledger=Ledger.fromJSON(this.ledger.toJSON());
     if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
     this.ledger=ledger;
-    if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
+    if(id==='management')this.upgrades.cargoManagement=true;
+    else if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
     else if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
     else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
     else{this.upgrades[id+'Level']++;this[id].push(slot(),slot());}
@@ -210,7 +211,7 @@ export class Shift {
       pkg = {id,kind:'shipping',code:id,zone:null,location:'customer',index:free,orderId:null,origin:null};
       this.packages.set(id,pkg); this.outbound[free].reservedFor = id;
     } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
-    const basePatience=45,patienceFactor=this.currentEvent().patience;
+    const basePatience=60,patienceFactor=this.currentEvent().patience;
     const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
       appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:basePatience*patienceFactor,
       status:'waiting',revealed:false};
