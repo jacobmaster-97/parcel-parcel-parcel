@@ -7,7 +7,7 @@ export const TARGETS = [
  {id:'receiving',type:'receiving',x:310,y:112,footY:92},
  {id:'outbound',type:'outbound',x:310,y:260,footY:330}
 ];
-export const QUEUE_POINTS = [174,132,90,48].map(x=>({x,y:142}));
+export const QUEUE_POINTS = [174,140,106,72,38].map(x=>({x,y:142}));
 export const ENTRANCE = {x:40,y:-18};
 export const COURIER_ROUTE = [ENTRANCE,{x:40,y:64},{x:272,y:64},{x:272,y:112},{x:310,y:112}];
 export const OBSTACLES = [

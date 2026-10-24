@@ -52,9 +52,9 @@ test('pause freezes countdown, patience and incoming work',()=>{
  assert.equal(s.take(s.queue[0].packageId).ok,false);s.resume();s.tick(1);assert.equal(s.remaining,119);
 });
 test('queue and receiving capacity remain bounded and stock never double-books',()=>{
- const s=playing();for(let i=0;i<100;i++)s.spawnCustomer();assert.equal(s.queue.length,4);
+ const s=playing();s.addPackage('A','shelf');for(let i=0;i<100;i++)s.spawnCustomer();assert.equal(s.queue.length,5);
  for(let i=0;i<50;i++)s.addPackage('A','receiving');assert.equal(s.receiving.filter(x=>x.packageId).length,6);
- for(let i=0;i<179;i++){s.tick(1);assert.ok(s.queue.length<=4);assert.ok(s.receiving.filter(x=>x.packageId).length<=6);invariant(s);}
+ for(let i=0;i<179;i++){s.tick(1);assert.ok(s.queue.length<=5);assert.ok(s.receiving.filter(x=>x.packageId).length<=6);invariant(s);}
 });
 test('end freezes commands and stops additional penalties',()=>{
  const s=playing();s.take(s.queue[0].packageId);s.tick(180);assert.equal(s.phase,'closing');assert.equal(s.held,null);assert.equal(s.queue.length,0);
@@ -184,3 +184,5 @@ test('scheduled arrivals dispatch courier rather than materialize receiving parc
  const s=playing(),count=s.receivingCount();s.tick(25);assert.ok(s.courier);assert.equal(s.receivingCount(),count);
  s.tick(1);assert.equal(s.receivingCount(),count);s.tick(10);assert.equal(s.receivingCount(),count+2);
 });
+
+test('normal first arrival timer7 and subsequent midpoint interval7',()=>{const g=playing();assert.equal(g.customerTimer,7);g.random=()=>.5;g.customerTimer=.001;g.tick(.01);assert.equal(g.customerTimer,7);});

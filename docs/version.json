@@ -1,15 +1,19 @@
 {
-  "version": "0.10.0",
-  "html_sha256": "af0e529b2a40831748dd44dbf100b13c29db72d2fdf628a9c1cfa132d1362ca8",
+  "version": "0.10.1",
+  "html_sha256": "2bdd074af90f6e91034f3d1cffe5eb458e91a1cb4c3843f933fb2fe9f14b6c7c",
   "features": [
     "120-second-day",
-    "faster-three-day-shoes-without-speed-numbers",
-    "two-stage-equal-event-lottery",
-    "schema5-compatible-migration"
+    "shoes96-hidden-speed-values",
+    "two-stage-equal-lottery",
+    "5-to9-second-arrivals",
+    "five-visible-queue-slots",
+    "stock-worker-speed88",
+    "schema6-migration"
   ],
   "changes": [
-    "50 percent normal /50 percent other, uniform eligible second stage",
-    "Existing day and announced forecasts retained; old remaining/elapsed scaled once",
-    "Shoes internal96 instead of88; unchanged price and expiry"
+    "Normal arrivals average7seconds; first timer7",
+    "Queue five plus accepted-held sender persists",
+    "Staff speed88, player80/shoes96",
+    "50/50 normal versus uniform eligible other; legacy forecast retained"
   ]
 }

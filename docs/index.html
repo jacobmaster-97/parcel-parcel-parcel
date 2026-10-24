@@ -99,7 +99,7 @@ body{background:#eeeade}.workspace{grid-template-columns:minmax(0,1fr) 350px}
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.10</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.10.1</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -147,7 +147,7 @@ const TARGETS = [
  {id:'receiving',type:'receiving',x:310,y:112,footY:92},
  {id:'outbound',type:'outbound',x:310,y:260,footY:330}
 ];
-const QUEUE_POINTS = [174,132,90,48].map(x=>({x,y:142}));
+const QUEUE_POINTS = [174,140,106,72,38].map(x=>({x,y:142}));
 const ENTRANCE = {x:40,y:-18};
 const COURIER_ROUTE = [ENTRANCE,{x:40,y:64},{x:272,y:64},{x:272,y:112},{x:310,y:112}];
 const OBSTACLES = [
@@ -322,7 +322,7 @@ class Shift {
     this.held = null;
     this.serial = 0;
     this.orderSerial = 0;
-    this.customerTimer = 10;
+    this.customerTimer = 7;
     this.deliveryTimer = 25;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.events = [];
@@ -387,7 +387,7 @@ class Shift {
       const t=w.route[w.next];
       if(t){const dx=t.x-w.x,dy=t.y-w.y,d=Math.hypot(dx,dy);if(d<.001){w.next++;continue;}
         w.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');w.moving=true;
-        const step=Math.min(d,remaining*64);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/64;if(step>=d-.001)w.next++;continue;}
+        const step=Math.min(d,remaining*88);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/88;if(step>=d-.001)w.next++;continue;}
       const task=w.task,p=this.packages.get(task.packageId);
       if(!task.carrying){
         const origin=this.receiving[task.originIndex];if(origin.packageId!==p.id){this.returnWorkerCargo();return;}
@@ -434,7 +434,7 @@ class Shift {
     this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
     this.day++;if(this.practice)this.dayEvents=initialDayEvents(this.dayEvents.seed,this.day,true);else advanceDayEvent(this.dayEvents); this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
-    this.customerTimer = 10/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
+    this.customerTimer = 7/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
     this.emit('daystart', {day: this.day}); this.spawnCustomer(); return true;
   }
   closeDay() {
@@ -480,7 +480,7 @@ class Shift {
     return [...this.packages.values()].filter(p => p.location === 'shelf' && !p.orderId && (!zone || p.zone === zone));
   }
   spawnCustomer({type = null} = {}) {
-    if (this.phase !== 'playing' || this.queue.length >= 4) return null;
+    if (this.phase !== 'playing' || this.queue.length >= 5) return null;
     const free = this.outbound.findIndex(s => !s.packageId && !s.reservedFor);
     let shipping = type === 'shipping' || (!type && !this.practice && this.orderSerial > 0 && this.random() < this.customerRates().shippingChance);
     if (shipping && free < 0) { if (type) return null; shipping = false; }
@@ -650,7 +650,7 @@ class Shift {
     if(this.remaining===0){this.closeDay();return;}
     for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
     this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;
-    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(9+this.random()*5)/this.customerRates().total;}
+    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(5+this.random()*4)/this.customerRates().total;}
     if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25/this.currentEvent().delivery;}
   }
 }
@@ -660,7 +660,7 @@ class Shift {
 
 
 
-const SAVE_SCHEMA=5;
+const SAVE_SCHEMA=6;
 const savedFields=['shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
@@ -685,7 +685,7 @@ function decodeShift(value){
  const ledger=Ledger.fromJSON(value.ledger);saveCheck(ledger.current.day===value.day&&ledger.lifetimeRevenue===value.totalRevenue&&ledger.current.sealed===(value.phase==='dayend'));
  for(const d of ledger.reports)saveCheck(d.stats&&['completed','errors','missed','stocked','revenue','shipped'].every(k=>saveInt(d.stats[k])));
  saveCheck(value.stats&&['completed','errors','missed','stocked','revenue','shipped'].every(k=>saveInt(value.stats[k]))&&value.stats.revenue===Object.values(ledger.current.income).reduce((a,b)=>a+b,0));
- saveCheck(Array.isArray(value.packages)&&value.packages.length<=60&&Array.isArray(value.orders)&&value.orders.length<=5&&Array.isArray(value.queue)&&value.queue.length<=4&&new Set(value.queue).size===value.queue.length);
+ saveCheck(Array.isArray(value.packages)&&value.packages.length<=61&&Array.isArray(value.orders)&&value.orders.length<=6&&Array.isArray(value.queue)&&value.queue.length<=5&&new Set(value.queue).size===value.queue.length);
  const packages=new Map(),orderMap=new Map();
  for(const p of value.packages){saveCheck(p&&typeof p.id==='string'&&/^[PS][1-9]\d*$/.test(p.id)&&Number(p.id.slice(1))<=value.serial&&!packages.has(p.id)&&typeof p.code==='string'&&/^(?:\d{4,12}|S\d{1,12})$/.test(p.code)&&['shelf','receiving','outbound','held','customer','worker'].includes(p.location)&&(['A','B','C','D'].includes(p.zone)||p.zone===null)&&(!p.kind||p.kind==='shipping'));packages.set(p.id,p);}
  saveCheck(new Set(value.packages.map(p=>p.code)).size===packages.size);
@@ -728,11 +728,11 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.10.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.10.1',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);
@@ -743,7 +743,7 @@ function readSave(record){
  }
  if(record.schemaVersion<4){const old=payload.shift;old.dayEvents=initialDayEvents(eventSeedFromText(record.profileId),old.day,true);if(['closing','stocking','dayend','upgrading'].includes(old.phase))previewNextEvent(old.dayEvents);}
  if(record.schemaVersion<5){const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=150&&saveFinite(old.elapsed)&&old.elapsed>=0);old.remaining=old.remaining*120/150;old.elapsed=old.elapsed*120/150;if(record.schemaVersion===4)old.dayEvents.legacyDrawThroughDay=old.dayEvents.next?.day||old.day;}
- const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=4&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
+ const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=5&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
  const game=decodeShift(payload.shift);view.actors.forEach(validateActor);view.departures.forEach(validateActor);saveCheck(new Set(view.actors.map(a=>a.id)).size===view.actors.length&&view.actors.length===game.queue.length&&view.actors.every(a=>game.queue.some(o=>o.id===a.id)));
  return{game,view:structuredClone(view),settings:structuredClone(settings)};
 }

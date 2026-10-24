@@ -29,7 +29,7 @@ export class Shift {
     this.held = null;
     this.serial = 0;
     this.orderSerial = 0;
-    this.customerTimer = 10;
+    this.customerTimer = 7;
     this.deliveryTimer = 25;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.events = [];
@@ -94,7 +94,7 @@ export class Shift {
       const t=w.route[w.next];
       if(t){const dx=t.x-w.x,dy=t.y-w.y,d=Math.hypot(dx,dy);if(d<.001){w.next++;continue;}
         w.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');w.moving=true;
-        const step=Math.min(d,remaining*64);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/64;if(step>=d-.001)w.next++;continue;}
+        const step=Math.min(d,remaining*88);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/88;if(step>=d-.001)w.next++;continue;}
       const task=w.task,p=this.packages.get(task.packageId);
       if(!task.carrying){
         const origin=this.receiving[task.originIndex];if(origin.packageId!==p.id){this.returnWorkerCargo();return;}
@@ -141,7 +141,7 @@ export class Shift {
     this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
     this.day++;if(this.practice)this.dayEvents=initialDayEvents(this.dayEvents.seed,this.day,true);else advanceDayEvent(this.dayEvents); this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
-    this.customerTimer = 10/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
+    this.customerTimer = 7/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
     this.emit('daystart', {day: this.day}); this.spawnCustomer(); return true;
   }
   closeDay() {
@@ -187,7 +187,7 @@ export class Shift {
     return [...this.packages.values()].filter(p => p.location === 'shelf' && !p.orderId && (!zone || p.zone === zone));
   }
   spawnCustomer({type = null} = {}) {
-    if (this.phase !== 'playing' || this.queue.length >= 4) return null;
+    if (this.phase !== 'playing' || this.queue.length >= 5) return null;
     const free = this.outbound.findIndex(s => !s.packageId && !s.reservedFor);
     let shipping = type === 'shipping' || (!type && !this.practice && this.orderSerial > 0 && this.random() < this.customerRates().shippingChance);
     if (shipping && free < 0) { if (type) return null; shipping = false; }
@@ -357,7 +357,7 @@ export class Shift {
     if(this.remaining===0){this.closeDay();return;}
     for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
     this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;
-    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(9+this.random()*5)/this.customerRates().total;}
+    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(5+this.random()*4)/this.customerRates().total;}
     if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25/this.currentEvent().delivery;}
   }
 }
