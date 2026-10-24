@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.9.0.html')).href+'?qa=1';
+const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.10.0.html')).href+'?qa=1';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await context.setOffline(true);
@@ -43,7 +43,7 @@ try{
  // Test the exact downloaded file, without any server/network, through its end state.
  await page.reload();await page.locator('#start-button:enabled').waitFor();await page.locator('#start-button').tap();await page.locator('#welcome-dialog').waitFor({state:'hidden'});
  await page.clock.fastForward(10000);
- const remaining=await page.evaluate(()=>__parcelQA.snapshot().remaining);assert.ok(remaining>=139&&remaining<=141);
+ const remaining=await page.evaluate(()=>__parcelQA.snapshot().remaining);assert.ok(remaining>=109&&remaining<=111);
  await page.clock.fastForward(171000);await page.locator('#result-dialog[open]').waitFor();
  assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'closing');
  await page.locator('#play-again').tap();await page.locator('#upgrade-skip').tap();assert.equal(await page.evaluate(()=>__parcelQA.snapshot().phase),'stocking');

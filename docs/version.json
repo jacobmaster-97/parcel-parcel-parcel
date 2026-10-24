@@ -1,18 +1,15 @@
 {
-  "version": "0.9.0",
-  "html_sha256": "a4e2d8ef63bc83b0a1d739a9e5fb2f286d90d8649862af1eca721285a9b3a103",
+  "version": "0.10.0",
+  "html_sha256": "af0e529b2a40831748dd44dbf100b13c29db72d2fdf628a9c1cfa132d1362ca8",
   "features": [
-    "approved-player-and-worker-sprites",
-    "ivory-grey-interior-tiles",
-    "matching-grey-counter-and-gate",
-    "eight-noninteractive-counter-decorations",
-    "player-facing-same-size-monitor",
-    "schema4-save-compatible"
+    "120-second-day",
+    "faster-three-day-shoes-without-speed-numbers",
+    "two-stage-equal-event-lottery",
+    "schema5-compatible-migration"
   ],
   "changes": [
-    "Distinct short-haired player and ponytail stock clerk use independent walk/carry/idle/work atlases",
-    "Grey counter repeat and matching gate preserve existing layout and collisions",
-    "Decor overlay rests on surface y170; monitor native artwork remains32x32",
-    "150 seconds, upgrades, events, economy and pre-opening autosave unchanged"
+    "50 percent normal /50 percent other, uniform eligible second stage",
+    "Existing day and announced forecasts retained; old remaining/elapsed scaled once",
+    "Shoes internal96 instead of88; unchanged price and expiry"
   ]
 }

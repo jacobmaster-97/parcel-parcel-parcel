@@ -88,7 +88,7 @@ body{background:#eeeade}.workspace{grid-template-columns:minmax(0,1fr) 350px}
 <body>
   <header class="topbar">
     <a class="brand" href="#" aria-label="集運小店"><span class="brand-mark">▦</span><span>集運小店<small>PARCEL POINT / 今日當值</small></span></a>
-    <div class="shift-hud"><span class="open-sign" id="mode-label">準備開檔</span><div class="timer-block"><small id="clock-label">距離收工</small><strong id="clock">02:30</strong></div><button id="shop-button" class="day-button" hidden>商店升級</button><button id="next-day" class="day-button" hidden>下一天 →</button><button id="pause-button" class="icon-button" disabled aria-label="暫停遊戲">Ⅱ</button></div>
+    <div class="shift-hud"><span class="open-sign" id="mode-label">準備開檔</span><div class="timer-block"><small id="clock-label">距離收工</small><strong id="clock">02:00</strong></div><button id="shop-button" class="day-button" hidden>商店升級</button><button id="next-day" class="day-button" hidden>下一天 →</button><button id="pause-button" class="icon-button" disabled aria-label="暫停遊戲">Ⅱ</button></div>
   </header>
   <main class="workspace">
     <section class="scene-panel" aria-label="店面工作區">
@@ -99,7 +99,7 @@ body{background:#eeeade}.workspace{grid-template-columns:minmax(0,1fr) 350px}
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.9</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.10</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -238,15 +238,24 @@ function eventCandidates(day,history=[]){
  const tired=history.slice(-2).length===2&&history.slice(-2).every(e=>DAY_EVENTS[e.id]?.busy);
  return Object.values(DAY_EVENTS).filter(e=>(day>=4||e.id!=='sale')&&(!tired||!e.busy));
 }
-function chooseDayEvent(seed,day,history=[]){
+function chooseLegacyDayEvent(seed,day,history=[]){
  if(day===1)return{id:'normal',day};
  let n=(seed^Math.imul(day,0x9e3779b1))>>>0;n=Math.imul(n^(n>>>16),0x85ebca6b);n=Math.imul(n^(n>>>13),0xc2b2ae35);n=(n^(n>>>16))>>>0;
  const candidates=eventCandidates(day,history),total=candidates.reduce((s,e)=>s+e.weight,0);let pick=n/4294967296*total;
  for(const e of candidates){pick-=e.weight;if(pick<0)return{id:e.id,day};}return{id:candidates.at(-1).id,day};
 }
-function initialDayEvents(seed,day=1,legacy=false){return{seed:seed>>>0,legacyThroughDay:legacy?day:0,current:{id:'normal',day},next:null,history:[],drawDay:day};}
+function chooseDayEvent(seed,day,history=[]){
+ if(day===1)return{id:'normal',day};
+ // Separate deterministic draws for the 50/50 gate and the uniform other pool.
+ const draw=salt=>{let n=(seed^Math.imul(day,0x9e3779b1)^salt)>>>0;n=Math.imul(n^(n>>>16),0x85ebca6b);n=Math.imul(n^(n>>>13),0xc2b2ae35);return((n^(n>>>16))>>>0)/4294967296;};
+ if(draw(0x51ed270b)<.5)return{id:'normal',day};
+ const others=eventCandidates(day,history).filter(e=>e.id!=='normal');
+ return{id:others.length?others[Math.floor(draw(0xa3c59ac3)*others.length)].id:'normal',day};
+}
+const stateEvent=(s,day,history)=>day<=s.legacyDrawThroughDay?chooseLegacyDayEvent(s.seed,day,history):chooseDayEvent(s.seed,day,history);
+function initialDayEvents(seed,day=1,legacy=false){return{seed:seed>>>0,legacyThroughDay:legacy?day:0,legacyDrawThroughDay:0,current:{id:'normal',day},next:null,history:[],drawDay:day};}
 function previewNextEvent(state){
- if(!state.next){state.next=chooseDayEvent(state.seed,state.current.day+1,[...state.history,state.current].slice(-2));state.drawDay=state.next.day;}
+ if(!state.next){state.next=stateEvent(state,state.current.day+1,[...state.history,state.current].slice(-2));state.drawDay=state.next.day;}
  return state.next;
 }
 function advanceDayEvent(state){
@@ -261,13 +270,13 @@ function dayEventSummary(event){return `${event.pickup===event.shipping?`客量 
 function validDayEvents(s,day,phase){
  const uint=n=>Number.isSafeInteger(n)&&n>=0&&n<=4294967295;
  const record=e=>e&&DAY_EVENTS[e.id]&&Number.isSafeInteger(e.day)&&e.day>=1&&e.day<=1000001&&(e.day!==1||e.id==='normal')&&(e.id!=='sale'||e.day>=4);
- if(!s||!uint(s.seed)||!Number.isSafeInteger(s.legacyThroughDay)||s.legacyThroughDay<0||s.legacyThroughDay>day||!record(s.current)||s.current.day!==day||!Array.isArray(s.history)||s.history.length>2)return false;
+ if(!s||!uint(s.seed)||!Number.isSafeInteger(s.legacyDrawThroughDay)||s.legacyDrawThroughDay<0||s.legacyDrawThroughDay>day+1||!Number.isSafeInteger(s.legacyThroughDay)||s.legacyThroughDay<0||s.legacyThroughDay>day||!record(s.current)||s.current.day!==day||!Array.isArray(s.history)||s.history.length>2)return false;
  if(s.history.length!==Math.min(2,day-Math.max(1,s.legacyThroughDay)))return false;
  if(!s.history.every((e,i)=>record(e)&&e.day===day-s.history.length+i))return false;
  if(day<=s.legacyThroughDay&&s.current.id!=='normal')return false;
- if(day>s.legacyThroughDay&&s.current.id!==chooseDayEvent(s.seed,day,s.history).id)return false;
+ if(day>s.legacyThroughDay&&s.current.id!==stateEvent(s,day,s.history).id)return false;
  const closed=['closing','stocking','dayend','upgrading'].includes(phase);
- if(closed&&!s.next||s.next&&(!record(s.next)||s.next.day!==day+1||s.next.id!==chooseDayEvent(s.seed,day+1,[...s.history,s.current].slice(-2)).id))return false;
+ if(closed&&!s.next||s.next&&(!record(s.next)||s.next.day!==day+1||s.next.id!==stateEvent(s,day+1,[...s.history,s.current].slice(-2)).id))return false;
  return s.drawDay===(s.next?day+1:day);
 }
 
@@ -276,7 +285,7 @@ const BASE_ZONES=['A','B'];
 const ALL_ZONES=['A','B','C','D'];
 function initialUpgrades(){return{shoeThroughDay:0,shelfLevels:{A:0,B:0},receivingLevel:0,outboundLevel:0,workerBookedDay:0,workerZones:['A','B']};}
 function upgradeOptions(game){
- const u=game.upgrades,items=[{id:'shoes',category:'工具',name:'輕便工作鞋',price:80,before:`移速 ${game.moveSpeed()}`,after:'移速 88 · 下一個營業日起連續3日',note:`當晚整理即可使用，不疊加。${u.shoeThroughDay?`現有有效至第 ${u.shoeThroughDay} 天整理結束。`:''}`,blocked:u.shoeThroughDay>game.day?'仍在有效期內':''}];
+ const u=game.upgrades,items=[{id:'shoes',category:'工具',name:'輕便工作鞋',price:80,before:game.upgrades.shoeThroughDay>=game.day?'輕快步伐生效中':'一般步伐',after:'提升步行速度 · 下一個營業日起連續3日',note:`當晚整理即可使用，不疊加。${u.shoeThroughDay?`現有有效至第 ${u.shoeThroughDay} 天整理結束。`:''}`,blocked:u.shoeThroughDay>game.day?'仍在有效期內':''}];
  for(const z of ALL_ZONES){const level=u.shelfLevels[z],exists=level!==undefined;items.push({id:`shelf:${z}`,category:'貨架',name:exists?`${z} 區貨架加層`:`新增 ${z} 區貨架`,price:exists?(level===0?480:650):320,before:exists?`${game.shelves[z].length} 格`:'尚未設置',after:exists?`${Math.min(8,6+level*2)} 格`:`新增4格 · ${z==='C'?'原下排右側位置':'店面下方新一排'}`,note:exists?'原貨物及格號保留，新增空格，不附送貨物。':'沿用原貨架美術，保持原店寬度及主要動線。',blocked:level===2?'已滿級':''});}
  for(const type of ['receiving','outbound'])items.push({id:type,category:'設備',name:type==='receiving'?'收貨籠擴容':'寄貨籠擴容',price:200,before:`${game[type].length} 格`,after:`${Math.min(12,game[type].length+2)} 格`,note:'每次增加2格，上限12格；不改客流、到貨頻率或服務費。',blocked:game[type].length>=12?'已滿級':''});
  items.push({id:'worker',category:'人手',name:'聘請明日理貨店員',price:60,before:u.workerBookedDay?'已預約明日':'明日未排班',after:`第 ${game.day+1} 天 · $60／日`,note:'先預留薪金，翌日開門扣款。只上架，每晚自行決定續聘；可取消未開始排班。',blocked:u.workerBookedDay?'明日已排班':''});return items;
@@ -287,7 +296,7 @@ function upgradeOptions(game){
 
 
 const ZONES = ['A', 'B'];
-const SHIFT_SECONDS = 150;
+const SHIFT_SECONDS = 120;
 const slot = () => ({packageId: null, reservedFor: null});
 
 class Shift {
@@ -323,7 +332,7 @@ class Shift {
   currentEvent(){return this.practice?DAY_EVENTS.normal:DAY_EVENTS[this.dayEvents.current.id];}
   customerRates(){return customerEventRates(this.currentEvent(),this.shippingChance);}
   previewTomorrow(){return this.practice?{id:'normal',day:this.day+1}:previewNextEvent(this.dayEvents);}
-  moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?88:80;}
+  moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?96:80;}
   reservedWages(){return this.upgrades.workerBookedDay?60:0;}
   availableFunds(){return this.ledger.balance-this.reservedWages();}
   canUpgrade(){return !this.practice&&(this.phase==='closing'||this.phase==='stocking'||this.phase==='upgrading');}
@@ -651,7 +660,7 @@ class Shift {
 
 
 
-const SAVE_SCHEMA=4;
+const SAVE_SCHEMA=5;
 const savedFields=['shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
@@ -670,7 +679,7 @@ function encodeShift(game){
 }
 function decodeShift(value){
  saveCheck(value&&typeof value==='object'&&saveInt(value.day)&&value.day>=1&&value.day<=1000000&&saveInt(value.serial)&&saveInt(value.orderSerial)&&saveInt(value.courierSerial)&&saveInt(value.seed)&&value.seed<=4294967295);
- saveCheck(['playing','closing','stocking','dayend','upgrading'].includes(value.phase)&&saveFinite(value.remaining)&&value.remaining>=0&&value.remaining<=150&&saveFinite(value.elapsed)&&value.elapsed>=0&&value.elapsed<=10000000&&saveInt(value.totalRevenue)&&saveFinite(value.shippingChance)&&value.shippingChance>=0&&value.shippingChance<=1&&value.deferDayStart===true);
+ saveCheck(['playing','closing','stocking','dayend','upgrading'].includes(value.phase)&&saveFinite(value.remaining)&&value.remaining>=0&&value.remaining<=120&&saveFinite(value.elapsed)&&value.elapsed>=0&&value.elapsed<=10000000&&saveInt(value.totalRevenue)&&saveFinite(value.shippingChance)&&value.shippingChance>=0&&value.shippingChance<=1&&value.deferDayStart===true);
  saveCheck(['customerTimer','deliveryTimer'].every(k=>saveFinite(value[k])&&value[k]>=-100000&&value[k]<=100000));
  saveCheck(validDayEvents(value.dayEvents,value.day,value.phase));
  const ledger=Ledger.fromJSON(value.ledger);saveCheck(ledger.current.day===value.day&&ledger.lifetimeRevenue===value.totalRevenue&&ledger.current.sealed===(value.phase==='dayend'));
@@ -719,11 +728,11 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.9.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.10.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);
@@ -733,6 +742,7 @@ function readSave(record){
   if(payload.view?.player&&savePoint(payload.view.player)&&payload.view.player.x>278&&payload.view.player.x<342&&payload.view.player.y>68&&payload.view.player.y<102&&!canStandInShop(payload.view.player.x,payload.view.player.y,old.shelves)){payload.view.player.x=310;payload.view.player.y=112;}
  }
  if(record.schemaVersion<4){const old=payload.shift;old.dayEvents=initialDayEvents(eventSeedFromText(record.profileId),old.day,true);if(['closing','stocking','dayend','upgrading'].includes(old.phase))previewNextEvent(old.dayEvents);}
+ if(record.schemaVersion<5){const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=150&&saveFinite(old.elapsed)&&old.elapsed>=0);old.remaining=old.remaining*120/150;old.elapsed=old.elapsed*120/150;if(record.schemaVersion===4)old.dayEvents.legacyDrawThroughDay=old.dayEvents.next?.day||old.day;}
  const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=4&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
  const game=decodeShift(payload.shift);view.actors.forEach(validateActor);view.departures.forEach(validateActor);saveCheck(new Set(view.actors.map(a=>a.id)).size===view.actors.length&&view.actors.length===game.queue.length&&view.actors.every(a=>game.queue.some(o=>o.id===a.id)));
  return{game,view:structuredClone(view),settings:structuredClone(settings)};

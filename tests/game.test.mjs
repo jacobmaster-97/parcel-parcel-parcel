@@ -49,7 +49,7 @@ test('expiry while parcel held clears reservation, then returning makes it reque
 test('pause freezes countdown, patience and incoming work',()=>{
  const s=playing();s.pause();const before=JSON.stringify([s.remaining,s.queue,s.packages.size]);
  s.tick(60);assert.equal(JSON.stringify([s.remaining,s.queue,s.packages.size]),before);
- assert.equal(s.take(s.queue[0].packageId).ok,false);s.resume();s.tick(1);assert.equal(s.remaining,149);
+ assert.equal(s.take(s.queue[0].packageId).ok,false);s.resume();s.tick(1);assert.equal(s.remaining,119);
 });
 test('queue and receiving capacity remain bounded and stock never double-books',()=>{
  const s=playing();for(let i=0;i<100;i++)s.spawnCustomer();assert.equal(s.queue.length,4);
@@ -62,14 +62,14 @@ test('end freezes commands and stops additional penalties',()=>{
 });
 test('practice supports complete delivery and stock loop without time pressure',()=>{
  const s=playing({practice:true});const p=s.packages.get(s.queue[0].packageId);
- s.tick(1000);assert.equal(s.remaining,150);assert.equal(s.queue[0].patience,60);
+ s.tick(1000);assert.equal(s.remaining,120);assert.equal(s.queue[0].patience,60);
  s.take(p.id);s.deliver();const fresh=[...s.packages.values()].find(p=>p.location==='receiving');
  s.take(fresh.id);s.stock('B');assert.equal(s.stats.completed,1);assert.equal(s.stats.stocked,1);invariant(s);
 });
 test('new shift restores independent clean state',()=>{
  const first=playing();first.take(first.queue[0].packageId);first.deliver();
  const next=playing();assert.equal(next.stats.completed,0);assert.equal(next.held,null);
- assert.equal(next.queue[0].code,'4826');assert.equal(next.remaining,150);invariant(next);
+ assert.equal(next.queue[0].code,'4826');assert.equal(next.remaining,120);invariant(next);
 });
 
 test('each customer needs a first interaction before code reveal and delivery',()=>{
@@ -100,7 +100,7 @@ test('last receiving parcel starts next day automatically and preserves chosen l
  s.tick(180);s.beginStocking();
  const fresh=[...s.packages.values()].filter(p=>p.location==='receiving');
  for(const [i,p] of fresh.entries()) {s.take(p.id);assert.equal(s.stock(ZONES[i%ZONES.length]).ok,true);}
- assert.equal(s.day,2);assert.equal(s.phase,'playing');assert.equal(s.remaining,150);assert.equal(s.totalRevenue,earned);
+ assert.equal(s.day,2);assert.equal(s.phase,'playing');assert.equal(s.remaining,120);assert.equal(s.totalRevenue,earned);
  for(const [i,p] of fresh.entries()){assert.equal(p.zone,ZONES[i%ZONES.length]);assert.equal(p.location,'shelf');}
  assert.equal(s.stats.revenue,0);assert.equal(s.queue[0].revealed,false);invariant(s);
 });

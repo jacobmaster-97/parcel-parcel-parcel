@@ -3,7 +3,7 @@ import {initialUpgrades,upgradeOptions} from './upgrades.js';
 import {DAY_EVENTS,initialDayEvents,previewNextEvent,advanceDayEvent,customerEventRates} from './day-events.js';
 import {Ledger} from './finance.js';
 export const ZONES = ['A', 'B'];
-export const SHIFT_SECONDS = 150;
+export const SHIFT_SECONDS = 120;
 const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
@@ -39,7 +39,7 @@ export class Shift {
   currentEvent(){return this.practice?DAY_EVENTS.normal:DAY_EVENTS[this.dayEvents.current.id];}
   customerRates(){return customerEventRates(this.currentEvent(),this.shippingChance);}
   previewTomorrow(){return this.practice?{id:'normal',day:this.day+1}:previewNextEvent(this.dayEvents);}
-  moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?88:80;}
+  moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?96:80;}
   reservedWages(){return this.upgrades.workerBookedDay?60:0;}
   availableFunds(){return this.ledger.balance-this.reservedWages();}
   canUpgrade(){return !this.practice&&(this.phase==='closing'||this.phase==='stocking'||this.phase==='upgrading');}

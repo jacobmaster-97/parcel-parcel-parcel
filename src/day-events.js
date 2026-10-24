@@ -10,15 +10,24 @@ export function eventCandidates(day,history=[]){
  const tired=history.slice(-2).length===2&&history.slice(-2).every(e=>DAY_EVENTS[e.id]?.busy);
  return Object.values(DAY_EVENTS).filter(e=>(day>=4||e.id!=='sale')&&(!tired||!e.busy));
 }
-export function chooseDayEvent(seed,day,history=[]){
+export function chooseLegacyDayEvent(seed,day,history=[]){
  if(day===1)return{id:'normal',day};
  let n=(seed^Math.imul(day,0x9e3779b1))>>>0;n=Math.imul(n^(n>>>16),0x85ebca6b);n=Math.imul(n^(n>>>13),0xc2b2ae35);n=(n^(n>>>16))>>>0;
  const candidates=eventCandidates(day,history),total=candidates.reduce((s,e)=>s+e.weight,0);let pick=n/4294967296*total;
  for(const e of candidates){pick-=e.weight;if(pick<0)return{id:e.id,day};}return{id:candidates.at(-1).id,day};
 }
-export function initialDayEvents(seed,day=1,legacy=false){return{seed:seed>>>0,legacyThroughDay:legacy?day:0,current:{id:'normal',day},next:null,history:[],drawDay:day};}
+export function chooseDayEvent(seed,day,history=[]){
+ if(day===1)return{id:'normal',day};
+ // Separate deterministic draws for the 50/50 gate and the uniform other pool.
+ const draw=salt=>{let n=(seed^Math.imul(day,0x9e3779b1)^salt)>>>0;n=Math.imul(n^(n>>>16),0x85ebca6b);n=Math.imul(n^(n>>>13),0xc2b2ae35);return((n^(n>>>16))>>>0)/4294967296;};
+ if(draw(0x51ed270b)<.5)return{id:'normal',day};
+ const others=eventCandidates(day,history).filter(e=>e.id!=='normal');
+ return{id:others.length?others[Math.floor(draw(0xa3c59ac3)*others.length)].id:'normal',day};
+}
+const stateEvent=(s,day,history)=>day<=s.legacyDrawThroughDay?chooseLegacyDayEvent(s.seed,day,history):chooseDayEvent(s.seed,day,history);
+export function initialDayEvents(seed,day=1,legacy=false){return{seed:seed>>>0,legacyThroughDay:legacy?day:0,legacyDrawThroughDay:0,current:{id:'normal',day},next:null,history:[],drawDay:day};}
 export function previewNextEvent(state){
- if(!state.next){state.next=chooseDayEvent(state.seed,state.current.day+1,[...state.history,state.current].slice(-2));state.drawDay=state.next.day;}
+ if(!state.next){state.next=stateEvent(state,state.current.day+1,[...state.history,state.current].slice(-2));state.drawDay=state.next.day;}
  return state.next;
 }
 export function advanceDayEvent(state){
@@ -33,12 +42,12 @@ export function dayEventSummary(event){return `${event.pickup===event.shipping?`
 export function validDayEvents(s,day,phase){
  const uint=n=>Number.isSafeInteger(n)&&n>=0&&n<=4294967295;
  const record=e=>e&&DAY_EVENTS[e.id]&&Number.isSafeInteger(e.day)&&e.day>=1&&e.day<=1000001&&(e.day!==1||e.id==='normal')&&(e.id!=='sale'||e.day>=4);
- if(!s||!uint(s.seed)||!Number.isSafeInteger(s.legacyThroughDay)||s.legacyThroughDay<0||s.legacyThroughDay>day||!record(s.current)||s.current.day!==day||!Array.isArray(s.history)||s.history.length>2)return false;
+ if(!s||!uint(s.seed)||!Number.isSafeInteger(s.legacyDrawThroughDay)||s.legacyDrawThroughDay<0||s.legacyDrawThroughDay>day+1||!Number.isSafeInteger(s.legacyThroughDay)||s.legacyThroughDay<0||s.legacyThroughDay>day||!record(s.current)||s.current.day!==day||!Array.isArray(s.history)||s.history.length>2)return false;
  if(s.history.length!==Math.min(2,day-Math.max(1,s.legacyThroughDay)))return false;
  if(!s.history.every((e,i)=>record(e)&&e.day===day-s.history.length+i))return false;
  if(day<=s.legacyThroughDay&&s.current.id!=='normal')return false;
- if(day>s.legacyThroughDay&&s.current.id!==chooseDayEvent(s.seed,day,s.history).id)return false;
+ if(day>s.legacyThroughDay&&s.current.id!==stateEvent(s,day,s.history).id)return false;
  const closed=['closing','stocking','dayend','upgrading'].includes(phase);
- if(closed&&!s.next||s.next&&(!record(s.next)||s.next.day!==day+1||s.next.id!==chooseDayEvent(s.seed,day+1,[...s.history,s.current].slice(-2)).id))return false;
+ if(closed&&!s.next||s.next&&(!record(s.next)||s.next.day!==day+1||s.next.id!==stateEvent(s,day+1,[...s.history,s.current].slice(-2)).id))return false;
  return s.drawDay===(s.next?day+1:day);
 }
