@@ -1,19 +1,13 @@
 {
-  "version": "0.10.1",
-  "html_sha256": "2bdd074af90f6e91034f3d1cffe5eb458e91a1cb4c3843f933fb2fe9f14b6c7c",
+  "version": "0.11.0",
+  "html_sha256": "522c9bee66b56ee562e69c94e21086378273d8a37cd0edcfb2f19220c3688cba",
   "features": [
-    "120-second-day",
-    "shoes96-hidden-speed-values",
-    "two-stage-equal-lottery",
-    "5-to9-second-arrivals",
-    "five-visible-queue-slots",
-    "stock-worker-speed88",
-    "schema6-migration"
+    "closing-full-receiving",
+    "45-second-base-patience",
+    "chance-of2to5-simultaneous-arrivals",
+    "hidden-rack-search",
+    "advanced-worker-unlock180-wage85-speed95",
+    "schema7-migration"
   ],
-  "changes": [
-    "Normal arrivals average7seconds; first timer7",
-    "Queue five plus accepted-held sender persists",
-    "Staff speed88, player80/shoes96",
-    "50/50 normal versus uniform eligible other; legacy forecast retained"
-  ]
+  "dialogue": "proposal only, not implemented"
 }

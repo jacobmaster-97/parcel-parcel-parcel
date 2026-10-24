@@ -40,7 +40,7 @@ export class Shift {
   customerRates(){return customerEventRates(this.currentEvent(),this.shippingChance);}
   previewTomorrow(){return this.practice?{id:'normal',day:this.day+1}:previewNextEvent(this.dayEvents);}
   moveSpeed(){return this.upgrades.shoeThroughDay>=this.day?96:80;}
-  reservedWages(){return this.upgrades.workerBookedDay?60:0;}
+  reservedWages(){return this.upgrades.workerBookedDay?(this.upgrades.workerBookedTier==='advanced'?85:60):0;}
   availableFunds(){return this.ledger.balance-this.reservedWages();}
   canUpgrade(){return !this.practice&&(this.phase==='closing'||this.phase==='stocking'||this.phase==='upgrading');}
   purchaseUpgrade(id){
@@ -48,18 +48,19 @@ export class Shift {
     const item=upgradeOptions(this).find(i=>i.id===id);
     if(!item||item.blocked)return{ok:false,message:item?.blocked||'此升級未開放'};
     if(this.availableFunds()<item.price)return{ok:false,message:'可用資金不足（已扣除預留薪金）'};
-    if(id==='worker'){this.upgrades.workerBookedDay=this.day+1;return{ok:true,message:'已預留明日薪金 $60，開門時扣款一次'};}
+    if(id==='worker'||id==='workerAdvanced'){this.upgrades.workerBookedDay=this.day+1;this.upgrades.workerBookedTier=id==='workerAdvanced'?'advanced':'basic';return{ok:true,message:`已預留明日薪金 $${item.price}，開門時扣款一次`};}
     const level=id.startsWith('shelf:')?this.upgrades.shelfLevels[id.slice(-1)]:this.upgrades[id+'Level'];
     const tx=id==='shoes'?`upgrade:shoes:${this.day}`:`upgrade:${id}:${level===undefined?'new':level+1}`;
     const ledger=Ledger.fromJSON(this.ledger.toJSON());
     if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
     this.ledger=ledger;
-    if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
+    if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
+    else if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
     else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
     else{this.upgrades[id+'Level']++;this[id].push(slot(),slot());}
     this.emit('upgrade',{id});return{ok:true,message:'已購買，本頁生效；開下一天前保存'};
   }
-  cancelWorkerBooking(){if(!this.canUpgrade())return false;this.upgrades.workerBookedDay=0;return true;}
+  cancelWorkerBooking(){if(!this.canUpgrade())return false;this.upgrades.workerBookedDay=0;this.upgrades.workerBookedTier='basic';return true;}
   setWorkerZones(zones){
     if(!this.canUpgrade()||!Array.isArray(zones)||!zones.length||new Set(zones).size!==zones.length||zones.some(z=>!this.shelves[z]))return false;
     this.upgrades.workerZones=[...zones];return true;
@@ -67,9 +68,10 @@ export class Shift {
   beginWorkerDay(){
     this.worker=null;
     if(this.upgrades.workerBookedDay!==this.day)return;
-    if(!this.ledger.post(`salary:${this.day}`,'operating',60,'worker',false,'理貨店員薪金'))throw new Error('預留薪金不足，未開門');
-    this.upgrades.workerBookedDay=0;
-    this.worker={x:250,y:218,face:'down',moving:false,travel:0,route:[],next:0,task:null};
+    const tier=this.upgrades.workerBookedTier,wage=tier==='advanced'?85:60;
+    if(!this.ledger.post(`salary:${this.day}`,'operating',wage,'worker',false,'理貨店員薪金'))throw new Error('預留薪金不足，未開門');
+    this.upgrades.workerBookedDay=0;this.upgrades.workerBookedTier='basic';
+    this.worker={tier,x:250,y:218,face:'down',moving:false,travel:0,route:[],next:0,task:null};
   }
   returnWorkerCargo(){
     const task=this.worker?.task;if(!task)return;
@@ -94,7 +96,7 @@ export class Shift {
       const t=w.route[w.next];
       if(t){const dx=t.x-w.x,dy=t.y-w.y,d=Math.hypot(dx,dy);if(d<.001){w.next++;continue;}
         w.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');w.moving=true;
-        const step=Math.min(d,remaining*88);w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/88;if(step>=d-.001)w.next++;continue;}
+        const step=Math.min(d,remaining*(w.tier==='advanced'?95:88));w.x+=dx/d*step;w.y+=dy/d*step;w.travel+=step;remaining-=step/(w.tier==='advanced'?95:88);if(step>=d-.001)w.next++;continue;}
       const task=w.task,p=this.packages.get(task.packageId);
       if(!task.carrying){
         const origin=this.receiving[task.originIndex];if(origin.packageId!==p.id){this.returnWorkerCargo();return;}
@@ -157,6 +159,8 @@ export class Shift {
       if (order.type === 'shipping') this.cancelShipping(p);
       this.emit('closed', {order: {...order}});
     }
+    // Return held/worker cargo first, then fill only genuinely free receiving slots.
+    while(this.addPackage(null,'receiving')){}
     this.queue = []; this.phase = 'closing';this.previewTomorrow(); this.emit('end');
   }
   slots(origin) { return origin.type === 'shelf' ? this.shelves[origin.zone] : origin.type === 'outbound' ? this.outbound : this.receiving; }
@@ -186,6 +190,12 @@ export class Shift {
   available(zone = null) {
     return [...this.packages.values()].filter(p => p.location === 'shelf' && !p.orderId && (!zone || p.zone === zone));
   }
+  spawnCustomerBatch(){
+    const count=this.random()<.25?2+Math.floor(this.random()*4):1;
+    const arriving=[];
+    for(let i=0;i<count&&this.queue.length<5;i++){const order=this.spawnCustomer();if(order)arriving.push(order);}
+    return arriving;
+  }
   spawnCustomer({type = null} = {}) {
     if (this.phase !== 'playing' || this.queue.length >= 5) return null;
     const free = this.outbound.findIndex(s => !s.packageId && !s.reservedFor);
@@ -200,9 +210,9 @@ export class Shift {
       pkg = {id,kind:'shipping',code:id,zone:null,location:'customer',index:free,orderId:null,origin:null};
       this.packages.set(id,pkg); this.outbound[free].reservedFor = id;
     } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
-    const basePatience=serial===0?60:48+Math.floor(this.random()*10),patienceFactor=this.currentEvent().patience;
+    const basePatience=45,patienceFactor=this.currentEvent().patience;
     const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
-      appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:(serial===0?60:58)*patienceFactor,
+      appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:basePatience*patienceFactor,
       status:'waiting',revealed:false};
     pkg.orderId=order.id; this.queue.push(order); this.orders.push(order);
     this.emit('customer',{order:{...order}}); return order;
@@ -357,7 +367,7 @@ export class Shift {
     if(this.remaining===0){this.closeDay();return;}
     for(const order of [...this.queue]){order.patience-=activeTime;if(order.patience<=0)this.expire(order);}
     this.customerTimer-=activeTime;this.deliveryTimer-=activeTime;
-    if(this.customerTimer<=0){this.spawnCustomer();this.customerTimer=(5+this.random()*4)/this.customerRates().total;}
+    if(this.customerTimer<=0){this.spawnCustomerBatch();this.customerTimer=(5+this.random()*4)/this.customerRates().total;}
     if(this.deliveryTimer<=0){this.requestCourier();this.deliveryTimer=25/this.currentEvent().delivery;}
   }
 }

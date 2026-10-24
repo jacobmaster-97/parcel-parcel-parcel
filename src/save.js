@@ -3,7 +3,7 @@ import {Ledger} from './finance.js';
 import {canStandInShop} from './layout.js';
 import {initialDayEvents,eventSeedFromText,previewNextEvent,validDayEvents} from './day-events.js';
 import {initialUpgrades} from './upgrades.js';
-export const SAVE_SCHEMA=6;
+export const SAVE_SCHEMA=7;
 const savedFields=['shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
@@ -36,11 +36,11 @@ export function decodeShift(value){
  const occupancy=new Map(),reserved=new Map();
  saveCheck(['closing','stocking'].includes(value.managementFrom));
  const u=value.upgrades;
- saveCheck(u&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&ledger.balance>=(u.workerBookedDay?60:0));
+ saveCheck(u&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&typeof u.workerAdvancedUnlocked==='boolean'&&['basic','advanced'].includes(u.workerBookedTier)&&(u.workerBookedTier!=='advanced'||u.workerAdvancedUnlocked)&&ledger.balance>=(u.workerBookedDay?(u.workerBookedTier==='advanced'?85:60):0));
  saveCheck(value.shelves&&Object.keys(value.shelves).sort().join()===Object.keys(u.shelfLevels).sort().join()&&Array.isArray(value.receiving)&&value.receiving.length===6+u.receivingLevel*2&&Array.isArray(value.outbound)&&value.outbound.length===6+u.outboundLevel*2);
  const groups=[...Object.keys(value.shelves).map(z=>['shelf',z,value.shelves[z]]),['receiving',null,value.receiving],['outbound',null,value.outbound]];
  const worker=value.worker;
- if(worker){saveCheck(value.phase==='playing'&&savePoint(worker)&&saveFaces.includes(worker.face)&&typeof worker.moving==='boolean'&&saveFinite(worker.travel)&&worker.travel>=0&&saveRoute(worker.route)&&saveInt(worker.next)&&worker.next<=worker.route.length&&ledger.paid.includes(`salary:${value.day}`));
+ if(worker){saveCheck(['basic','advanced'].includes(worker.tier)&&(worker.tier!=='advanced'||u.workerAdvancedUnlocked)&&value.phase==='playing'&&savePoint(worker)&&saveFaces.includes(worker.face)&&typeof worker.moving==='boolean'&&saveFinite(worker.travel)&&worker.travel>=0&&saveRoute(worker.route)&&saveInt(worker.next)&&worker.next<=worker.route.length&&ledger.paid.includes(`salary:${value.day}`));
   if(worker.task){const t=worker.task;saveCheck(packages.has(t.packageId)&&u.workerZones.includes(t.zone)&&saveInt(t.index)&&t.index<value.shelves[t.zone].length&&saveInt(t.originIndex)&&t.originIndex<value.receiving.length&&typeof t.carrying==='boolean');}}
  for(const [type,zone,slots] of groups){saveCheck(Array.isArray(slots)&&slots.length===(type==='shelf'?4+u.shelfLevels[zone]*2:type==='receiving'?6+u.receivingLevel*2:6+u.outboundLevel*2));slots.forEach((s,i)=>{
   saveCheck(s&&(s.packageId===null||typeof s.packageId==='string')&&(s.reservedFor===null||typeof s.reservedFor==='string')&&!(s.packageId&&s.reservedFor));
@@ -71,11 +71,11 @@ export function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 export function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.10.1',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.11.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 export function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);
@@ -86,6 +86,7 @@ export function readSave(record){
  }
  if(record.schemaVersion<4){const old=payload.shift;old.dayEvents=initialDayEvents(eventSeedFromText(record.profileId),old.day,true);if(['closing','stocking','dayend','upgrading'].includes(old.phase))previewNextEvent(old.dayEvents);}
  if(record.schemaVersion<5){const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=150&&saveFinite(old.elapsed)&&old.elapsed>=0);old.remaining=old.remaining*120/150;old.elapsed=old.elapsed*120/150;if(record.schemaVersion===4)old.dayEvents.legacyDrawThroughDay=old.dayEvents.next?.day||old.day;}
+ if(record.schemaVersion<7){const u=payload.shift.upgrades;u.workerAdvancedUnlocked=false;u.workerBookedTier='basic';if(payload.shift.worker)payload.shift.worker.tier='basic';}
  const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=5&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
  const game=decodeShift(payload.shift);view.actors.forEach(validateActor);view.departures.forEach(validateActor);saveCheck(new Set(view.actors.map(a=>a.id)).size===view.actors.length&&view.actors.length===game.queue.length&&view.actors.every(a=>game.queue.some(o=>o.id===a.id)));
  return{game,view:structuredClone(view),settings:structuredClone(settings)};

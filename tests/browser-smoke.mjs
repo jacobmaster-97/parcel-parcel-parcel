@@ -24,7 +24,7 @@ async function keyTo(page,axis,target){
 async function act(page,touch=false){await(touch?page.locator('#touch-action').tap():page.keyboard.press('e'));await page.clock.runFor(450);}
 async function choose(page,code,zone,touch=false){
  assert.equal(await page.locator('#inventory-confirm').isDisabled(),true);
- const choice=page.getByRole('button',{name:`包裹 ${code}，${zone==='receiving'?'待上架':`${zone} 區`}`});
+ const choice=page.getByRole('button',{name:`包裹 ${code}，${zone==='receiving'?'待上架':'貨架'}`});
  await(touch?choice.tap():choice.click());await(touch?page.locator('#inventory-confirm').tap():page.locator('#inventory-confirm').click());await page.clock.runFor(450);
 }
 async function counterFromShelf(page){await keyTo(page,'y',218);await keyTo(page,'x',174);}

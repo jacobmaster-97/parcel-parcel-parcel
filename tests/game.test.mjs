@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {Shift,ZONES} from '../src/game.js';
 
 function playing(options){const s=new Shift({shippingChance:0,...options});s.start();s.deliver();return s;}
+test('45-second base patience with event multipliers and no random variation',()=>{const s=playing();assert.equal(s.queue[0].maxPatience,45);for(let i=0;i<3;i++)s.spawnCustomer();assert.ok(s.queue.every(o=>o.maxPatience===45));});
+test('burst can add2 through5 at once, but never exceeds five or fabricates cargo',()=>{for(const n of[2,3,4,5]){const s=playing({shippingChance:1});s.expire(s.queue[0]);let calls=0;s.random=()=>++calls===1?0:calls===2?(n-2+.1)/4:0;const arrivals=s.spawnCustomerBatch();assert.equal(arrivals.length,n);assert.equal(s.queue.length,n);s.random=()=>0;s.spawnCustomerBatch();assert.ok(s.queue.length<=5);assert.equal(new Set(s.queue.map(o=>o.packageId)).size,s.queue.length);for(const o of s.queue)assert.ok(s.packages.has(o.packageId));}const s=playing({shippingChance:1});s.random=()=>.9;assert.equal(s.spawnCustomerBatch().length,1);});
+test('closing fills expanded receiving only once without losing existing cargo or ledger',()=>{const s=playing();s.ledger.post('fixture-cash','pickup',1000,'test');s.totalRevenue=1000;s.stats.revenue=1000;s.closeDay();s.purchaseUpgrade('receiving');s.purchaseUpgrade('receiving');s.beginStocking();s.nextDay();const ids=s.receiving.filter(x=>x.packageId).map(x=>x.packageId),balance=s.ledger.balance;s.closeDay();assert.equal(s.receivingCount(),10);for(const id of ids)assert.ok(s.receiving.some(x=>x.packageId===id));assert.equal(s.ledger.balance,balance);const serial=s.serial;s.closeDay();assert.equal(s.serial,serial);});
 function invariant(s){
  const seen=new Set();
  for(const [zone,slots] of [...Object.entries(s.shelves),['receiving',s.receiving]]){
@@ -62,7 +65,7 @@ test('end freezes commands and stops additional penalties',()=>{
 });
 test('practice supports complete delivery and stock loop without time pressure',()=>{
  const s=playing({practice:true});const p=s.packages.get(s.queue[0].packageId);
- s.tick(1000);assert.equal(s.remaining,120);assert.equal(s.queue[0].patience,60);
+ s.tick(1000);assert.equal(s.remaining,120);assert.equal(s.queue[0].patience,45);
  s.take(p.id);s.deliver();const fresh=[...s.packages.values()].find(p=>p.location==='receiving');
  s.take(fresh.id);s.stock('B');assert.equal(s.stats.completed,1);assert.equal(s.stats.stocked,1);invariant(s);
 });
@@ -96,7 +99,7 @@ test('stocking is untimed and paused stocking resumes to stocking',()=>{
  s.pause();assert.equal(s.take([...s.packages.values()][0].id).ok,false);s.resume();assert.equal(s.phase,'stocking');invariant(s);
 });
 test('last receiving parcel starts next day automatically and preserves chosen locations',()=>{
- const s=playing();s.take(s.queue[0].packageId);s.deliver();const earned=s.totalRevenue;
+ const s=playing();s.take(s.queue[0].packageId);s.deliver();for(let j=0;j<2;j++){s.spawnCustomer();s.deliver();s.take(s.queue[0].packageId);s.deliver();}const earned=s.totalRevenue;
  s.tick(180);s.beginStocking();
  const fresh=[...s.packages.values()].filter(p=>p.location==='receiving');
  for(const [i,p] of fresh.entries()) {s.take(p.id);assert.equal(s.stock(ZONES[i%ZONES.length]).ok,true);}
@@ -111,11 +114,7 @@ test('manual next day safely returns held parcels and retains unstocked receivin
  assert.equal(s.nextDay(),true);assert.equal(s.day,2);assert.equal(s.held,null);assert.equal(fresh.location,'receiving');assert.equal(s.receivingCount(),count);
  assert.equal(s.nextDay(),false);invariant(s);
 });
-test('no receiving goods skips stocking to next day without reseeding shelves',()=>{
- const s=playing();for(const p of [...s.packages.values()].filter(p=>p.location==='receiving')){s.take(p.id);s.stock('A');if(s.held)s.stock('B');}
- assert.equal(s.receivingCount(),0);s.tick(180);const ids=[...s.packages.keys()];s.beginStocking();
- assert.equal(s.day,2);assert.equal(s.phase,'playing');assert.deepEqual([...s.packages.keys()],ids);invariant(s);
-});
+test('closing refills empty receiving without reseeding shelves and repeated close does not duplicate',()=>{const s=playing();for(const slot of s.receiving){if(slot.packageId)s.packages.delete(slot.packageId);slot.packageId=null;}const shelfIds=Object.values(s.shelves).flat().map(x=>x.packageId);s.closeDay();assert.equal(s.receivingCount(),6);const serial=s.serial;s.closeDay();assert.equal(s.serial,serial);s.beginStocking();assert.equal(s.phase,'stocking');assert.deepEqual(Object.values(s.shelves).flat().map(x=>x.packageId),shelfIds);invariant(s);});
 
 function shippingReady(){
  const s=playing({shippingChance:1});s.take(s.queue[0].packageId);s.deliver();
@@ -153,7 +152,7 @@ test('accepted shipping survives closing and must be deposited before empty-stoc
  for(const item of [...s.packages.values()].filter(p=>p.location==='receiving')){s.take(item.id);s.stock('A');if(s.held)s.stock('B');}
  s.deliver();const before=s.totalRevenue;s.closeDay();assert.equal(s.held,p.id);
  s.beginStocking();assert.equal(s.phase,'stocking');assert.equal(s.storeShipping().ok,true);
- assert.equal(s.day,2);assert.equal(p.location,'sent');assert.equal(s.totalRevenue,before+12);
+ assert.equal(s.day,1);s.nextDay();assert.equal(s.day,2);assert.equal(p.location,'sent');assert.equal(s.totalRevenue,before+12);
 });
 test('manual next day retains accepted shipping and its reserved destination',()=>{
  const {s,p}=shippingReady();s.deliver();s.closeDay();s.beginStocking();assert.equal(s.nextDay(),true);
@@ -178,7 +177,7 @@ test('pause freezes courier travel as well as clock and orders',()=>{
 test('closing turns undelivered courier back without dropping cargo during stocking',()=>{
  const s=playing();s.requestCourier();s.advanceCourier(3);const count=s.receivingCount();s.closeDay();
  assert.equal(s.courier.stage,'leaving');assert.equal(s.courier.carrying,true);s.beginStocking();s.tick(60);
- assert.equal(s.courier,null);assert.equal(s.receivingCount(),count);
+ assert.equal(s.courier,null);assert.equal(s.receivingCount(),s.receiving.length);
 });
 test('scheduled arrivals dispatch courier rather than materialize receiving parcels',()=>{
  const s=playing(),count=s.receivingCount();s.tick(25);assert.ok(s.courier);assert.equal(s.receivingCount(),count);
