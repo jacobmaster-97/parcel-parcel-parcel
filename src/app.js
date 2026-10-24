@@ -5,6 +5,7 @@ import {makeSave,readSave,encodeShift,decodeShift} from './save.js';
 import {DAY_EVENTS,dayEventSummary,eventSeedFromText} from './day-events.js';
 import {upgradeOptions} from './upgrades.js';
 import {SaveStore} from './storage.js';
+import {NpcSpeech,eligibleLines,placeSpeech} from './npc-dialogue.js';
 
 const $ = id => document.getElementById(id);
 const canvas = $('shop'), ctx = canvas.getContext('2d');
@@ -21,6 +22,9 @@ let world=WORLD,targets=TARGETS;const queuePoints=QUEUE_POINTS;
 function syncLayout(){const layout=shopLayout(shift.shelves);world=layout.world;targets=layout.targets;}
 const counter=targets.find(t=>t.type==='counter'),receiving=targets.find(t=>t.type==='receiving');
 let shift = new Shift(), player, actors = new Map(), departures = [], lastTime = 0;
+const npcSpeech=new NpcSpeech(),successfulDepartures=new Set(),speechLayouts=new Map();let speechBubble=null;
+const speechLive=document.createElement('span');speechLive.id='npc-speech-live';speechLive.setAttribute('role','status');speechLive.setAttribute('aria-live','polite');speechLive.style.cssText='position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap';document.body.append(speechLive);
+function resetSpeech(){npcSpeech.reset(shift.dayEvents.seed^shift.day);successfulDepartures.clear();speechBubble=null;speechLive.textContent='';}
 syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
@@ -63,7 +67,7 @@ function beep(success=true){
 function beginSession(practice=false){
  if(!ready){if(loadError)location.reload();return;}
  closeDialogs();shift=new Shift({practice,deferDayStart:!practice,eventSeed:eventSeedFromText(campaignId||'practice')});syncLayout();resetPlayer();actors=new Map();departures=[];
- action=null;practiceDone=false;feedback=null;queueSignature='';shift.start();processEvents();
+ action=null;practiceDone=false;feedback=null;queueSignature='';resetSpeech();shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 已開放貨架 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
@@ -211,6 +215,7 @@ function processEvents(){
   if(event.type==='customer')actors.set(event.order.id,newCustomerActor(event.order));
   if(event.type==='checkpoint')queueMicrotask(()=>completeBoundary());
   if(event.type==='delivered'||event.type==='missed'||event.type==='closed'||event.type==='shippingAccepted'){
+   if(event.type==='delivered'||event.type==='shippingAccepted')successfulDepartures.add(event.order.id);
    const actor=actors.get(event.order.id);
    if(actor){actors.delete(actor.id);actor.carrying=event.type==='delivered'||event.order.type==='shipping'&&event.type!=='shippingAccepted';actor.route=[{x:actor.x,y:100},{x:25,y:100},{x:25,y:52},{x:40,y:24},{...ENTRANCE}];actor.next=0;departures.push(actor);}
    if(event.type==='delivered')beep(true);else if(event.type==='missed')toast('有客人等唔切走咗，包裹會保留喺店內。',true);
@@ -221,6 +226,7 @@ function processEvents(){
   if(event.type==='end')finish();
   if(event.type==='stocking'){toast('收舖上架：不計時，自由選 已開放貨架；也可隨時進入下一天。');}
   if(event.type==='daystart'){
+   resetSpeech();
    closeDialogs();action=null;queueSignature='';$('pause-button').disabled=false;
    toast(`第 ${event.day} 天開門！貨架位置已保留，先到櫃檯接客。`);
   }
@@ -307,7 +313,40 @@ function drawActor(actor,isPlayer=false){
  if(image)ctx.drawImage(image,frame*32,row*48,32,48,Math.round(actor.x)-16,Math.round(actor.y)-44,32,48);
  if(isPlayer){ctx.fillStyle='#f4edc9';ctx.beginPath();ctx.moveTo(actor.x,actor.y-51);ctx.lineTo(actor.x-3,actor.y-56);ctx.lineTo(actor.x+3,actor.y-56);ctx.closePath();ctx.fill();}
 }
-function draw(){
+function drawNpcSpeech(elapsed,view){
+ speechBubble=null;
+ const enabled=shift.phase==='playing'&&!dialogOpen()&&!saveBusy&&!ownershipLost;
+ if(!enabled){if(shift.phase!=='paused'&&shift.phase!=='playing')npcSpeech.active=null;speechLive.textContent='';return;}
+ const event=shift.dayEvents.current.id,allActors=[player,...actors.values(),...departures,...(shift.worker?[shift.worker]:[]),...(shift.courier?[shift.courier]:[])];
+ const obstacles=allActors.map(a=>({x:a.x-16,y:a.y-44,w:32,h:48}));
+ obstacles.push({x:0,y:0,w:world.width,h:32},{x:0,y:158,w:GATE.left,h:44},{x:GATE.right,y:158,w:world.width-GATE.right,h:44},{x:GATE.left-4,y:184,w:16,h:48},
+ {x:108,y:202,w:52,h:26},{x:receiving.x-39,y:receiving.footY-74,w:78,h:80},{x:274,y:267,w:76,h:67});
+ const tooltip=closestTarget();if(tooltip&&tooltip.type!=='counter'&&getComputedStyle($('touch-controls')).display==='none')obstacles.push({x:player.x-55,y:player.y+4,w:110,h:28});
+ for(const t of targets.filter(t=>t.type==='shelf'))obstacles.push({x:t.x-34,y:t.footY-66,w:68,h:70});
+ const fontSize=Math.max(10,Math.ceil(14/camera.scale)),lineHeight=Math.ceil(fontSize*1.4);ctx.font=`bold ${fontSize}px system-ui`;
+ const layout=text=>{const key=`${fontSize}:${text}`;if(speechLayouts.has(key))return speechLayouts.get(key);const lines=[];let line='';for(const c of text){if(line&&ctx.measureText(line+c).width>88){lines.push(line);line='';}line+=c;}if(line)lines.push(line);const b={lines,w:Math.ceil(Math.max(...lines.map(l=>ctx.measureText(l).width)))+12,h:lines.length*lineHeight+10};speechLayouts.set(key,b);return b;};
+ const visible=a=>a.y>=64&&a.x-16>=view.x&&a.x+16<=view.x+view.w&&a.y-44>=view.y&&a.y+4<=view.y+view.h;
+ const speakers=[];
+ for(const o of shift.queue){const a=actors.get(o.id);if(a&&visible(a))speakers.push({...a,id:`guest:${shift.day}:${o.id}`,role:'customer',shipping:o.type==='shipping',ratio:o.patience/o.maxPatience,departing:false});}
+ const activeDepartures=new Set(departures.map(a=>a.id));for(const id of successfulDepartures)if(!activeDepartures.has(id))successfulDepartures.delete(id);
+ for(const a of departures)if(visible(a))speakers.push({...a,id:`guest:${shift.day}:${a.id}`,role:'customer',departing:true,success:successfulDepartures.has(a.id)});
+ if(shift.worker&&visible(shift.worker)){const freeShelf=shift.upgrades.workerZones.reduce((n,z)=>n+shift.shelves[z].filter(s=>!s.packageId&&!s.reservedFor).length,0);speakers.push({...shift.worker,id:`worker:${shift.day}`,role:'worker',event,idle:!shift.worker.task,carrying:!!shift.worker.task?.carrying,hasStock:shift.receivingCount()>0||!!shift.worker.task?.carrying,freeShelf});}
+ if(shift.courier&&visible(shift.courier)){const c=shift.courier;speakers.push({...c,id:`courier:${c.id}`,role:'courier',event,freeReceiving:shift.receiving.filter(s=>!s.packageId&&!s.reservedFor).length,nearReceiving:Math.hypot(c.x-receiving.x,c.y-receiving.y)<32});}
+ for(const s of speakers)s.allowedLineIds=eligibleLines(s).filter(l=>{const b=layout(l.text);return placeSpeech(s,[b.w,b.h],view,obstacles);}).map(l=>l.id);
+ const active=npcSpeech.tick(elapsed,speakers.filter(s=>s.allowedLineIds.length),true);
+ if(!active){speechLive.textContent='';return;}
+ const actor=speakers.find(s=>s.id===active.speakerId);if(!actor)return;
+ const b=layout(active.text),rect=placeSpeech(actor,[b.w,b.h],view,obstacles);if(!rect){speechLive.textContent='';return;}
+ ctx.fillStyle='#23473d';ctx.fillRect(rect.x-1,rect.y-1,rect.w+2,rect.h+2);ctx.fillStyle='#fff6df';ctx.fillRect(rect.x,rect.y,rect.w,rect.h);
+ const tx=Math.max(rect.x+4,Math.min(rect.x+rect.w-4,actor.x)),ty=Math.max(rect.y+4,Math.min(rect.y+rect.h-4,actor.y-24));
+ ctx.fillStyle='#23473d';ctx.beginPath();
+ if(actor.x<rect.x||actor.x>rect.x+rect.w){const left=actor.x<rect.x,x=left?rect.x-1:rect.x+rect.w+1;ctx.moveTo(x,ty-3);ctx.lineTo(x,ty+3);ctx.lineTo(x+(left?-3:3),ty);}
+ else{const below=rect.y>actor.y-24,y=below?rect.y-1:rect.y+rect.h+1;ctx.moveTo(tx-3,y);ctx.lineTo(tx+3,y);ctx.lineTo(tx,y+(below?-3:3));}ctx.fill();
+ ctx.fillStyle='#23473d';ctx.textAlign='left';b.lines.forEach((line,i)=>ctx.fillText(line,rect.x+6,rect.y+fontSize+5+i*lineHeight));
+ speechBubble={id:active.id,role:active.role,text:active.text,speakerId:active.speakerId,rect:{...rect},view:{...view},fontCssPixels:fontSize*camera.scale,until:active.until,obstacles:obstacles.map(o=>({...o}))};
+ const spoken=`${{customer:'客人',worker:'理貨員',courier:'送貨員'}[active.role]}：${active.text}`;if(speechLive.textContent!==spoken)speechLive.textContent=spoken;
+}
+function draw(elapsed=0){
  const bounds=canvas.getBoundingClientRect();if(!bounds.width||!bounds.height)return;
  const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.round(bounds.width*dpr),h=Math.round(bounds.height*dpr);
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
@@ -366,6 +405,8 @@ function draw(){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-26,target.y-12,52,20);
   if(!touch&&target.type!=='counter')pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
  }
+ const vx=Math.max(0,camera.x-offsetX),vy=Math.max(0,camera.y-offsetY);
+ drawNpcSpeech(elapsed,{x:vx,y:vy,w:Math.min(world.width,camera.x-offsetX+viewW)-vx,h:Math.min(world.height,camera.y-offsetY+viewH)-vy});
  ctx.restore();
 }
 function updateUI(){
@@ -444,7 +485,7 @@ function loop(now){
   shift.selectionId=$('inventory-dialog').open?selected:null;shift.workerAvoid=player;shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
- draw();updateUI();requestAnimationFrame(loop);
+ draw(elapsed);updateUI();requestAnimationFrame(loop);
 }
 
 window.addEventListener('keydown',e=>{
@@ -567,7 +608,7 @@ async function start(practice=false){
 }
 function restoreCampaign(record){
  const restored=readSave(record);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
- player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;
+ player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;resetSpeech();
  action=null;feedback=null;queueSignature='';suspendedInventory=null;practiceDone=false;clearInput();
  if(shift.canWork())shift.pause();
  $('pause-button').disabled=false;$('pause-reason').textContent='進度已還原。離線期間沒有推進時間，準備好再繼續。';showDialog('pause-dialog');lastTime=performance.now();
@@ -606,7 +647,7 @@ async function completeBoundary(){
  }finally{saveBusy=false;}
 }
 function adoptBoundary(record){
- const {game,view}=readSave(record);shift=game;syncLayout();player={...view.player,moving:false};actors=new Map(view.actors.map(a=>[a.id,a]));departures=view.departures;
+ const {game,view}=readSave(record);shift=game;syncLayout();player={...view.player,moving:false};actors=new Map(view.actors.map(a=>[a.id,a]));departures=view.departures;resetSpeech();
  pendingBoundary=null;campaignMemory=null;action=null;feedback=null;queueSignature='';closeDialogs();clearInput();$('pause-button').disabled=false;lastTime=performance.now();canvas.focus({preventScroll:true});
 }
 async function skipBoundarySave(){
@@ -764,7 +805,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 });
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
-if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
+if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
  dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,

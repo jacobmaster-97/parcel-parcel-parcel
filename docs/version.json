@@ -1,13 +1,12 @@
 {
-  "version": "0.11.0",
-  "html_sha256": "522c9bee66b56ee562e69c94e21086378273d8a37cd0edcfb2f19220c3688cba",
+  "version": "0.12.0",
+  "html_sha256": "9d6f2224828b203b9d34f90e0d5af109165266dca8aea4fe07d5f2333f6cfcbe",
   "features": [
-    "closing-full-receiving",
-    "45-second-base-patience",
-    "chance-of2to5-simultaneous-arrivals",
-    "hidden-rack-search",
-    "advanced-worker-unlock180-wage85-speed95",
-    "schema7-migration"
+    "approved32-npc-lines",
+    "context-aware-customer-worker-courier-dialogue",
+    "one-cosmetic-bubble-every12to20seconds",
+    "no-occlusion-with-offscreen-and-pause-suppression",
+    "independent-cosmetic-rng-no-save-schema-change"
   ],
-  "dialogue": "proposal only, not implemented"
+  "dialogue": "implemented; same schema7 and gameplay rules"
 }
