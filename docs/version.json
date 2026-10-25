@@ -1,12 +1,12 @@
 {
-  "version": "0.13.0",
-  "html_sha256": "63d8de7adb367d4fde541119a823e8e29700a8d4c5eadb12df53ab766036afda",
+  "version": "0.14.0",
+  "html_sha256": "0f5a28a38f601133e84e9b29024ea6225b7fb7c943e6c1f713445a41c69f55bf",
   "features": [
-    "60-second-base-patience",
-    "sale36-returns48-weather60",
-    "900-permanent-cargo-management",
-    "zone-hints-only-after-purchase-and-reception",
-    "schema8-migrate1to7-preserve-patience",
-    "only-pre-opening-autosave"
+    "mobile-full-map-only",
+    "compact48-plus64-header",
+    "controls-outside-map",
+    "screen-space14px-labels",
+    "live-details-with-explicit-pause",
+    "schema8-and-economy-unchanged"
   ]
 }

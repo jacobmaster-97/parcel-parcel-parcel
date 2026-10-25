@@ -14,16 +14,21 @@
     <a class="brand" href="#" aria-label="集運小店"><span class="brand-mark">▦</span><span>集運小店<small>PARCEL POINT / 今日當值</small></span></a>
     <div class="shift-hud"><span class="open-sign" id="mode-label">準備開檔</span><div class="timer-block"><small id="clock-label">距離收工</small><strong id="clock">02:00</strong></div><button id="shop-button" class="day-button" hidden>商店升級</button><button id="next-day" class="day-button" hidden>下一天 →</button><button id="pause-button" class="icon-button" disabled aria-label="暫停遊戲">Ⅱ</button></div>
   </header>
+  <button id="mobile-order-open" class="mobile-order-strip mobile-only" aria-label="展開工作詳情" aria-haspopup="dialog">
+    <span class="mobile-request-line"><span id="mobile-service">服務</span><strong id="mobile-code">待接待</strong><span id="mobile-zone" hidden></span><span class="mobile-chevron" aria-hidden="true">⌄</span></span>
+    <span class="mobile-request-sub"><span id="mobile-location">先到櫃檯接待</span><strong id="mobile-patience">—</strong></span>
+    <span id="mobile-patience-track" class="mobile-patience-track" role="progressbar" aria-label="客人耐性" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="mobile-patience-fill"></span></span>
+  </button>
   <main class="workspace">
     <section class="scene-panel" aria-label="店面工作區">
       <div class="scene-toolbar"><span><i class="live-dot"></i> <span id="store-day">街坊集運 · 第 1 天</span></span><span id="scene-status">等你開檔</span></div>
-      <div class="canvas-wrap" id="canvas-wrap"><canvas id="shop" tabindex="0" aria-label="店員工作區。用 WASD 或方向鍵移動，E 互動；手機使用下方搖桿。"></canvas><div class="scene-vignette"></div></div>
+      <div class="canvas-wrap" id="canvas-wrap"><canvas id="shop" tabindex="0" aria-label="店員工作區。用 WASD 或方向鍵移動，E 互動；手機使用下方搖桿。"></canvas><div class="scene-vignette"></div><div id="mobile-map-labels" class="mobile-only" aria-hidden="true"></div></div>
       <div class="touch-controls" id="touch-controls">
         <div class="joystick" id="joystick" role="group" aria-label="移動搖桿"><div class="joystick-cross"></div><span class="joystick-knob" id="joystick-knob"></span></div>
-        <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div>
-        <button class="touch-action" id="touch-action" disabled><span class="action-symbol">↗</span><span id="touch-action-label">行近目標</span></button>
+        <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div><div class="mobile-hand mobile-only"><small>店員手上</small><strong id="mobile-held">空手</strong></div>
+        <button class="touch-action" id="touch-action" disabled><span class="action-symbol" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 19 19 5M5 5h14v14"/></svg></span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.13</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.14</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -39,6 +44,11 @@
       <section class="notes-card"><span class="note-pin"></span><span class="eyebrow">店長留低張紙</span><h2>忙，都可以有條不紊。</h2><p id="guide">睇清提貨碼先揀貨。空檔記得將收貨區新貨，自由選 已開放貨架上架。</p><div class="shift-progress"><span>已完成 <strong id="completed">0</strong> 單</span><span>收入 <strong id="revenue">$0</strong></span></div><button id="help-button" class="text-button">操作小抄 ↗</button></section>
     </aside>
   </main>
+  <dialog id="mobile-detail-dialog" class="game-dialog mobile-detail-dialog" aria-labelledby="mobile-detail-title">
+    <div class="dialog-top"><h2 id="mobile-detail-title">工作詳情</h2><div class="inventory-header-actions"><button id="mobile-detail-pause" class="icon-button" aria-label="暫停工作">Ⅱ</button><button id="mobile-detail-close" class="icon-button" aria-label="收起工作詳情">×</button></div></div>
+    <p class="detail-time-note">查看詳情仍會計時；需要停下可按暫停。</p><p id="mobile-detail-request"></p><p id="mobile-detail-feedback" role="status" hidden></p>
+    <dl id="mobile-detail-facts"></dl><h3>等候隊列</h3><div id="mobile-detail-queue"></div><button id="mobile-detail-back" class="button button-primary">收起，返回地圖</button>
+  </dialog>
   <dialog id="welcome-dialog" class="game-dialog welcome-dialog" aria-labelledby="welcome-title">
     <span class="eyebrow">一間小店 · 一個繁忙班次</span><h2 id="welcome-title">今日，<br>輪到你當值。</h2><p>幫街坊搵返佢哋嘅包裹。接待、提貨、寄貨，仲要抽空幫送到店嘅新貨上架。</p>
     <div class="welcome-art" aria-hidden="true"><img src="assets/environment/props/parcel_medium.png" alt=""><span>睇清編號<br><b>唔好交錯貨。</b></span><img class="welcome-clerk" src="assets/characters/player_idle.png" alt=""></div>

@@ -28,13 +28,16 @@ function resetSpeech(){npcSpeech.reset(shift.dayEvents.seed^shift.day);successfu
 syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
-let camera = {x:0,y:0,scale:2}, practiceDone = false, queueSignature = '';
+let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', practiceDone = false, queueSignature = '';
 let sound = true, audio = null;
 let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const saveStore=new SaveStore();let campaignId=null,campaignActive=false,campaignMemory=null,campaignCatalog=null,saveBusy=false,ownershipLost=false,menuBusy=false,choiceResolve=null,pendingBoundary=null;
 let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false,eventInfoKey='';
 let saveStatus='只在整理完、開下一天前自動保存。';
-const dialogIds = ['welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
+const mobileLayoutQuery=matchMedia('(pointer:coarse), (max-width:800px), (orientation:landscape) and (max-height:600px)');
+const syncMobileLayout=()=>document.body.classList.toggle('full-map-mobile',mobileLayoutQuery.matches);syncMobileLayout();mobileLayoutQuery.addEventListener('change',syncMobileLayout);
+const mobileView=()=>document.body.classList.contains('full-map-mobile');
+const dialogIds = ['mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const rackHints = () => shift.upgrades.cargoManagement;
 const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
@@ -315,6 +318,38 @@ function drawActor(actor,isPlayer=false){
  if(image)ctx.drawImage(image,frame*32,row*48,32,48,Math.round(actor.x)-16,Math.round(actor.y)-44,32,48);
  if(isPlayer){ctx.fillStyle='#f4edc9';ctx.beginPath();ctx.moveTo(actor.x,actor.y-51);ctx.lineTo(actor.x-3,actor.y-56);ctx.lineTo(actor.x+3,actor.y-56);ctx.closePath();ctx.fill();}
 }
+function updateMobileMapLabels(bounds){
+ const layer=$('mobile-map-labels');
+ if(!mobileView()){if(mobileMarkerKey){layer.replaceChildren();mobileMarkers=[];mobileMarkerKey='';}return;}
+ const shelves=targets.filter(t=>t.type==='shelf'),key=String(rackHints())+'|'+shelves.map(t=>t.zone).join();
+ if(key!==mobileMarkerKey){
+  mobileMarkerKey=key;mobileMarkers=[...(rackHints()?shelves.map(t=>({x:t.x,y:t.footY-49,text:t.zone,type:'shelf'})):[]),{x:receiving.x,y:receiving.footY-41,text:'收',type:'receiving'},...targets.filter(t=>t.type==='outbound').map(t=>({x:t.x,y:t.footY-50,text:'寄',type:'outbound'}))];
+  layer.replaceChildren();for(const marker of mobileMarkers){const el=document.createElement('span');el.className=`mobile-map-marker ${marker.type}`;el.textContent=marker.text;marker.el=el;layer.append(el);}
+ }
+ for(const marker of mobileMarkers){const x=Math.max(12,Math.min(bounds.width-12,mapViewport.x+marker.x*camera.scale)),y=Math.max(11,Math.min(bounds.height-11,mapViewport.y+marker.y*camera.scale));marker.el.style.left=`${x}px`;marker.el.style.top=`${y}px`;marker.rect={x:(x-12-mapViewport.x)/camera.scale,y:(y-11-mapViewport.y)/camera.scale,w:24/camera.scale,h:22/camera.scale};}
+}
+function updateMobileHud(order,known,held,stocking,holdingShipping,activePatience,ratio,patienceState){
+ const title=holdingShipping?'待入籠':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'貨物上架':shift.phase==='ready'?'準備中':'等新客';
+ $('mobile-code').textContent=title;$('mobile-code').classList.toggle('words',!/^[0-9]+$/.test(title));
+ $('mobile-service').textContent=stocking?`第${shift.day}天`:holdingShipping?'寄貨':known&&order.type==='pickup'?'提貨':'服務';
+ const showZone=known&&order.type==='pickup'&&rackHints()&&!holdingShipping;$('mobile-zone').hidden=!showZone;$('mobile-zone').textContent=showZone?`${order.zone} 區`:'';
+ const location=stocking?`收貨${shift.receivingCount()}件 · 自由選架上架`:holdingShipping?'送到右下寄貨籠':held&&known&&order?.packageId===held.id?'返回櫃檯交貨':order?known?order.type==='shipping'?'寄貨服務':rackHints()?`前往 ${order.zone} 區貨架`:'按提貨碼逐架尋找':'先到櫃檯接待':'趁空檔整理貨物';
+ $('mobile-location').textContent=feedback?.error?`！${feedback.text}`:location;
+ $('mobile-order-open').classList.toggle('error',!!feedback?.error);$('mobile-order-open').classList.toggle('warn',activePatience&&patienceState==='warn');$('mobile-order-open').classList.toggle('danger',activePatience&&patienceState==='danger');
+ $('mobile-patience').textContent=activePatience?shift.practice?'不計時':shift.phase==='paused'?'已暫停':`${ratio<=.2?'！':ratio<=.4?'△ ':''}耐性 ${Math.ceil(order.patience)}秒`:holdingShipping?'已接收':stocking?'不限時':'';
+ $('mobile-patience-track').style.visibility=activePatience&&!shift.practice?'visible':'hidden';$('mobile-patience-track').setAttribute('aria-valuenow',String(Math.round(ratio*100)));$('mobile-patience-fill').style.width=`${ratio*100}%`;
+ $('mobile-held').textContent=held?held.kind==='shipping'?'待寄貨':held.code:'空手';
+ $('mobile-order-open').disabled=!shift.canWork()||saveBusy||ownershipLost;
+ if(!$('mobile-detail-dialog').open)return;
+ const detail={request:holdingShipping?'已接收寄貨，請放到右下寄貨籠。':requestText(),held:$('held-code').textContent,patience:$('mobile-patience').textContent,day:shift.day,phase:shift.phase,receiving:shift.receivingCount(),receivingCapacity:shift.receiving.length,outbound:shift.outbound.filter(s=>s.packageId).length,outboundCapacity:shift.outbound.length,completed:shift.stats.completed+shift.stats.shipped,revenue:shift.stats.revenue,queue:shift.queue.map(o=>({patience:shift.practice?'不計時':`${Math.ceil(o.patience)}秒`,status:o.revealed?'已接待':'待接待'})),feedback:feedback?.text||''};
+ const key=JSON.stringify(detail);if(key===mobileDetailKey)return;mobileDetailKey=key;
+ $('mobile-detail-request').textContent=detail.request;$('mobile-detail-feedback').textContent=detail.feedback;$('mobile-detail-feedback').hidden=!detail.feedback;
+ const facts=[['營業日',`第${detail.day}天`],['店員手上',detail.held],['客人耐性',detail.patience||'—'],['收貨待上架',`${detail.receiving}／${detail.receivingCapacity}`],['寄貨籠',`${detail.outbound}／${detail.outboundCapacity}`],['等候客人',`${detail.queue.length}人`],['今日完成',`${detail.completed}單`],['今日收入',`$${detail.revenue}`]];
+ $('mobile-detail-facts').replaceChildren();for(const[label,value]of facts){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;$('mobile-detail-facts').append(dt,dd);}
+ $('mobile-detail-queue').replaceChildren();for(const[o,i]of detail.queue.map((o,i)=>[o,i])){const row=document.createElement('div');row.textContent=`${i+1}. ${o.status} · ${o.patience}`;$('mobile-detail-queue').append(row);}if(!detail.queue.length)$('mobile-detail-queue').textContent=stocking?'今日已停止接客。':'暫時沒有客人。';
+}
+function openMobileDetails(){if(!canWork()||dialogOpen())return;clearInput();mobileDetailKey='';showDialog('mobile-detail-dialog');updateUI();}
+function closeMobileDetails(){$('mobile-detail-dialog').close();clearInput();if(mobileView())$('mobile-order-open').focus({preventScroll:true});else canvas.focus({preventScroll:true});}
 function drawNpcSpeech(elapsed,view){
  speechBubble=null;
  const enabled=shift.phase==='playing'&&!dialogOpen()&&!saveBusy&&!ownershipLost;
@@ -322,7 +357,8 @@ function drawNpcSpeech(elapsed,view){
  const event=shift.dayEvents.current.id,allActors=[player,...actors.values(),...departures,...(shift.worker?[shift.worker]:[]),...(shift.courier?[shift.courier]:[])];
  const obstacles=allActors.map(a=>({x:a.x-16,y:a.y-44,w:32,h:48}));
  obstacles.push({x:0,y:0,w:world.width,h:32},{x:0,y:158,w:GATE.left,h:44},{x:GATE.right,y:158,w:world.width-GATE.right,h:44},{x:GATE.left-4,y:184,w:16,h:48},
- {x:108,y:202,w:52,h:26},{x:receiving.x-39,y:receiving.footY-74,w:78,h:80},{x:274,y:267,w:76,h:67});
+ {x:receiving.x-39,y:receiving.footY-74,w:78,h:80},{x:274,y:267,w:76,h:67});
+ if(!mobileView())obstacles.push({x:108,y:202,w:52,h:26});else obstacles.push(...mobileMarkers.map(m=>m.rect));
  const tooltip=closestTarget();if(tooltip&&tooltip.type!=='counter'&&getComputedStyle($('touch-controls')).display==='none')obstacles.push({x:player.x-55,y:player.y+4,w:110,h:28});
  for(const t of targets.filter(t=>t.type==='shelf'))obstacles.push({x:t.x-34,y:t.footY-66,w:68,h:70});
  const fontSize=Math.max(10,Math.ceil(14/camera.scale)),lineHeight=Math.ceil(fontSize*1.4);ctx.font=`bold ${fontSize}px system-ui`;
@@ -353,10 +389,11 @@ function draw(elapsed=0){
  const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.round(bounds.width*dpr),h=Math.round(bounds.height*dpr);
  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}
  const touch=getComputedStyle($('touch-controls')).display!=='none';
- const scale=touch?1.5:Math.min(2,bounds.width/world.width,bounds.height/world.height),viewW=bounds.width/scale,viewH=bounds.height/scale;
+ const scale=touch?Math.max(.01,Math.min((bounds.width-2)/world.width,(bounds.height-2)/world.height)):Math.min(2,bounds.width/world.width,bounds.height/world.height),viewW=bounds.width/scale,viewH=bounds.height/scale;
  camera={scale,x:Math.max(0,Math.min(world.width-viewW,player.x-viewW/2)),
   y:Math.max(0,Math.min(world.height-viewH,player.y-viewH/2))};
  const offsetX=Math.max(0,(viewW-world.width)/2),offsetY=Math.max(0,(viewH-world.height)/2);
+ mapViewport={x:(offsetX-camera.x)*scale,y:(offsetY-camera.y)*scale,width:world.width*scale,height:world.height*scale,scale,fullMap:touch};updateMobileMapLabels(bounds);
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#bdc6af';ctx.fillRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
  ctx.setTransform(dpr*scale,0,0,dpr*scale,Math.round((offsetX-camera.x)*dpr*scale),Math.round((offsetY-camera.y)*dpr*scale));
  ctx.save();ctx.beginPath();ctx.rect(0,0,world.width,world.height);ctx.clip();
@@ -399,11 +436,10 @@ function draw(elapsed=0){
  drawables.push({y:player.y,draw:()=>drawActor(player,true)});
  drawables.sort((a,b)=>a.y-b.y).forEach(d=>d.draw());
 
- if(rackHints())for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,shelf.footY-49);
- pill(`收貨 ${shift.receivingCount()}/${shift.receiving.length}`,receiving.x,receiving.footY-59,'#8d693f');
+ if(!touch&&rackHints())for(const shelf of targets.filter(t=>t.type==='shelf'))pill(`${shelf.zone} 區`,shelf.x,shelf.footY-49);
+ if(!touch)pill(`收貨 ${shift.receivingCount()}/${shift.receiving.length}`,receiving.x,receiving.footY-59,'#8d693f');
  const outbound=targets.find(t=>t.type==='outbound');
- pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/${shift.outbound.length}`,outbound.x,280,'#73518b');
- pill('互動',counter.x-38,218);
+ if(!touch){pill(`寄貨 ${shift.outbound.filter(s=>s.packageId).length}/${shift.outbound.length}`,outbound.x,280,'#73518b');pill('互動',counter.x-38,218);}
  if(target){
   ctx.strokeStyle='#f9fbdf';ctx.lineWidth=1;ctx.strokeRect(target.x-26,target.y-12,52,20);
   if(!touch&&target.type!=='counter')pill(`E · ${targetLabel(target)}`,player.x,player.y+17,'#214738');
@@ -479,6 +515,7 @@ function updateUI(){
  const destinationName=held?.zone===null&&held.kind!=='shipping'?'自選 已開放貨架':destination.type==='shelf'?(rackHints()?`${destination.zone} 區貨架`:'貨架'):destination.type==='counter'?'交貨櫃檯':destination.type==='outbound'?'寄貨區':destination.type==='gate'?'員工通道':'收貨區';
  $('scene-status').textContent=canWork()?target?targetLabel(target):destination.type==='search'?(rackHints()?`前往 ${order.zone} 區貨架`:'按提貨碼逐架尋找'):`${arrow} ${destinationName}`:
   shift.phase==='paused'?'已暫停':shift.phase==='closing'?'營業結束，準備上架':shift.phase==='upgrading'?'商店升級':'等你開檔';
+ updateMobileHud(order,known,held,stocking,holdingShipping,activePatience,ratio,patienceState);
  if($('inventory-dialog').open)updateInventoryRequest();
 }
 
@@ -537,6 +574,8 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])joy.addEve
 });
 $('touch-action').addEventListener('pointerdown',e=>{e.preventDefault();interact();});
 $('touch-action').addEventListener('click',e=>{if(e.detail===0)interact();});
+$('mobile-order-open').addEventListener('click',openMobileDetails);
+$('mobile-detail-close').addEventListener('click',closeMobileDetails);$('mobile-detail-back').addEventListener('click',closeMobileDetails);$('mobile-detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeMobileDetails();});$('mobile-detail-pause').addEventListener('click',()=>pause());
 $('pause-button').addEventListener('click',()=>pause());$('help-button').addEventListener('click',()=>pause('操作小抄：時間已暫停，慢慢睇。'));
 $('practice-button').addEventListener('click',()=>start(true));$('start-button').addEventListener('click',()=>start(false));
 $('resume-button').addEventListener('click',resume);$('restart-button').addEventListener('click',()=>campaignMenu());
@@ -808,7 +847,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 });
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
-if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
+if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
  dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
