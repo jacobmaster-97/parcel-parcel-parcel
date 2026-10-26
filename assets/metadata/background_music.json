@@ -1,0 +1,42 @@
+{
+  "status": "approved-integrated",
+  "integrated": true,
+  "source": "Original note sequences and deterministic synthesis in render.py; no external music, recordings, samples or generative music service.",
+  "tracks": [
+    {
+      "id": "business",
+      "title": "街坊開檔",
+      "bpm": 104,
+      "bars": 32,
+      "seconds": 73.84615,
+      "sampleRate": 44100,
+      "channels": 2,
+      "mp3Bytes": 1223225,
+      "mp3Sha256": "1f405d963b01786cb090270496fbf4a0ebc4a7bf6cfb09e3fab1e8889c1191fe",
+      "peakDbfs": -7.54,
+      "rmsDbfs": -21.41,
+      "clippedSamples": 0,
+      "loopBoundaryStep": 8.609399343406134e-05,
+      "noteCount": 550,
+      "file": "assets/audio/business.mp3"
+    },
+    {
+      "id": "stocking",
+      "title": "收工慢慢執",
+      "bpm": 84,
+      "bars": 24,
+      "seconds": 68.57143,
+      "sampleRate": 44100,
+      "channels": 2,
+      "mp3Bytes": 663872,
+      "mp3Sha256": "6d8704a7686cd73bf10660dacd703c021691696975d1eed2e761357d6d0303a7",
+      "peakDbfs": -6.54,
+      "rmsDbfs": -21.41,
+      "clippedSamples": 0,
+      "loopBoundaryStep": 0.0003006945513818922,
+      "noteCount": 264,
+      "file": "assets/audio/stocking.mp3"
+    }
+  ],
+  "version": "0.16.0"
+}

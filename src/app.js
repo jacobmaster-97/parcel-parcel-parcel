@@ -1,3 +1,4 @@
+import {BackgroundMusic} from './music.js';
 import {ACHIEVEMENTS,achievementTier} from './achievements.js';
 import {Shift, ZONES} from './game.js';
 import {WORLD,TARGETS,GATE,QUEUE_POINTS,ENTRANCE,canStandInShop,shopLayout} from './layout.js';
@@ -19,6 +20,16 @@ const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parc
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
  ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png'],['achievement_icons','assets/ui/achievement_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
+const backgroundMusic=new BackgroundMusic({business:sourceURL('assets/audio/business.mp3'),stocking:sourceURL('assets/audio/stocking.mp3')});
+let audioFocused=true;
+function syncMusic(){
+ const phase=shift.phase==='paused'?shift.pausedPhase:shift.phase;
+ const track=phase==='playing'?'business':['closing','upgrading','stocking'].includes(phase)?'stocking':null;
+ const enabled=!!track&&sound&&campaignActive&&!ownershipLost&&!saveBusy&&audioFocused&&!document.hidden&&shift.phase!=='paused'&&!$('welcome-dialog').open;
+ backgroundMusic.scene(track,track?`${track}:${shift.day}`:null,enabled);
+}
+function primeAudio(){if(document.hidden)return;audioFocused=true;backgroundMusic.unlock();syncMusic();}
+document.addEventListener('pointerdown',primeAudio,{capture:true,passive:true});document.addEventListener('keydown',primeAudio,{capture:true});
 let world=WORLD,targets=TARGETS;const queuePoints=QUEUE_POINTS;
 function syncLayout(){const layout=shopLayout(shift.shelves);world=layout.world;targets=layout.targets;}
 const counter=targets.find(t=>t.type==='counter'),receiving=targets.find(t=>t.type==='receiving');
@@ -30,7 +41,7 @@ syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', queueSignature = '';
-let sound = true, audio = null;
+let sound = true;
 let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const saveStore=new SaveStore();let campaignId=null,campaignActive=false,campaignMemory=null,campaignCatalog=null,saveBusy=false,ownershipLost=false,menuBusy=false,choiceResolve=null,pendingBoundary=null;
 let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false,eventInfoKey='';
@@ -62,8 +73,8 @@ function toast() {}
 function beep(success=true){
  if(!sound)return;
  try{
-  audio??=new (window.AudioContext||window.webkitAudioContext)();
-  if(audio.state==='suspended')audio.resume();
+  const audio=backgroundMusic.context;if(!audio||audio.state!=='running')return;
+  backgroundMusic.duck();
   const osc=audio.createOscillator(),gain=audio.createGain(),now=audio.currentTime;
   osc.type='triangle';osc.frequency.setValueAtTime(success?660:185,now);
   if(success)osc.frequency.setValueAtTime(880,now+.08);
@@ -73,7 +84,7 @@ function beep(success=true){
 }
 function beginSession(){
  if(!ready){if(loadError)location.reload();return;}
- closeDialogs();shift=new Shift({deferDayStart:true,eventSeed:eventSeedFromText(campaignId)});syncLayout();resetPlayer();actors=new Map();departures=[];
+ backgroundMusic.reset();closeDialogs();shift=new Shift({deferDayStart:true,eventSeed:eventSeedFromText(campaignId)});syncLayout();resetPlayer();actors=new Map();departures=[];
  action=null;feedback=null;queueSignature='';resetSpeech();shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 已開放貨架 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
@@ -86,7 +97,7 @@ function pause(reason='所有客人耐性及班次時間已停止。'){
   const saved={target:{...inventoryContext},selected,scroll:$('inventory-scroll').scrollTop};
   closeInventory(false);suspendedInventory=saved;
  }
- $('pause-reason').textContent=reason;showDialog('pause-dialog');
+ $('pause-reason').textContent=reason;showDialog('pause-dialog');syncMusic();
 }
 function resume(){
  if(ownershipLost){$('pause-reason').textContent='這個分頁已停止寫入。請匯出本頁或回主選單載入最新進度。';return;}
@@ -555,7 +566,7 @@ function loop(now){
   shift.selectionId=$('inventory-dialog').open?selected:null;shift.workerAvoid=player;shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
- draw(elapsed);updateUI();requestAnimationFrame(loop);
+ draw(elapsed);updateUI();syncMusic();requestAnimationFrame(loop);
 }
 
 window.addEventListener('keydown',e=>{
@@ -577,8 +588,9 @@ window.addEventListener('keydown',e=>{
  }
 });
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur',()=>{clearInput();pause('你離開咗遊戲畫面，班次已自動暫停。');});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInput();pause('畫面已切到背景，班次與客人耐性已暫停。');}});
+window.addEventListener('blur',()=>{audioFocused=false;syncMusic();clearInput();pause('你離開咗遊戲畫面，班次已自動暫停。');});
+window.addEventListener('focus',()=>{audioFocused=true;syncMusic();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){audioFocused=false;syncMusic();clearInput();pause('畫面已切到背景，班次與客人耐性已暫停。');}});
 let previousSize={width:innerWidth,height:innerHeight};
 window.addEventListener('resize',()=>{
  if(Math.abs(innerWidth-previousSize.width)>25||Math.abs(innerHeight-previousSize.height)>100){
@@ -674,7 +686,7 @@ async function start(){
  }finally{menuBusy=false;}
 }
 function restoreCampaign(record,{saved=true}={}){
- const restored=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(restored.game.achievements);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
+ backgroundMusic.reset();const restored=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(restored.game.achievements);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
  player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;resetSpeech();
  action=null;feedback=null;queueSignature='';suspendedInventory=null;clearInput();
  if(shift.canWork())shift.pause();
@@ -691,7 +703,7 @@ async function continueCampaign(){
 }
 async function campaignMenu(){
  if(campaignActive){if(shift.canWork())shift.pause();campaignMemory=captureCampaign();}
- closeDialogs();clearInput();showDialog('welcome-dialog');await refreshCampaignMenu();
+ closeDialogs();clearInput();showDialog('welcome-dialog');syncMusic();await refreshCampaignMenu();
 }
 function stageNextDay(){
  const next=decodeShift(encodeShift(shift));next.openNextDay();next.drainEvents();
@@ -866,7 +878,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

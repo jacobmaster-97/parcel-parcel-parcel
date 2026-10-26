@@ -1,3 +1,7 @@
+# v0.16.0 背景音樂
+
+已按確認接入營業及整理兩曲。Web Audio共用一個Context，主動操作後才播放；營業、關店／升級／上架按階段切換，暫停／主選單／背景／換日保存停止，恢復時續播。音樂失敗不阻擋遊戲。兩首內嵌離線單檔，與已確認MP3逐byte相同。設定目前只有提案，沒有新增設定UI／HUD或保存時點；schema9不變。詳design/music-integration-v1/IMPLEMENTED.md及design/settings-v1/PROPOSAL.md。
+
 # v0.15.2 移除練習模式
 
 依使用者要求，移除練習按鈕、練習完成視窗、跳轉及前端練習流程。新店直接開始120秒正式營業，舊店繼續經營與收舖不限時上架保留。前端所有UI、啟動、日結、成就及匯出均只走正式流程。schema9與唯一換日前保存不變。詳design/PRACTICE_REMOVAL_IMPLEMENTED.md。

@@ -1,3 +1,7 @@
+# v0.16 背景音樂
+
+`audio/business.mp3`／`audio/stocking.mp3`為使用者已確認兩曲，直接沿用design/music-review-v1程式合成原始MP3。索引metadata/background_music.json；不使用外部歌曲或錄音。正式曲目音量經Web Audio Gain降低，SFX期間短暫壓低BGM。
+
 # v0.15 成就圖集
 
 `ui/achievement_icons.png`：30個原風格像素圖示，5×6格、每格64×64透明；實際只有達成後才在遊戲顯示。鎖定用通用問號。索引與來源見 `metadata/achievement_icons.json`，原始生成及實測切框保存在 `raw/achievements-v015/`；原圖不作等格直接使用。
