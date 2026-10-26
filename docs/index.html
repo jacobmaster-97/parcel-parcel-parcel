@@ -200,7 +200,7 @@ body.full-map-mobile{height:100dvh;overflow:hidden;background:#e7ebdb;padding:0}
         <div class="touch-hint">左手移動<br><span>行近目標再互動</span></div><div class="mobile-hand mobile-only"><small>店員手上</small><strong id="mobile-held">空手</strong></div>
         <button class="touch-action" id="touch-action" disabled><span class="action-symbol" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 19 19 5M5 5h14v14"/></svg></span><span id="touch-action-label">行近目標</span></button>
       </div>
-      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.15.1</span></footer>
+      <footer class="scene-footer"><span class="desktop-keys"><kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 移動 <kbd>E</kbd> 互動 <kbd>Esc</kbd> 暫停</span><span class="mobile-caption">直接控制店員 · 橫向或直向都可以玩</span><span class="prototype-label">PROTOTYPE 0.15.2</span></footer>
     </section>
     <aside class="side-panel">
       <section class="order-card" aria-labelledby="order-title">
@@ -231,7 +231,7 @@ body.full-map-mobile{height:100dvh;overflow:hidden;background:#e7ebdb;padding:0}
     <span class="eyebrow">一間小店 · 一個繁忙班次</span><h2 id="welcome-title">今日，<br>輪到你當值。</h2><p>幫街坊搵返佢哋嘅包裹。接待、提貨、寄貨，仲要抽空幫送到店嘅新貨上架。</p>
     <div class="welcome-art" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABQCAYAAADm4nCVAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfqChYEBgOMk9xGAAAEeUlEQVR42u3ZS6hVZRTA8f9a397n3Hs1zdTIW0qhoiZShmVqSE+LaFLRpAZB0KCIGtQkKpAignAUQYOQAhsoCCpWNgjJvD3U8mpm2sNBmb2o1K56zzl7f99qsM+9khgUDe421u8MDpzR+tbr25sDzjnnnHPOOeecc84555xzzjnnnHPOOeecc84555xzzjnnnHPOOeecc84555xzzjnnnHPOOfcfXTmz3wADTKvvc5qMdQD/1PwZk+3A97/z3srbyXvHYSkiJDTvIWSJRY+uI9PA1CkT+PGXo+fMuc6JQPuaaoMvP8CvR4+jWQBLqAokI6XI/BX3Ek0wOvTkDX7e9S5ZOczsh9bQKspan7HWwfXkarteuo9jx9vMWbyUWLYh9CKpxbd7dgDK3BX3klJEYkGHHg5/sJ5kERBiWaIxcqwt3L9qM8dORYaLWKsz1yqYEY082PqnbqV/wiRMDbNECApALAsmXTydC+deh4kCCTPj0LYNYBEzQ/T07SAimBir123jlYEjtTuzjnUAZxLB9r/+OP0T+5AMzCIaAghVIfLA1DlLsBCQkHPwnTcojv7E9AWLmXHFMi5duIyh438Q8gaoMun8cWzZ9gXTL5o61kc7q2ysAziTGXz26U7yXDnVjnSKkquXLqIZMi6YtwSTrCpKp8U3728kyxsc3juACAiGZk0WXn8rZRQ++WgH2z/cRSNASmmsj3ZWtSsAgKqQDJpZRjNXvti9lyxXZoY+8mYvxY+H0FRWu18DAliChFAMD3NwcJBNW3dwzVULGC6NINUqqqNaFsCoJgGqxGlQVIRUFLQTHDl8hKGTLX4banHPXbdBUbD/88/p7R3P6o3buWzaVMY3e8iygJiBiBfg3xITEoZ2r6lOOyKNBmUR6RSR3kagf/J4PnxvgE40GgFWv7mT+ZdMwUj09Tb5av/Xo8m3eua/pgUwSJJQEcAQEUIW+G73x7Q6iUYmdBsbRMhFECATSN33486pFgAqYBg1e/gZVbunIKDqWrR6JBJFzFjx2Issf/AZ8lwQgSSKioIZKlBGENEq4yLYXz6c3mk1U88JQECsSjDdhKZhQt7gpoeehRCQZBzYvoEj+waxVHbXjFDNgnUnpNv1o+NSP7WcgCCgophVF3KKsUqsGRK0e7Eq85bfyc2PPNc9hnW73Lr7XqrOFwiqiNRzAmpZAA3KyFO7JSOWCdWs6mKrtnk1HIqgGEZC0UxHN42ZdZteKTGeXr8PangR1LEAcveqrUzsa1AmIc+Vnr4mm1Y9wdEfviU0ehFVBENGN3w1HblolXSrfo/JuKAv8eTaPXTKVLvkQ03vgE4Z5aaVbzNr2nn221CH1x6+kckT+ti96VViCoAxe8kKZl17C7HoANVwlGUkpm7ni/LC5v2caBW1TPyIWgd3pkaW2eN3XM6yy/updnyk1S6JychV2bLzS2b3T2HoZJvn3zqAWf3PV/sA/zZwEWtmyppHbyAPxol2ZGD3IebNmMwTa/dSxLq+ev0PBRXLg478Vemcc86dE/4Exw+9ol5v/OIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMTAtMjJUMDM6NTM6MTUrMDA6MDDxruYmAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTEwLTIyVDAzOjQ0OjUxKzAwOjAw06SwygAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0xMC0yMlQwNDowNjowMyswMDowMJKRK78AAAAASUVORK5CYII=" alt=""><span>睇清編號<br><b>唔好交錯貨。</b></span><img class="welcome-clerk" src="data:image/png;base64,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" alt=""></div>
     <ol class="welcome-steps"><li><b>先接待客人</b><span>行到櫃檯按 E／互動鍵</span></li><li><b>揀返指定貨</b><span>E／互動鍵 → 選貨 → 確認</span></li><li><b>交貨兼上架</b><span>橫向排隊、寄貨及送貨員到貨</span></li></ol>
-    <p class="loading-status" id="loading-status">正在準備店面素材…</p><p id="campaign-summary" class="campaign-summary" role="status">正在讀取本地進度…</p><div class="dialog-actions"><button id="continue-button" class="button button-primary" hidden disabled>繼續經營</button><button id="start-button" class="button button-primary" disabled>開始新店</button></div><div class="menu-secondary"><button id="menu-achievements" class="button button-secondary">成就</button><button id="import-button" class="button button-secondary">匯入備份</button><button id="practice-button" class="button button-secondary" disabled>練習 · 不計時</button></div><div id="recovery-list" class="recovery-list"></div><small class="save-note">只在整理完、開下一天前自動保存。營業中關頁會回到上次保存點。</small>
+    <p class="loading-status" id="loading-status">正在準備店面素材…</p><p id="campaign-summary" class="campaign-summary" role="status">正在讀取本地進度…</p><div class="dialog-actions"><button id="continue-button" class="button button-primary" hidden disabled>繼續經營</button><button id="start-button" class="button button-primary" disabled>開始新店</button></div><div class="menu-secondary"><button id="menu-achievements" class="button button-secondary">成就</button><button id="import-button" class="button button-secondary">匯入備份</button></div><div id="recovery-list" class="recovery-list"></div><small class="save-note">只在整理完、開下一天前自動保存。營業中關頁會回到上次保存點。</small>
   </dialog>
   <dialog id="inventory-dialog" class="game-dialog inventory-dialog" aria-labelledby="inventory-title">
     <div class="dialog-top"><div><span class="eyebrow">貨架選貨</span><h2 id="inventory-title">貨架</h2></div><div class="inventory-header-actions"><button id="inventory-pause" class="icon-button" aria-label="暫停選貨">Ⅱ</button><button id="inventory-close" class="icon-button" aria-label="關閉選貨面板">×</button></div></div>
@@ -241,7 +241,6 @@ body.full-map-mobile{height:100dvh;overflow:hidden;background:#e7ebdb;padding:0}
   </dialog>
   <dialog id="pause-dialog" class="game-dialog pause-dialog" aria-labelledby="pause-title"><span class="eyebrow">歇一歇，唔使急</span><h2 id="pause-title">班次已暫停</h2><p id="wallet-summary" class="wallet-summary"></p><section id="pause-event" class="event-card" aria-label="店況資料"></section><p class="save-status" role="status"></p><p id="pause-reason">所有客人耐性及班次時間已停止。</p><div class="control-guide"><p><kbd>WASD</kbd> / 方向鍵：移動</p><p><kbd>E</kbd>：接待、揀貨、上架、退回或交貨</p><p>手機：左下搖桿，右下互動按鈕</p><p>揀錯貨？帶返原貨架，按互動退回。</p></div><div class="dialog-actions"><button id="restart-button" class="button button-secondary">回主選單</button><button id="resume-button" class="button button-primary">繼續當值 →</button></div><div class="menu-secondary"><button id="pause-achievements" class="button button-secondary">成就</button><button id="finance-button" class="button button-secondary">收支日報</button><button id="export-button" class="button button-secondary">匯出備份</button></div></dialog>
   <dialog id="result-dialog" class="game-dialog result-dialog" aria-labelledby="result-title"><span class="eyebrow">辛苦晒，今日收工！</span><h2 id="result-title">你嘅當值成績</h2><p id="result-comment"></p><div class="result-grid" id="result-grid"></div><p class="save-status" role="status"></p><div class="menu-secondary"><button id="result-achievements" class="button button-secondary">查看成就</button><button id="result-finance" class="button button-secondary">收支日報</button><button id="result-export" class="button button-secondary">匯出備份</button><button id="result-menu" class="button button-secondary">主選單</button></div><p id="result-achievements-new" class="achievement-new" hidden></p><p class="result-note">接下來可選擇升級自提點，再進入不限時貨物上架。只在開下一天前自動保存。</p><div class="dialog-actions"><button id="play-again" class="button button-primary">繼續</button></div></dialog>
-  <dialog id="practice-done-dialog" class="game-dialog" aria-labelledby="practice-done-title"><span class="eyebrow">提貨 ✓ 上架 ✓</span><h2 id="practice-done-title">識做喇，準備開檔！</h2><p>你已完成一單提貨同一件新貨上架。正式班次有隨機寄貨客人；將接收嘅貨物放到紫色寄貨區。送貨員會親自將新貨送到收貨區。</p><button id="practice-to-shift" class="button button-primary">開始正式班次 →</button></dialog>
   <dialog id="finance-dialog" class="game-dialog finance-dialog" aria-labelledby="finance-title"><div class="dialog-top"><h2 id="finance-title">收支日報</h2><button id="finance-close" class="icon-button" aria-label="關閉收支日報">×</button></div><p id="finance-wallet" class="wallet-summary"></p><p id="report-period" class="report-note"></p><div id="report-body"></div><p class="save-status"></p></dialog>
   <dialog id="checkpoint-dialog" class="game-dialog" aria-labelledby="checkpoint-title"><h2 id="checkpoint-title">換日儲存中</h2><p id="checkpoint-message" role="status">正在封存本日帳目並保存下一天開門前的進度…</p><div class="dialog-actions"><button id="checkpoint-retry" class="button button-primary" hidden>重試保存</button><button id="checkpoint-export" class="button button-secondary" hidden>匯出待保存進度</button><button id="checkpoint-continue" class="button button-secondary" hidden>暫不存檔繼續</button></div></dialog>
   <dialog id="confirm-dialog" class="game-dialog" aria-labelledby="confirm-title"><h2 id="confirm-title"></h2><p id="confirm-message"></p><div class="dialog-actions"><button id="confirm-no" class="button button-secondary">取消</button><button id="confirm-yes" class="button button-primary">確認</button></div></dialog>
@@ -899,7 +898,7 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.15.1',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.15.2',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
@@ -1072,7 +1071,7 @@ function resetSpeech(){npcSpeech.reset(shift.dayEvents.seed^shift.day);successfu
 syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
-let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', practiceDone = false, queueSignature = '';
+let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', queueSignature = '';
 let sound = true, audio = null;
 let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const saveStore=new SaveStore();let campaignId=null,campaignActive=false,campaignMemory=null,campaignCatalog=null,saveBusy=false,ownershipLost=false,menuBusy=false,choiceResolve=null,pendingBoundary=null;
@@ -1082,7 +1081,7 @@ const mobileLayoutQuery=matchMedia('(pointer:coarse), (max-width:800px), (orient
 const syncMobileLayout=()=>document.body.classList.toggle('full-map-mobile',mobileLayoutQuery.matches);syncMobileLayout();mobileLayoutQuery.addEventListener('change',syncMobileLayout);
 const mobileView=()=>document.body.classList.contains('full-map-mobile');
 let achievementOrigin=null,achievementViewGame=null,achievementSavedSnapshot=null;
-const dialogIds = ['achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
+const dialogIds = ['achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const rackHints = () => shift.upgrades.cargoManagement;
 const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
@@ -1114,14 +1113,14 @@ function beep(success=true){
   osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(now+.2);
  }catch{/* Audio is optional; gameplay continues if the browser denies it. */}
 }
-function beginSession(practice=false){
+function beginSession(){
  if(!ready){if(loadError)location.reload();return;}
- closeDialogs();shift=new Shift({practice,deferDayStart:!practice,eventSeed:eventSeedFromText(campaignId||'practice')});syncLayout();resetPlayer();actors=new Map();departures=[];
- action=null;practiceDone=false;feedback=null;queueSignature='';resetSpeech();shift.start();processEvents();
+ closeDialogs();shift=new Shift({deferDayStart:true,eventSeed:eventSeedFromText(campaignId)});syncLayout();resetPlayer();actors=new Map();departures=[];
+ action=null;feedback=null;queueSignature='';resetSpeech();shift.start();processEvents();
  $('guide').textContent='先到櫃檯接待客人，再按提貨碼找貨。新貨可自由選 已開放貨架 上架。';
  const first=actors.get(shift.queue[0]?.id);if(first){first.x=queuePoints[0].x;first.y=queuePoints[0].y;first.moving=false;first.entered=true;}
  $('pause-button').disabled=false;canvas.focus({preventScroll:true});
- toast(practice?'練習不計時：先到櫃檯接待客人，登記提貨要求。':'開檔！先接待客人，空檔自由上架新貨。');
+ toast('開檔！先接待客人，空檔自由上架新貨。');
 }
 function pause(reason='所有客人耐性及班次時間已停止。'){
  if(!shift.pause())return;
@@ -1261,7 +1260,7 @@ function finish(){
  renderAchievementNews();$('pause-button').disabled=true;showDialog('result-dialog');
 }
 function renderAchievementNews(){
- const entries=ACHIEVEMENTS.filter(c=>shift.achievements?.unlocked[c.id]?.includes(shift.day));const node=$('result-achievements-new');node.hidden=!entries.length||shift.practice;node.textContent=entries.length?`本日新成就：${entries.map(c=>c.name).join('、')}（開下一天前保存）`:'';
+ const entries=ACHIEVEMENTS.filter(c=>shift.achievements?.unlocked[c.id]?.includes(shift.day));const node=$('result-achievements-new');node.hidden=!entries.length;node.textContent=entries.length?`本日新成就：${entries.map(c=>c.name).join('、')}（開下一天前保存）`:'';
 }
 function renderAchievements(){
  const game=achievementViewGame,a=game?.achievements;
@@ -1286,7 +1285,7 @@ async function openAchievements(id,button){
  if(id==='welcome-dialog'){
   const memory=!ownershipLost&&campaignMemory,record=memory||campaignCatalog?.current;
   try{achievementViewGame=record?readSave(record).game:null;}catch{achievementViewGame=null;}
- }else{if(shift.practice)return;achievementViewGame=shift;}
+ }else{achievementViewGame=shift;}
  achievementOrigin={id,button};clearInput();$(id).close();renderAchievements();showDialog('achievements-dialog');$('achievements-scroll').scrollTop=0;$('achievements-close').focus();
 }
 function closeAchievements(){if(!$('achievements-dialog').open)return;$('achievements-dialog').close();const from=achievementOrigin;achievementOrigin=null;achievementViewGame=null;clearInput();if(from){showDialog(from.id);$(from.button)?.focus({preventScroll:true});}}
@@ -1312,9 +1311,6 @@ function processEvents(){
    closeDialogs();action=null;queueSignature='';$('pause-button').disabled=false;
    toast(`第 ${event.day} 天開門！貨架位置已保留，先到櫃檯接客。`);
   }
- }
- if(shift.practice&&shift.stats.completed>=1&&shift.stats.stocked>=1&&!practiceDone){
-  practiceDone=true;shift.pause();closeDialogs();showDialog('practice-done-dialog');
  }
 }
 const canStand=(x,y)=>canStandInShop(x,y,shift.shelves);
@@ -1413,12 +1409,12 @@ function updateMobileHud(order,known,held,stocking,holdingShipping,activePatienc
  const location=stocking?`收貨${shift.receivingCount()}件 · 自由選架上架`:holdingShipping?'送到右下寄貨籠':held&&known&&order?.packageId===held.id?'返回櫃檯交貨':order?known?order.type==='shipping'?'寄貨服務':rackHints()?`前往 ${order.zone} 區貨架`:'按提貨碼逐架尋找':'先到櫃檯接待':'趁空檔整理貨物';
  $('mobile-location').textContent=feedback?.error?`！${feedback.text}`:location;
  $('mobile-order-open').classList.toggle('error',!!feedback?.error);$('mobile-order-open').classList.toggle('warn',activePatience&&patienceState==='warn');$('mobile-order-open').classList.toggle('danger',activePatience&&patienceState==='danger');
- $('mobile-patience').textContent=activePatience?shift.practice?'不計時':shift.phase==='paused'?'已暫停':`${ratio<=.2?'！':ratio<=.4?'△ ':''}耐性 ${Math.ceil(order.patience)}秒`:holdingShipping?'已接收':stocking?'不限時':'';
- $('mobile-patience-track').style.visibility=activePatience&&!shift.practice?'visible':'hidden';$('mobile-patience-track').setAttribute('aria-valuenow',String(Math.round(ratio*100)));$('mobile-patience-fill').style.width=`${ratio*100}%`;
+ $('mobile-patience').textContent=activePatience?shift.phase==='paused'?'已暫停':`${ratio<=.2?'！':ratio<=.4?'△ ':''}耐性 ${Math.ceil(order.patience)}秒`:holdingShipping?'已接收':stocking?'不限時':'';
+ $('mobile-patience-track').style.visibility=activePatience?'visible':'hidden';$('mobile-patience-track').setAttribute('aria-valuenow',String(Math.round(ratio*100)));$('mobile-patience-fill').style.width=`${ratio*100}%`;
  $('mobile-held').textContent=held?held.kind==='shipping'?'待寄貨':held.code:'空手';
  $('mobile-order-open').disabled=!shift.canWork()||saveBusy||ownershipLost;
  if(!$('mobile-detail-dialog').open)return;
- const detail={request:holdingShipping?'已接收寄貨，請放到右下寄貨籠。':requestText(),held:$('held-code').textContent,patience:$('mobile-patience').textContent,day:shift.day,phase:shift.phase,receiving:shift.receivingCount(),receivingCapacity:shift.receiving.length,outbound:shift.outbound.filter(s=>s.packageId).length,outboundCapacity:shift.outbound.length,completed:shift.stats.completed+shift.stats.shipped,revenue:shift.stats.revenue,queue:shift.queue.map(o=>({patience:shift.practice?'不計時':`${Math.ceil(o.patience)}秒`,status:o.revealed?'已接待':'待接待'})),feedback:feedback?.text||''};
+ const detail={request:holdingShipping?'已接收寄貨，請放到右下寄貨籠。':requestText(),held:$('held-code').textContent,patience:$('mobile-patience').textContent,day:shift.day,phase:shift.phase,receiving:shift.receivingCount(),receivingCapacity:shift.receiving.length,outbound:shift.outbound.filter(s=>s.packageId).length,outboundCapacity:shift.outbound.length,completed:shift.stats.completed+shift.stats.shipped,revenue:shift.stats.revenue,queue:shift.queue.map(o=>({patience:`${Math.ceil(o.patience)}秒`,status:o.revealed?'已接待':'待接待'})),feedback:feedback?.text||''};
  const key=JSON.stringify(detail);if(key===mobileDetailKey)return;mobileDetailKey=key;
  $('mobile-detail-request').textContent=detail.request;$('mobile-detail-feedback').textContent=detail.feedback;$('mobile-detail-feedback').hidden=!detail.feedback;
  const facts=[['營業日',`第${detail.day}天`],['店員手上',detail.held],['客人耐性',detail.patience||'—'],['收貨待上架',`${detail.receiving}／${detail.receivingCapacity}`],['寄貨籠',`${detail.outbound}／${detail.outboundCapacity}`],['等候客人',`${detail.queue.length}人`],['今日完成',`${detail.completed}單`],['今日收入',`$${detail.revenue}`]];
@@ -1530,11 +1526,11 @@ function updateUI(){
  const stocking=shift.phase==='stocking'||shift.phase==='paused'&&shift.pausedPhase==='stocking';
  const holdingShipping=held?.kind==='shipping';
  const seconds=Math.ceil(shift.remaining);
- $('clock').textContent=stocking?'不限時':shift.practice?'練習':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
+ $('clock').textContent=stocking?'不限時':`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
  $('clock-label').textContent=stocking?'上架時間':'距離收工';
  $('store-day').textContent=`街坊集運 · 第 ${shift.day} 天`;
- $('clock').parentElement.classList.toggle('urgent',!stocking&&!shift.practice&&seconds<=30);
- $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?(shift.practice?'練習':shift.currentEvent().mode):shift.phase==='closing'?'已收舖':shift.phase==='upgrading'?'商店升級':'準備開檔'}`;
+ $('clock').parentElement.classList.toggle('urgent',!stocking&&seconds<=30);
+ $('mode-label').textContent=`第 ${shift.day} 天 · ${shift.phase==='paused'?'暫停':stocking?'上架時間':shift.phase==='playing'?shift.currentEvent().mode:shift.phase==='closing'?'已收舖':shift.phase==='upgrading'?'商店升級':'準備開檔'}`;
  $('order-title').textContent=holdingShipping?'寄貨處理中':'下一單，交畀你';
  $('order-code').textContent=holdingShipping?'寄貨':order?(known?(order.type==='shipping'?'寄貨':order.code):'待接待'):stocking?'整理中':shift.phase==='ready'?'準備中':'等新客';
  $('order-zone').textContent=holdingShipping?'寄':known?(order.type==='shipping'?'寄':rackHints()?order.zone:'取'):'—';
@@ -1543,27 +1539,25 @@ function updateUI(){
  $('order-location').textContent=holdingShipping?'右下角寄貨區':known?(order.type==='shipping'?'右下角寄貨區':rackHints()?`${order.zone} 區貨架`:'按提貨碼逐架尋找'):order?'到櫃檯接待後顯示':stocking?'新貨可自由選架上架':'';
  document.querySelector('.order-card').classList.toggle('pending',!known&&!holdingShipping);
  $('queue-count').textContent=stocking?`收貨 ${shift.receivingCount()} 件`:`${shift.queue.length} 人等候`;
- const ratio=order?(shift.practice?1:Math.max(0,order.patience/order.maxPatience)):0;
+ const ratio=order?Math.max(0,order.patience/order.maxPatience):0;
  const activePatience=!!order&&!stocking&&!holdingShipping;
  $('order-patience').hidden=!activePatience;
  const patienceState=ratio<=.2?'danger':ratio<=.4?'warn':'normal';
- const patienceText=shift.practice?'不計時':shift.phase==='paused'?'已暫停':`${Math.ceil(order?.patience||0)} 秒 · ${ratio<=.2?'！快到時':ratio<=.4?'△ 留意':'充足'}`;
+ const patienceText=shift.phase==='paused'?'已暫停':`${Math.ceil(order?.patience||0)} 秒 · ${ratio<=.2?'！快到時':ratio<=.4?'△ 留意':'充足'}`;
  for(const prefix of ['','inventory-']){
   const fill=$(prefix+'patience-fill'),text=$(prefix+'patience-text');
   fill.style.width=`${ratio*100}%`;fill.parentElement.className=`patience-track ${patienceState}`;
-  fill.parentElement.hidden=!activePatience||shift.practice;fill.parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
+  fill.parentElement.hidden=!activePatience;fill.parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
   text.textContent=activePatience?patienceText:stocking?'不計時':'—';
  }
- $('pause-achievements').hidden=shift.practice;$('result-achievements').hidden=shift.practice;
  $('inventory-patience').hidden=!activePatience;
  $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?(rackHints()?`${held.zone} 區貨架`:'架上貨物'): '待上架'}`:'空手';
  $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
  $('order-feedback').hidden=!feedback;
  if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
  const mini=$('customer-mini');mini.style.backgroundImage=order?`url("${sourceURL(sources[`${people[order.appearance]}_idle`])}")`:'none';
- if(shift.practice)$('guide').textContent=shift.stats.completed?'提貨完成！去收貨區拿一件新貨，自由選 已開放貨架 貨架上架。':known?'已登記提貨要求，按提示找貨，再返櫃檯交貨。':'先去櫃檯接待客人，互動後才會顯示提貨碼，之後逐架尋找。';
  renderEventInfo();
- $('wallet-summary').textContent=shift.practice?'練習結果獨立，不影響正式錢包。':`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 今日收入 ${moneyText(Object.values(shift.ledger.current.income).reduce((a,b)=>a+b,0))} · 今日支出 ${moneyText(Object.values(shift.ledger.current.expense).reduce((a,b)=>a+b,0)-shift.ledger.current.refund)}`;
+ $('wallet-summary').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 今日收入 ${moneyText(Object.values(shift.ledger.current.income).reduce((a,b)=>a+b,0))} · 今日支出 ${moneyText(Object.values(shift.ledger.current.expense).reduce((a,b)=>a+b,0)-shift.ledger.current.refund)}`;
  document.querySelectorAll('.save-status').forEach(e=>e.textContent=saveStatus);
  $('completed').textContent=String(shift.stats.completed+shift.stats.shipped);$('revenue').textContent=`$${shift.stats.revenue}`;
  const signature=shift.phase+'|'+shift.queue.slice(1).map(o=>`${o.id}:${Math.ceil(o.patience)}`).join('|');
@@ -1571,13 +1565,13 @@ function updateUI(){
   queueSignature=signature;const list=$('queue-list');list.replaceChildren();
   for(const o of shift.queue.slice(1)){
    const row=document.createElement('div');row.className='queue-item';
-   for(const [tag,value] of [['span','等候接待'],['strong','—'],['span',shift.practice?'練習':`${Math.ceil(o.patience)}s`]]){
+   for(const [tag,value] of [['span','等候接待'],['strong','—'],['span',`${Math.ceil(o.patience)}s`]]){
     const el=document.createElement(tag);el.textContent=value;row.append(el);
    }list.append(row);
   }
   if(!list.childNodes.length){const el=document.createElement('p');el.className='quiet';el.textContent=stocking?'今日已停止接客。':'暫時冇其他客，趁機補貨。';list.append(el);}
  }
- $('next-day').hidden=shift.phase!=='stocking';$('shop-button').hidden=shift.phase!=='stocking'||shift.practice;
+ $('next-day').hidden=shift.phase!=='stocking';$('shop-button').hidden=shift.phase!=='stocking';
  const target=closestTarget();$('touch-action').disabled=!target;$('touch-action-label').textContent=targetLabel(target);
  let destination=held?.kind==='shipping'?targets.find(t=>t.id==='outbound'):
   order&&!known?counter:held&&known&&order.packageId===held.id?counter:
@@ -1655,17 +1649,16 @@ $('touch-action').addEventListener('click',e=>{if(e.detail===0)interact();});
 $('mobile-order-open').addEventListener('click',openMobileDetails);
 $('mobile-detail-close').addEventListener('click',closeMobileDetails);$('mobile-detail-back').addEventListener('click',closeMobileDetails);$('mobile-detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeMobileDetails();});$('mobile-detail-pause').addEventListener('click',()=>pause());
 $('pause-button').addEventListener('click',()=>pause());$('help-button').addEventListener('click',()=>pause('操作小抄：時間已暫停，慢慢睇。'));
-$('practice-button').addEventListener('click',()=>start(true));$('start-button').addEventListener('click',()=>start(false));
+$('start-button').addEventListener('click',()=>start());
 $('resume-button').addEventListener('click',resume);$('restart-button').addEventListener('click',()=>campaignMenu());
-$('play-again').addEventListener('click',()=>{if(ownershipLost){campaignMenu();return;}if(shift.practice){enterStocking();return;}shift.managementFrom='closing';shift.phase='upgrading';showUpgradePrompt();});
+$('play-again').addEventListener('click',()=>{if(ownershipLost){campaignMenu();return;}shift.managementFrom='closing';shift.phase='upgrading';showUpgradePrompt();});
 $('next-day').addEventListener('click',()=>{if(ownershipLost)return;closeInventory(false);shift.nextDay();processEvents();});
-$('practice-to-shift').addEventListener('click',()=>campaignMemory?continueCampaign():start(false));
 $('inventory-close').addEventListener('click',()=>closeInventory());$('inventory-confirm').addEventListener('click',confirmParcel);
 $('inventory-pause').addEventListener('click',()=>pause());
 $('inventory-back').addEventListener('click',()=>closeInventory());
 $('inventory-dialog').addEventListener('cancel',e=>{e.preventDefault();closeInventory();});
 $('pause-dialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
-for(const id of ['welcome-dialog','result-dialog','practice-done-dialog'])$(id).addEventListener('cancel',e=>e.preventDefault());
+for(const id of ['welcome-dialog','result-dialog'])$(id).addEventListener('cancel',e=>e.preventDefault());
 document.querySelector('.brand').addEventListener('click',e=>e.preventDefault());
 // Campaign persistence: gameplay remains in memory until the day boundary.
 function campaignView(game=shift){
@@ -1709,12 +1702,8 @@ async function claimCampaign(id,{reset=false}={}){
   await saveStore.acquire(id,{reset,force:true});return true;
  }
 }
-async function start(practice=false){
+async function start(){
  if(!ready||menuBusy)return;
- if(practice){
-  if(campaignActive&&!shift.practice)campaignMemory=captureCampaign();
-  beginSession(true);return;
- }
  menuBusy=true;
  try{
   let catalog;try{catalog=await saveStore.inspect();}catch{/* Allow explicit memory-only play. */}
@@ -1723,13 +1712,13 @@ async function start(practice=false){
   try{if(!await claimCampaign(id,{reset:true}))return;}
   catch(e){if(!await askCampaign('未能啟用本地存檔',e.message+' 可先在本頁經營，換日前重試，或手動匯出；關頁會失去未保存進度。','暫不存檔開始'))return;}
   achievementSavedSnapshot=null;campaignId=id;campaignMemory=null;campaignActive=true;ownershipLost=false;purchasesBlocked=false;pendingBoundary=null;
-  setSaveStatus('尚未自動保存；整理完、準備開下一天前才會保存。');beginSession(false);
+  setSaveStatus('尚未自動保存；整理完、準備開下一天前才會保存。');beginSession();
  }finally{menuBusy=false;}
 }
 function restoreCampaign(record,{saved=true}={}){
  const restored=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(restored.game.achievements);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
  player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;resetSpeech();
- action=null;feedback=null;queueSignature='';suspendedInventory=null;practiceDone=false;clearInput();
+ action=null;feedback=null;queueSignature='';suspendedInventory=null;clearInput();
  if(shift.canWork())shift.pause();
  $('pause-button').disabled=false;$('pause-reason').textContent='進度已還原。離線期間沒有推進時間，準備好再繼續。';showDialog('pause-dialog');lastTime=performance.now();
 }
@@ -1743,7 +1732,7 @@ async function continueCampaign(){
  }catch(e){await askCampaign('未能繼續經營',e.message,'知道了');}finally{menuBusy=false;}
 }
 async function campaignMenu(){
- if(campaignActive&&!shift.practice){if(shift.canWork())shift.pause();campaignMemory=captureCampaign();}
+ if(campaignActive){if(shift.canWork())shift.pause();campaignMemory=captureCampaign();}
  closeDialogs();clearInput();showDialog('welcome-dialog');await refreshCampaignMenu();
 }
 function stageNextDay(){
@@ -1751,7 +1740,7 @@ function stageNextDay(){
  const view=campaignView(next);return{record:makeSave(campaignId,next,view,{sound})};
 }
 async function completeBoundary(){
- if(saveBusy||shift.practice||shift.phase!=='dayend')return;
+ if(saveBusy||shift.phase!=='dayend')return;
  saveBusy=true;closeDialogs();showDialog('checkpoint-dialog');$('checkpoint-title').textContent='換日儲存中';$('checkpoint-message').textContent='正在封存本日帳目，保存下一天開門前的完整進度…';
  for(const id of ['checkpoint-retry','checkpoint-export','checkpoint-continue'])$(id).hidden=true;
  try{
@@ -1776,7 +1765,7 @@ async function skipBoundarySave(){
 }
 function exportCampaign(){
  try{
-  const record=shift.practice?campaignMemory:captureCampaign();if(!record)throw new Error('練習沒有正式店舖進度可匯出。');readSave(record);
+  const record=captureCampaign();readSave(record);
   const blob=new Blob([JSON.stringify(record,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
   link.href=url;link.download=`parcel-parcel-parcel-day-${record.payload.shift.day}-${new Date().toISOString().slice(0,10)}.json`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
  }catch(e){askCampaign('無法匯出',e.message,'知道了');}
@@ -1790,7 +1779,6 @@ async function replaceCampaign(record,title='匯入備份'){
  }catch(e){await askCampaign('進度沒有被取代',e.message,'知道了');}finally{menuBusy=false;}
 }
 function openFinance(){
- if(shift.practice){askCampaign('練習結果獨立','練習不會增加正式錢包。返回主選單可繼續原有正式進度。','知道了');return;}
  if(!campaignActive)return;
  const ledger=shift.ledger;
  $('finance-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 累計收入 ${moneyText(ledger.lifetimeRevenue)} · 今日支出 ${moneyText(Object.values(ledger.current.expense).reduce((a,b)=>a+b,0)-ledger.current.refund)}`;
@@ -1807,13 +1795,13 @@ function renderFinance(){
 
 // Cards share one saved forecast; rendering never draws a new event.
 function fillEventCard(id,entry,label){
- const node=$(id);node.hidden=shift.practice||!entry;if(node.hidden)return;
+ const node=$(id);node.hidden=!entry;if(node.hidden)return;
  const event=DAY_EVENTS[entry.id],key=`${label}:${entry.day}:${entry.id}`;if(node.dataset.event===key)return;
  node.dataset.event=key;node.replaceChildren();const tag=document.createElement('small'),name=document.createElement('h3'),story=document.createElement('p'),effects=document.createElement('p');
  tag.textContent=`${label} · 第 ${entry.day} 天`;name.textContent=event.name;story.textContent=event.story;effects.className='event-effects';effects.textContent=dayEventSummary(event);node.append(tag,name,story,effects);
 }
 function renderEventInfo(){
- const key=`${shift.practice}:${shift.dayEvents.current.day}:${shift.dayEvents.current.id}:${shift.dayEvents.next?.day}:${shift.dayEvents.next?.id}`;if(key===eventInfoKey)return;eventInfoKey=key;
+ const key=`${shift.dayEvents.current.day}:${shift.dayEvents.current.id}:${shift.dayEvents.next?.day}:${shift.dayEvents.next?.id}`;if(key===eventInfoKey)return;eventInfoKey=key;
  fillEventCard('forecast-prompt',shift.dayEvents.next,'明日店況');fillEventCard('forecast-shop',shift.dayEvents.next,'明日店況');
  fillEventCard('pause-event',shift.dayEvents.current,'今日店況');
  const node=$('pause-event');if(!node.hidden&&shift.dayEvents.next){const key=`${shift.dayEvents.next.day}:${shift.dayEvents.next.id}`;if(node.dataset.next!==key){node.querySelector('.next-event')?.remove();const p=document.createElement('p');p.className='next-event';p.textContent=`明日 · ${DAY_EVENTS[shift.dayEvents.next.id].name}：${dayEventSummary(DAY_EVENTS[shift.dayEvents.next.id])}`;node.append(p);node.dataset.next=key;}}else{node.querySelector('.next-event')?.remove();delete node.dataset.next;}
@@ -1830,7 +1818,7 @@ function enterStocking(){
  processEvents();$('pause-button').disabled=false;canvas.focus({preventScroll:true});
 }
 function openUpgradeShop(){
- if(ownershipLost||shift.practice)return;
+ if(ownershipLost)return;
  if(shift.phase==='stocking'){shift.managementFrom='stocking';shift.phase='upgrading';}
  if(shift.phase!=='upgrading')return;
  closeDialogs();$('upgrade-feedback').textContent='';renderUpgrades();showDialog('upgrade-dialog');
@@ -1912,7 +1900,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
  const img=new Image();img.onload=()=>{images.set(name,packRuntimeImage(name,img));resolve();};img.onerror=()=>reject(new Error(`Image unavailable: ${name}`));img.src=sourceURL(path);
 }))).then(()=>{
  ready=true;$('loading-status').textContent='店面準備好，隨時可以開檔。';
- $('practice-button').disabled=false;$('start-button').disabled=false;
+ $('start-button').disabled=false;
 }).catch(error=>{
  loadError=true;$('loading-status').textContent='素材未能載入，請重試或用完整原型檔案開啟。';
  $('start-button').disabled=false;$('start-button').textContent='重新載入';console.error(error);

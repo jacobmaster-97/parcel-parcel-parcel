@@ -1,6 +1,6 @@
 {
-  "version": "0.15.1",
-  "html_sha256": "ff2c9040daec60abca142265fe06b5e9a8514406c801e4a4b8839a7aac5112b5",
+  "version": "0.15.2",
+  "html_sha256": "b067c26fa0709953626755f93c069118988453de35ac8445cf6e3e4906a762b3",
   "save_schema": 9,
   "achievements": 30,
   "icons": 30,
@@ -13,6 +13,8 @@
     "same-pre-opening-atomic-save",
     "mobile-full-map-retained",
     "current-day-finance-summary",
-    "no-finance-history-selector-details-or-refund-row"
+    "no-finance-history-selector-details-or-refund-row",
+    "formal-campaign-only",
+    "practice-entry-flow-and-dialog-removed"
   ]
 }

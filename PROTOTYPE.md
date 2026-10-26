@@ -1,3 +1,7 @@
+# v0.15.2 移除練習模式
+
+依使用者要求，移除練習按鈕、練習完成視窗、跳轉及前端練習流程。新店直接開始120秒正式營業，舊店繼續經營與收舖不限時上架保留。前端所有UI、啟動、日結、成就及匯出均只走正式流程。schema9與唯一換日前保存不變。詳design/PRACTICE_REMOVAL_IMPLEMENTED.md。
+
 # v0.15.1 收支日報簡化
 
 依使用者要求，只顯示當日摘要，移除歷史營業日下拉、逐筆明細、退款欄及歷史明細合併提示。保留當日收支、資金與工作統計。財務、成就及遊戲規則不改，schema9與唯一換日前自存不改。實裝及驗證見design/FINANCE_SUMMARY_IMPLEMENTED.md與tests/finance-summary-smoke.mjs。

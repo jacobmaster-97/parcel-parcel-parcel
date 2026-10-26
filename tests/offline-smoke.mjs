@@ -5,15 +5,15 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.15.1.html')).href+'?qa=1';
+const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.15.2.html')).href+'?qa=1';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await context.setOffline(true);
 const errors=[],network=[];const page=await context.newPage();
 page.on('pageerror',e=>errors.push(e.message));
 page.on('request',r=>{if(/^https?:/.test(r.url()))network.push(r.url());});
-await page.clock.install();await page.goto(uri);await page.locator('#practice-button:enabled').waitFor();
-await page.locator('#practice-button').tap();await page.clock.fastForward(4000);
+await page.clock.install();await page.goto(uri);await page.locator('#start-button:enabled').waitFor();
+assert.equal(await page.locator('#practice-button,#practice-done-dialog,#practice-to-shift').count(),0);await page.locator('#start-button').tap();await page.locator('#welcome-dialog').waitFor({state:'hidden'});await page.clock.fastForward(4000);assert.equal(await page.evaluate(()=>__parcelQA.snapshot().practice),false);
 const profiles=[{width:390,height:844,file:'prototype-mobile.png'},
  {width:844,height:390,file:'prototype-mobile-landscape.png'},
  {width:360,height:640,file:'prototype-small.png'},
@@ -41,7 +41,7 @@ try{
   results.push({viewport:[profile.width,profile.height],status:'PASS',controlsInsideViewport:true,minTouchSize:48});
  }
  // Test the exact downloaded file, without any server/network, through its end state.
- await page.reload();await page.locator('#start-button:enabled').waitFor();await page.locator('#start-button').tap();await page.locator('#welcome-dialog').waitFor({state:'hidden'});
+ await page.reload();await page.locator('#start-button:enabled').waitFor();await page.locator('#start-button').tap();await page.locator('#confirm-dialog[open]').waitFor();assert.match(await page.locator('#confirm-title').innerText(),/接管/);await page.locator('#confirm-yes').tap();await page.locator('#welcome-dialog').waitFor({state:'hidden'});
  await page.clock.fastForward(10000);
  const remaining=await page.evaluate(()=>__parcelQA.snapshot().remaining);assert.ok(remaining>=109&&remaining<=111);
  await page.clock.fastForward(171000);await page.locator('#result-dialog[open]').waitFor();

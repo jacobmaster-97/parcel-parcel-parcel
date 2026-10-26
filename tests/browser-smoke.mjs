@@ -36,7 +36,7 @@ async function controlsFit(page){
  assert.equal(boxes.overflow,false);for(const b of boxes.items){assert.ok(b.x>=0&&b.y>=0&&b.right<=boxes.width+1&&b.bottom<=boxes.height+1,JSON.stringify(boxes));if(b.s!=='.scene-panel')assert.ok(b.w>=48&&b.h>=48);}
 }
 try{
- const desktop=await setup(),page=desktop.page;await page.locator('#practice-button').click();await page.clock.runFor(50);
+ const desktop=await setup(),page=desktop.page;await page.locator('#start-button').click();await page.locator('#welcome-dialog').waitFor({state:'hidden'});await page.clock.runFor(50);
  let state=await snapshot(page);assert.equal(state.world.width,350);assert.deepEqual(state.targets.filter(t=>t.type==='shelf').map(t=>t.x),[70,140]);
  assert.deepEqual(state.assetSizes.courier_walk,[256,192]);assert.deepEqual(state.assetSizes.courier_carry_walk,[256,192]);assert.deepEqual(state.assetSizes.outbound_cage,[96,80]);
  assert.equal(await page.locator('#instruction,#toast').count(),0);assert.equal(await page.locator('#order-code').textContent(),'待接待');
@@ -50,11 +50,10 @@ try{
  await act(page);await choose(page,'4826','A');await counterFromShelf(page);await act(page);assert.equal((await snapshot(page)).stats.completed,1);
  await page.keyboard.down('e');await page.clock.runFor(600);await page.keyboard.up('e');assert.equal((await snapshot(page)).stats.completed,1);
  await receivingFromStaff(page);await act(page);await choose(page,'4974','receiving');await shelfFromPublic(page,140);await act(page);
- await page.locator('#practice-done-dialog[open]').waitFor();assert.equal((await snapshot(page)).packages.find(p=>p.code==='4974').zone,'B');
- await page.locator('#practice-to-shift').click();await page.locator('#practice-done-dialog').waitFor({state:'hidden'});await page.clock.runFor(50);await page.screenshot({path:output+'prototype-desktop.png'});
+ assert.equal((await snapshot(page)).packages.find(p=>p.code==='4974').zone,'B');assert.equal((await snapshot(page)).practice,false);assert.ok((await snapshot(page)).wallet>0);assert.equal(await page.locator('#practice-button,#practice-done-dialog,#practice-to-shift').count(),0);await page.clock.runFor(50);await page.screenshot({path:output+'prototype-desktop.png'});
  assert.ok((await snapshot(page)).actors.every(a=>a.y<=142));results.push('Desktop: real counter collision, staff gate, first greeting, wrong/return/correct pickup and free shelving; normalized courier atlases loaded.');await desktop.context.close();
 
- const mobile=await setup(true),mp=mobile.page,cdp=await mobile.context.newCDPSession(mp);await mp.locator('#practice-button').tap();await mp.clock.runFor(50);
+ const mobile=await setup(true),mp=mobile.page,cdp=await mobile.context.newCDPSession(mp);await mp.locator('#start-button').tap();await mp.locator('#welcome-dialog').waitFor({state:'hidden'});await mp.clock.runFor(50);
  async function touchTo(axis,target){
   const before=(await snapshot(mp)).player[axis];if(Math.abs(before-target)<=1)return;
   const b=await mp.locator('#joystick').boundingBox(),sign=target>before?1:-1;
@@ -67,8 +66,7 @@ try{
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[finger]});await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[finger,{x:button.x+button.width/2,y:button.y+button.height/2,id:2}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  await mp.locator('#inventory-dialog[open]').waitFor();await choose(mp,'4826','A',true);await touchTo('y',218);await touchTo('x',174);await act(mp,true);
  assert.equal((await snapshot(mp)).stats.completed,1);await touchTo('x',310);await touchTo('y',112);await act(mp,true);await choose(mp,'4974','receiving',true);
- await touchTo('x',310);await touchTo('y',260);await touchTo('x',140);await act(mp,true);await mp.locator('#practice-done-dialog[open]').waitFor();
- await mp.locator('#practice-to-shift').tap();await mp.locator('#practice-done-dialog').waitFor({state:'hidden'});await mp.clock.runFor(50);await controlsFit(mp);await mp.screenshot({path:output+'prototype-mobile.png'});
+ await touchTo('x',310);await touchTo('y',260);await touchTo('x',140);await act(mp,true);assert.equal((await snapshot(mp)).practice,false);assert.ok((await snapshot(mp)).remaining<120);assert.ok((await snapshot(mp)).wallet>0);assert.equal(await mp.locator('#practice-button,#practice-done-dialog,#practice-to-shift').count(),0);await mp.clock.runFor(50);await controlsFit(mp);await mp.screenshot({path:output+'prototype-mobile.png'});
  await mp.setViewportSize({width:844,height:390});await mp.waitForTimeout(150);await mp.clock.runFor(50);await mp.locator('#pause-dialog[open]').waitFor();await mp.locator('#resume-button').tap();await mp.clock.runFor(50);await controlsFit(mp);await mp.screenshot({path:output+'prototype-mobile-landscape.png'});
  await mp.evaluate(()=>window.dispatchEvent(new Event('blur')));await mp.locator('#pause-dialog[open]').waitFor();results.push('Mobile: pure touch pickup/delivery, two-finger inventory, staff-gate replenishment, B-zone stocking, portrait/landscape and focus-loss pause.');await mobile.context.close();
 
