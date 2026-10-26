@@ -1,6 +1,6 @@
 {
-  "version": "0.15.0",
-  "html_sha256": "2d75618b8651308497e7f844f32a5428b8d10bccf436ddd5c629a756c2de93db",
+  "version": "0.15.1",
+  "html_sha256": "ff2c9040daec60abca142265fe06b5e9a8514406c801e4a4b8839a7aac5112b5",
   "save_schema": 9,
   "achievements": 30,
   "icons": 30,
@@ -11,6 +11,8 @@
     "separate-player-worker-first-stocks",
     "legacy-evidence-only-migration",
     "same-pre-opening-atomic-save",
-    "mobile-full-map-retained"
+    "mobile-full-map-retained",
+    "current-day-finance-summary",
+    "no-finance-history-selector-details-or-refund-row"
   ]
 }

@@ -751,21 +751,15 @@ function openFinance(){
  if(!campaignActive)return;
  const ledger=shift.ledger;
  $('finance-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())} · 累計收入 ${moneyText(ledger.lifetimeRevenue)} · 今日支出 ${moneyText(Object.values(ledger.current.expense).reduce((a,b)=>a+b,0)-ledger.current.refund)}`;
- const select=$('report-day');select.replaceChildren();
- for(const d of [ledger.current,...ledger.reports.slice().reverse()]){const o=document.createElement('option');o.value=String(d.day);o.textContent=`第 ${d.day} 天 · ${d.sealed?'已封存':shift.phase==='closing'||shift.phase==='upgrading'||shift.phase==='stocking'||shift.pausedPhase==='stocking'?'整理中':'營業中'}`;select.append(o);}
  renderFinance();showDialog('finance-dialog');
 }
 function renderFinance(){
- const ledger=shift.ledger,day=Number($('report-day').value),d=[ledger.current,...ledger.reports].find(r=>r.day===day);if(!d)return;
+ const d=shift.ledger.current;
+ $('report-period').textContent=`第 ${d.day} 天 · ${d.sealed?'已封存':['closing','upgrading','stocking'].includes(shift.phase)||shift.pausedPhase==='stocking'?'整理中':'營業中'}`;
  const body=$('report-body');body.replaceChildren();const income=Object.values(d.income).reduce((a,b)=>a+b,0),expense=Object.values(d.expense).reduce((a,b)=>a+b,0)-d.refund;
- const values=[['期初資金',d.opening],['提貨服務費',d.income.pickup],['小費',d.income.tips],['寄貨服務費',d.income.shipping],['今日收入',income],['營運支出',d.expense.operating],['投資支出',d.expense.investment],['相關退款',d.refund],['今日現金增減',income-expense],[d.sealed?'期末資金':'目前資金',d.opening+income-expense]];
+ const values=[['期初資金',d.opening],['提貨服務費',d.income.pickup],['小費',d.income.tips],['寄貨服務費',d.income.shipping],['今日收入',income],['營運支出',d.expense.operating],['投資支出',d.expense.investment],['今日現金增減',income-expense],[d.sealed?'期末資金':'目前資金',d.opening+income-expense]];
  for(const [name,value] of values){const row=document.createElement('div');row.className='report-row';const label=document.createElement('span'),amount=document.createElement('strong');label.textContent=name;amount.textContent=moneyText(value);row.append(label,amount);body.append(row);}
- const heading=document.createElement('h3');heading.textContent='逐筆明細';body.append(heading);
- const names={pickup:'提貨服務費',tips:'小費',shipping:'寄貨服務費',operating:'營運支出',investment:'投資支出',refund:'退款'};
- for(const e of d.entries){const row=document.createElement('p');row.className='report-entry';row.textContent=`${names[e.type]} · ${e.reference}${e.night?' · 收舖後完成':''}　${['operating','investment'].includes(e.type)?'−':'+'}${moneyText(e.amount)}`;body.append(row);}
- if(!d.entries.length){const p=document.createElement('p');p.textContent='本日尚無收支。';body.append(p);}
  const stats=d.stats||shift.stats;const p=document.createElement('p');p.className='report-note';p.textContent=`完成提貨 ${stats.completed} · 寄貨 ${stats.shipped} · 上架 ${stats.stocked} · 錯件 ${stats.errors} · 流失 ${stats.missed}`;body.append(p);
- if(ledger.archived.days){const p=document.createElement('p');p.className='report-note';p.textContent=`第1–${ledger.archived.days}天明細已合併：收入 ${moneyText(ledger.archived.income)}，淨支出 ${moneyText(ledger.archived.expense)}。錢包及累計收入保留。`;body.append(p);}
 }
 
 // Cards share one saved forecast; rendering never draws a new event.
@@ -847,7 +841,7 @@ $('checkpoint-dialog').addEventListener('cancel',e=>e.preventDefault());
 $('checkpoint-retry').addEventListener('click',()=>completeBoundary());$('checkpoint-export').addEventListener('click',()=>exportCampaign());$('checkpoint-continue').addEventListener('click',()=>skipBoundarySave());
 for(const id of ['finance-button','result-finance'])$(id).addEventListener('click',()=>openFinance());
 for(const id of ['export-button','result-export'])$(id).addEventListener('click',()=>exportCampaign());
-$('finance-close').addEventListener('click',()=>$('finance-dialog').close());$('report-day').addEventListener('change',renderFinance);
+$('finance-close').addEventListener('click',()=>$('finance-dialog').close());
 $('result-menu').addEventListener('click',()=>campaignMenu());
 $('import-button').addEventListener('click',()=>$('import-file').click());
 $('import-file').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{if(file.size>8*1024*1024)throw new Error('備份檔案過大。');const record=JSON.parse(await file.text());await replaceCampaign(record);}catch(error){await askCampaign('無法匯入',error.message,'知道了');}});
