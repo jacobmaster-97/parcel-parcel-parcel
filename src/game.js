@@ -1,3 +1,4 @@
+import {initialAchievements,achievementEvent,sealAchievementDay} from './achievements.js';
 import {COURIER_ROUTE,shopLayout} from './layout.js';
 import {initialUpgrades,upgradeOptions} from './upgrades.js';
 import {DAY_EVENTS,initialDayEvents,previewNextEvent,advanceDayEvent,customerEventRates} from './day-events.js';
@@ -8,7 +9,7 @@ const slot = () => ({packageId: null, reservedFor: null});
 
 export class Shift {
   constructor({practice = false, seed = 7, shippingChance = .2, deferDayStart = false, eventSeed = seed} = {}) {
-    this.practice = practice;
+    this.practice = practice;this.achievements=initialAchievements();
     this.deferDayStart=deferDayStart;this.ledger=new Ledger();this.upgrades=initialUpgrades();this.worker=null;this.selectionId=null;this.managementFrom='closing';
     this.shippingChance = shippingChance;this.dayEvents=initialDayEvents(eventSeed);
     this.outbound = Array.from({length:6}, slot);
@@ -107,7 +108,7 @@ export class Shift {
       }else{
         const dest=this.shelves[task.zone][task.index];if(dest.packageId||dest.reservedFor!==p.id){this.returnWorkerCargo();return;}
         this.receiving[task.originIndex].reservedFor=null;dest.reservedFor=null;dest.packageId=p.id;p.location='shelf';p.zone=task.zone;p.index=task.index;p.origin=null;
-        this.stats.stocked++;w.task=null;w.moving=false;this.emit('workerStock',{packageId:p.id});
+        const fresh=!p.achievementStocked;p.achievementStocked=true;this.stats.stocked++;w.task=null;w.moving=false;this.emit('workerStock',{packageId:p.id,fresh,zone:task.zone});
       }
     }
   }
@@ -115,7 +116,7 @@ export class Shift {
     this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
     return this.seed / 4294967296;
   }
-  emit(type, detail = {}) { this.events.push({type, ...detail}); }
+  emit(type, detail = {}) { achievementEvent(this,type,detail);this.events.push({type, ...detail}); }
   drainEvents() { return this.events.splice(0); }
   start() {
     if (this.phase !== 'ready') return false;
@@ -135,13 +136,13 @@ export class Shift {
     if (this.phase !== 'stocking') return false;
     if (this.held && !this.isHoldingShipping() && !this.returnHeld().ok) return false;
     this.forwardOutbound();
-    this.ledger.seal(this.stats);
+    sealAchievementDay(this);this.ledger.seal(this.stats);
     if(this.deferDayStart){this.phase='dayend';this.emit('checkpoint');return true;}
     return this.openNextDay();
   }
   openNextDay(){
     if(!['stocking','dayend'].includes(this.phase))return false;
-    this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
+    sealAchievementDay(this);this.ledger.seal(this.stats);this.ledger.openDay(this.day+1);
     this.day++;if(this.practice)this.dayEvents=initialDayEvents(this.dayEvents.seed,this.day,true);else advanceDayEvent(this.dayEvents); this.beginWorkerDay(); this.remaining = SHIFT_SECONDS; this.elapsed = 0;
     this.stats = {completed: 0, errors: 0, missed: 0, stocked: 0, revenue: 0, shipped: 0};
     this.customerTimer = 7/this.customerRates().total; this.deliveryTimer = 25/this.currentEvent().delivery; this.phase = 'playing';
@@ -285,7 +286,7 @@ export class Shift {
     if (order) order.zone = zone;
     p.origin = null; this.held = null;
     if (fresh) this.stats.stocked++;
-    this.emit('stock', {packageId: p.id});
+    const first=fresh&&!p.achievementStocked;p.achievementStocked=true;this.emit('stock', {packageId:p.id,fresh:first,zone});
     if (this.phase === 'stocking' && this.receivingCount() === 0 && !this.isHoldingShipping()) this.nextDay();
     return {ok: true, message: `${p.code} 已上架 · ${zone} 區`};
   }

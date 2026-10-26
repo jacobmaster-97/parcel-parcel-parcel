@@ -1,12 +1,16 @@
 {
-  "version": "0.14.0",
-  "html_sha256": "0f5a28a38f601133e84e9b29024ea6225b7fb7c943e6c1f713445a41c69f55bf",
+  "version": "0.15.0",
+  "html_sha256": "2d75618b8651308497e7f844f32a5428b8d10bccf436ddd5c629a756c2de93db",
+  "save_schema": 9,
+  "achievements": 30,
+  "icons": 30,
   "features": [
-    "mobile-full-map-only",
-    "compact48-plus64-header",
-    "controls-outside-map",
-    "screen-space14px-labels",
-    "live-details-with-explicit-pause",
-    "schema8-and-economy-unchanged"
+    "achievement-album-three-entries",
+    "earned-icons-only",
+    "all-items-without-status-category-filters",
+    "separate-player-worker-first-stocks",
+    "legacy-evidence-only-migration",
+    "same-pre-opening-atomic-save",
+    "mobile-full-map-retained"
   ]
 }

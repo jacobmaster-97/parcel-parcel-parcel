@@ -1,6 +1,6 @@
 import {createRequire} from 'node:module';import assert from 'node:assert/strict';import fs from 'node:fs';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.14.0.html',import.meta.url).href;
+const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.15.0.html',import.meta.url).href;
 const root=new URL('../deliverables/',import.meta.url).pathname,b=await chromium.launch({args:['--no-sandbox']});const errors=[],profiles=[];
 const c=await b.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
 try{
@@ -12,7 +12,7 @@ try{
  await move('s',525);await move('a',1300);await p.keyboard.press('e');await p.clock.runFor(50);
  assert.equal(await p.locator('#inventory-confirm').isDisabled(),true);assert.equal(await p.locator('.parcel-choice[aria-pressed=true]').count(),0);assert.equal(await p.locator('.parcel-choice:disabled').count(),2);
  await p.keyboard.press('ArrowRight');assert.match(await p.locator('#inventory-selection').innerText(),/4826/);
- await p.getByRole('button',{name:'包裹 4863，貨架'}).click();await p.locator('#inventory-pause').click();const paused=await p.evaluate(()=>__parcelQA.snapshot().queue[0].patience);await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>__parcelQA.snapshot().queue[0].patience),paused);await p.locator('#resume-button').click();assert.equal(await p.locator('#inventory-dialog').evaluate(e=>e.open),true);assert.equal(await p.getByRole('button',{name:'包裹 4863，貨架'}).getAttribute('aria-pressed'),'true');
+ await p.getByRole('button',{name:'包裹 4863，貨架'}).click();await p.locator('#inventory-pause').click();const paused=await p.evaluate(()=>__parcelQA.snapshot().queue[0].patience);await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>__parcelQA.snapshot().queue[0].patience),paused);await p.locator('#pause-achievements').click();await p.clock.runFor(5000);assert.equal(await p.evaluate(()=>__parcelQA.snapshot().queue[0].patience),paused);await p.keyboard.press('Escape');assert.ok(await p.locator('#pause-dialog').evaluate(e=>e.open));await p.locator('#resume-button').click();assert.equal(await p.locator('#inventory-dialog').evaluate(e=>e.open),true);assert.equal(await p.getByRole('button',{name:'包裹 4863，貨架'}).getAttribute('aria-pressed'),'true');
  await p.screenshot({path:root+'ui-selection-desktop.png'});
  for(const [width,height] of [[390,844],[844,390],[360,640],[640,360],[360,800]]){
   await p.setViewportSize({width,height});await p.waitForTimeout(150);await p.clock.runFor(100);if(await p.locator('#pause-dialog').evaluate(e=>e.open))await p.locator('#resume-button').click();await p.clock.runFor(50);

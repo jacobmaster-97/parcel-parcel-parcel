@@ -1,0 +1,381 @@
+{
+  "version": "0.15.0",
+  "image": "assets/ui/achievement_icons.png",
+  "width": 320,
+  "height": 384,
+  "cell": [
+    64,
+    64
+  ],
+  "grid": [
+    5,
+    6
+  ],
+  "filter": "nearest",
+  "transparent": true,
+  "source": "image_gen original output; assets/raw/achievements-v015/generated-icons.png",
+  "normalization": "Measured nonuniform source bounds; chroma removal, content crop, nearest-neighbour fit to52px; transparent cell padding. No programmatically drawn icon content.",
+  "reveal": "Only attach icon background when first tier earned; locked cards use generic question mark.",
+  "icons": [
+    {
+      "id": "4",
+      "name": "街坊熟面口",
+      "column": 0,
+      "row": 0,
+      "rect": [
+        0,
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "5",
+      "name": "寄貨能手",
+      "column": 1,
+      "row": 0,
+      "rect": [
+        64,
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "6",
+      "name": "上架達人",
+      "column": 2,
+      "row": 0,
+      "rect": [
+        128,
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "7",
+      "name": "細水長流",
+      "column": 3,
+      "row": 0,
+      "rect": [
+        192,
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "8",
+      "name": "件件準繩",
+      "column": 4,
+      "row": 0,
+      "rect": [
+        256,
+        0,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "9",
+      "name": "眼明手快",
+      "column": 0,
+      "row": 1,
+      "rect": [
+        0,
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "10",
+      "name": "有條不紊",
+      "column": 1,
+      "row": 1,
+      "rect": [
+        64,
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "11",
+      "name": "獨當一面",
+      "column": 2,
+      "row": 1,
+      "rect": [
+        128,
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "12",
+      "name": "添置新架",
+      "column": 3,
+      "row": 1,
+      "rect": [
+        192,
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "13",
+      "name": "容量大升級",
+      "column": 4,
+      "row": 1,
+      "rect": [
+        256,
+        64,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "14",
+      "name": "籠位充足",
+      "column": 0,
+      "row": 2,
+      "rect": [
+        0,
+        128,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "15",
+      "name": "數碼小店",
+      "column": 1,
+      "row": 2,
+      "rect": [
+        64,
+        128,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "16",
+      "name": "生意上軌道",
+      "column": 2,
+      "row": 2,
+      "rect": [
+        128,
+        128,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "17",
+      "name": "最佳拍檔",
+      "column": 3,
+      "row": 2,
+      "rect": [
+        192,
+        128,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "18",
+      "name": "理貨好幫手",
+      "column": 4,
+      "row": 2,
+      "rect": [
+        256,
+        128,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "19",
+      "name": "迎戰大促",
+      "column": 0,
+      "row": 3,
+      "rect": [
+        0,
+        192,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "20",
+      "name": "風雨無阻",
+      "column": 1,
+      "row": 3,
+      "rect": [
+        64,
+        192,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "21",
+      "name": "退貨專家",
+      "column": 2,
+      "row": 3,
+      "rect": [
+        128,
+        192,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "22",
+      "name": "見慣大場面",
+      "column": 3,
+      "row": 3,
+      "rect": [
+        192,
+        192,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "23",
+      "name": "收工有交帶",
+      "column": 4,
+      "row": 3,
+      "rect": [
+        256,
+        192,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "24",
+      "name": "井井有條",
+      "column": 0,
+      "row": 4,
+      "rect": [
+        0,
+        256,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "25",
+      "name": "開店投資",
+      "column": 1,
+      "row": 4,
+      "rect": [
+        64,
+        256,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "27",
+      "name": "服務有餘裕",
+      "column": 2,
+      "row": 4,
+      "rect": [
+        128,
+        256,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "28",
+      "name": "口碑連連",
+      "column": 3,
+      "row": 4,
+      "rect": [
+        192,
+        256,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "29",
+      "name": "鞋仔飛人",
+      "column": 4,
+      "row": 4,
+      "rect": [
+        256,
+        256,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "30",
+      "name": "進階精英",
+      "column": 0,
+      "row": 5,
+      "rect": [
+        0,
+        320,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "31",
+      "name": "合作無間",
+      "column": 1,
+      "row": 5,
+      "rect": [
+        64,
+        320,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "34",
+      "name": "精打細算",
+      "column": 2,
+      "row": 5,
+      "rect": [
+        128,
+        320,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "35",
+      "name": "精打細算2",
+      "column": 3,
+      "row": 5,
+      "rect": [
+        192,
+        320,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "36",
+      "name": "收工有交帶2",
+      "column": 4,
+      "row": 5,
+      "rect": [
+        256,
+        320,
+        64,
+        64
+      ]
+    }
+  ]
+}

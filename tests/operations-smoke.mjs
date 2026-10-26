@@ -1,7 +1,7 @@
 import{createRequire}from'node:module';import assert from'node:assert/strict';import fs from'node:fs/promises';
 import{Shift}from'../src/game.js';import{makeSave}from'../src/save.js';
 const{chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({args:['--no-sandbox']});
-const url=new URL('../deliverables/parcel-point-prototype-v0.14.0.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
+const url=new URL('../deliverables/parcel-point-prototype-v0.15.0.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
 const snap=p=>p.evaluate(()=>__parcelQA.snapshot());
 function record(closing){const g=new Shift({shippingChance:0,deferDayStart:true});g.start();g.ledger.post('fixture','pickup',2000,'fixture');g.totalRevenue=g.stats.revenue=2000;if(closing)g.closeDay();return makeSave('ops-fixture',g,{player:{x:174,y:218,face:'up',travel:0},actors:g.queue.map(o=>({id:o.id,appearance:o.appearance,x:174,y:142,face:'down',travel:0,carrying:false,entered:true,route:[],next:0})),departures:[]});}
 async function load(p,closing){await p.clock.install();p.on('pageerror',e=>errors.push(e.message));await p.goto(url);await p.locator('#start-button:enabled').waitFor();await p.locator('#import-file').setInputFiles({name:'ops.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(record(closing)))});await p.locator('#confirm-yes').click();await p.locator('#pause-dialog[open]').waitFor();await p.locator('#resume-button').click();}

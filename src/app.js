@@ -1,3 +1,4 @@
+import {ACHIEVEMENTS,achievementTier} from './achievements.js';
 import {Shift, ZONES} from './game.js';
 import {WORLD,TARGETS,GATE,QUEUE_POINTS,ENTRANCE,canStandInShop,shopLayout} from './layout.js';
 import {COURIER_ART} from './courier-art.js';
@@ -16,7 +17,7 @@ const characterNames = ['courier_walk','courier_carry_walk',...['player','worker
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
  'scanner','checkout_terminal','trolley','outbound_cage','counter_repeat','gate_open','countertop_decor','info_screen','warm_lamp','festive_decoration'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
- ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png']]);
+ ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png'],['achievement_icons','assets/ui/achievement_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 let world=WORLD,targets=TARGETS;const queuePoints=QUEUE_POINTS;
 function syncLayout(){const layout=shopLayout(shift.shelves);world=layout.world;targets=layout.targets;}
@@ -37,7 +38,8 @@ let saveStatus='只在整理完、開下一天前自動保存。';
 const mobileLayoutQuery=matchMedia('(pointer:coarse), (max-width:800px), (orientation:landscape) and (max-height:600px)');
 const syncMobileLayout=()=>document.body.classList.toggle('full-map-mobile',mobileLayoutQuery.matches);syncMobileLayout();mobileLayoutQuery.addEventListener('change',syncMobileLayout);
 const mobileView=()=>document.body.classList.contains('full-map-mobile');
-const dialogIds = ['mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
+let achievementOrigin=null,achievementViewGame=null,achievementSavedSnapshot=null;
+const dialogIds = ['achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','practice-done-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const rackHints = () => shift.upgrades.cargoManagement;
 const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
@@ -213,8 +215,40 @@ function finish(){
   const box=document.createElement('div'),name=document.createElement('small'),number=document.createElement('strong');
   name.textContent=label;number.textContent=value;box.append(name,number);$('result-grid').append(box);
  }
- $('pause-button').disabled=true;showDialog('result-dialog');
+ renderAchievementNews();$('pause-button').disabled=true;showDialog('result-dialog');
 }
+function renderAchievementNews(){
+ const entries=ACHIEVEMENTS.filter(c=>shift.achievements?.unlocked[c.id]?.includes(shift.day));const node=$('result-achievements-new');node.hidden=!entries.length||shift.practice;node.textContent=entries.length?`本日新成就：${entries.map(c=>c.name).join('、')}（開下一天前保存）`:'';
+}
+function renderAchievements(){
+ const game=achievementViewGame,a=game?.achievements;
+ const unlocked=a?ACHIEVEMENTS.filter(c=>achievementTier(a,c)>0).length:0,complete=a?ACHIEVEMENTS.filter(c=>achievementTier(a,c)===c.goals.length).length:0;
+ const summary=$('achievements-summary');summary.replaceChildren();for(const text of game?[`已解鎖 ${unlocked}／${ACHIEVEMENTS.length}`,`滿級 ${complete}／${ACHIEVEMENTS.length}`]:['尚無正式店舖進度']){const part=document.createElement('span');part.textContent=text;summary.append(part);}
+ const savedView=achievementOrigin?.id==='welcome-dialog'&&(!campaignMemory||ownershipLost),dirty=!savedView&&JSON.stringify(a)!==achievementSavedSnapshot;
+ $('achievements-save-note').textContent=!game?'先開始經營才會累積成就。':`${savedView?'顯示最近保存的店舖進度。':dirty?'成就有未保存進度；開下一天前才會保存。':'成就進度與最近保存點一致；其他遊戲進度仍只在換日前保存。'}${a?.legacy?' 舊檔服務統計由更新後實際工作起累計，不補造歷史。':''}`;
+ const grid=$('achievements-cards');grid.replaceChildren();
+ if(!game){const empty=document.createElement('p');empty.className='achievement-empty';empty.textContent='查看成就不會建立新店或開始倒數。';grid.append(empty);return;}
+ for(const c of ACHIEVEMENTS){const tier=achievementTier(a,c),max=tier===c.goals.length;
+  const card=document.createElement('article');card.className=`achievement-card ${tier?'unlocked':'locked'} tier-${tier}`;card.dataset.achievement=c.id;
+  const icon=document.createElement('span');icon.className='achievement-icon';icon.setAttribute('role','img');icon.setAttribute('aria-label',tier?`${c.name}已解鎖圖示`:'圖示未解鎖');
+  if(tier){icon.style.backgroundImage=`url("${sourceURL(sources.achievement_icons)}")`;icon.style.backgroundPosition=`${c.icon%5*25}% ${Math.floor(c.icon/5)*20}%`;}else icon.textContent='?';
+  const body=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),progress=document.createElement('strong'),track=document.createElement('div'),fill=document.createElement('span');
+  name.textContent=c.name;desc.textContent=c.description;const target=c.goals[Math.min(tier,c.goals.length-1)],value=a.values[c.id];progress.textContent=`${max?'✓ 已完成':tier?'已解鎖 · 下一階段':'未完成'} · ${Math.min(value,target).toLocaleString()}／${target.toLocaleString()}`;track.className='achievement-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label',c.name);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(target));track.setAttribute('aria-valuenow',String(Math.min(value,target)));fill.style.width=`${Math.min(1,value/target)*100}%`;track.append(fill);body.append(name,desc,progress);
+  if(c.goals.length>1){const levels=document.createElement('small');levels.className='achievement-levels';levels.textContent=c.goals.map((goal,i)=>`${['銅','銀','金'][i]} ${goal.toLocaleString()}${i<tier?' ✓':''}`).join(' · ');body.append(levels);}
+  body.append(track);card.append(icon,body);grid.append(card);
+ }
+}
+async function openAchievements(id,button){
+ if(menuBusy||saveBusy||$('achievements-dialog').open)return;
+ if(id==='welcome-dialog'){
+  const memory=!ownershipLost&&campaignMemory,record=memory||campaignCatalog?.current;
+  try{achievementViewGame=record?readSave(record).game:null;}catch{achievementViewGame=null;}
+ }else{if(shift.practice)return;achievementViewGame=shift;}
+ achievementOrigin={id,button};clearInput();$(id).close();renderAchievements();showDialog('achievements-dialog');$('achievements-scroll').scrollTop=0;$('achievements-close').focus();
+}
+function closeAchievements(){if(!$('achievements-dialog').open)return;$('achievements-dialog').close();const from=achievementOrigin;achievementOrigin=null;achievementViewGame=null;clearInput();if(from){showDialog(from.id);$(from.button)?.focus({preventScroll:true});}}
+for(const[id,button]of[['welcome-dialog','menu-achievements'],['pause-dialog','pause-achievements'],['result-dialog','result-achievements']])$(button).addEventListener('click',()=>openAchievements(id,button));
+$('achievements-close').addEventListener('click',closeAchievements);$('achievements-back').addEventListener('click',closeAchievements);$('achievements-dialog').addEventListener('cancel',e=>{e.preventDefault();closeAchievements();});
 function processEvents(){
  for(const event of shift.drainEvents()){
   if(event.type==='customer')actors.set(event.order.id,newCustomerActor(event.order));
@@ -477,6 +511,7 @@ function updateUI(){
   fill.parentElement.hidden=!activePatience||shift.practice;fill.parentElement.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
   text.textContent=activePatience?patienceText:stocking?'不計時':'—';
  }
+ $('pause-achievements').hidden=shift.practice;$('result-achievements').hidden=shift.practice;
  $('inventory-patience').hidden=!activePatience;
  $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?(rackHints()?`${held.zone} 區貨架`:'架上貨物'): '待上架'}`:'空手';
  $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
@@ -644,12 +679,12 @@ async function start(practice=false){
   const id=globalThis.crypto?.randomUUID?.()||`shop-${Date.now()}-${Math.random()}`;
   try{if(!await claimCampaign(id,{reset:true}))return;}
   catch(e){if(!await askCampaign('未能啟用本地存檔',e.message+' 可先在本頁經營，換日前重試，或手動匯出；關頁會失去未保存進度。','暫不存檔開始'))return;}
-  campaignId=id;campaignMemory=null;campaignActive=true;ownershipLost=false;purchasesBlocked=false;pendingBoundary=null;
+  achievementSavedSnapshot=null;campaignId=id;campaignMemory=null;campaignActive=true;ownershipLost=false;purchasesBlocked=false;pendingBoundary=null;
   setSaveStatus('尚未自動保存；整理完、準備開下一天前才會保存。');beginSession(false);
  }finally{menuBusy=false;}
 }
-function restoreCampaign(record){
- const restored=readSave(record);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
+function restoreCampaign(record,{saved=true}={}){
+ const restored=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(restored.game.achievements);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
  player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;resetSpeech();
  action=null;feedback=null;queueSignature='';suspendedInventory=null;practiceDone=false;clearInput();
  if(shift.canWork())shift.pause();
@@ -660,7 +695,7 @@ async function continueCampaign(){
  try{
   const catalog=await saveStore.inspect(),memory=campaignMemory&&!ownershipLost,record=memory?campaignMemory:catalog.current;if(!record)return;
   readSave(record);if(!await claimCampaign(record.profileId))return;
-  restoreCampaign(record);campaignMemory=null;
+  restoreCampaign(record,{saved:!memory});campaignMemory=null;
   setSaveStatus(memory?'已還原本頁進度；尚未到自動保存時點。':`已儲存：${new Date(record.savedAt).toLocaleString('zh-HK',{timeZone:'Asia/Hong_Kong'})}。只在換日前自動保存。`);
  }catch(e){await askCampaign('未能繼續經營',e.message,'知道了');}finally{menuBusy=false;}
 }
@@ -688,13 +723,13 @@ async function completeBoundary(){
   purchasesBlocked=true;setSaveStatus('未能儲存；請重試或匯出完整備份。');
  }finally{saveBusy=false;}
 }
-function adoptBoundary(record){
- const {game,view}=readSave(record);shift=game;syncLayout();player={...view.player,moving:false};actors=new Map(view.actors.map(a=>[a.id,a]));departures=view.departures;resetSpeech();
+function adoptBoundary(record,{saved=true}={}){
+ const {game,view}=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(game.achievements);shift=game;syncLayout();player={...view.player,moving:false};actors=new Map(view.actors.map(a=>[a.id,a]));departures=view.departures;resetSpeech();
  pendingBoundary=null;campaignMemory=null;action=null;feedback=null;queueSignature='';closeDialogs();clearInput();$('pause-button').disabled=false;lastTime=performance.now();canvas.focus({preventScroll:true});
 }
 async function skipBoundarySave(){
  if(saveBusy||!pendingBoundary||ownershipLost)return;
- if(await askCampaign('暫不存檔繼續','下一天會在本頁開始，但沒有寫入本地。關頁將回到較舊的保存點；你可先匯出這份進度。','繼續本頁')){adoptBoundary(pendingBoundary.record);setSaveStatus('目前進度未儲存；關頁會回到上次成功保存點。');}
+ if(await askCampaign('暫不存檔繼續','下一天會在本頁開始，但沒有寫入本地。關頁將回到較舊的保存點；你可先匯出這份進度。','繼續本頁')){adoptBoundary(pendingBoundary.record,{saved:false});setSaveStatus('目前進度未儲存；關頁會回到上次成功保存點。');}
 }
 function exportCampaign(){
  try{
@@ -848,7 +883,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

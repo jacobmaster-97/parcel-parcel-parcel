@@ -1,0 +1,1417 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-22",
+  "characterCell": [
+    32,
+    48
+  ],
+  "directionOrder": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "atlases": [
+    {
+      "name": "clerk_walk",
+      "image": "assets/characters/clerk_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32
+    },
+    {
+      "name": "clerk_carry_walk",
+      "image": "assets/characters/clerk_carry_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32
+    },
+    {
+      "name": "customer_young_walk",
+      "image": "assets/characters/customer_young_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32
+    },
+    {
+      "name": "customer_office_walk",
+      "image": "assets/characters/customer_office_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32
+    },
+    {
+      "name": "customer_senior_walk",
+      "image": "assets/characters/customer_senior_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32
+    },
+    {
+      "name": "customer_young_carry_walk",
+      "image": "assets/characters/customer_young_carry_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32,
+      "state": "leaving_with_parcel",
+      "parcel": "Baked-in fixed medium cardboard box",
+      "transition": "Use only after successful order handover; walking to exit is presentation, not a second reward event."
+    },
+    {
+      "name": "customer_office_carry_walk",
+      "image": "assets/characters/customer_office_carry_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32,
+      "state": "leaving_with_parcel",
+      "parcel": "Baked-in fixed medium cardboard box",
+      "transition": "Use only after successful order handover; walking to exit is presentation, not a second reward event."
+    },
+    {
+      "name": "customer_senior_carry_walk",
+      "image": "assets/characters/customer_senior_carry_walk.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 12,
+          "repeat": -1
+        }
+      },
+      "sideDirections": "Left generated separately; right mechanically mirrored. Badge/hair asymmetry is mirrored.",
+      "generatedFrameCount": 32,
+      "state": "leaving_with_parcel",
+      "parcel": "Baked-in fixed medium cardboard box",
+      "transition": "Use only after successful order handover; walking to exit is presentation, not a second reward event."
+    },
+    {
+      "name": "clerk_work",
+      "image": "assets/characters/clerk_work.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 8,
+      "rows": 4,
+      "frameCount": 32,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "pickup_down": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "place_down": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "pickup_left": {
+          "frames": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "place_left": {
+          "frames": [
+            12,
+            13,
+            14,
+            15
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "pickup_right": {
+          "frames": [
+            16,
+            17,
+            18,
+            19
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "place_right": {
+          "frames": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "pickup_up": {
+          "frames": [
+            24,
+            25,
+            26,
+            27
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        },
+        "place_up": {
+          "frames": [
+            28,
+            29,
+            30,
+            31
+          ],
+          "frameRate": 10,
+          "repeat": 0,
+          "note": "Contact timing and separate runtime parcel must be verified during integration."
+        }
+      }
+    },
+    {
+      "name": "clerk_carry_idle",
+      "image": "assets/characters/clerk_carry_idle.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 4,
+      "rows": 1,
+      "frameCount": 4,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0
+          ],
+          "repeat": 0
+        },
+        "left": {
+          "frames": [
+            1
+          ],
+          "repeat": 0
+        },
+        "right": {
+          "frames": [
+            2
+          ],
+          "repeat": 0
+        },
+        "up": {
+          "frames": [
+            3
+          ],
+          "repeat": 0
+        }
+      }
+    },
+    {
+      "name": "clerk_idle",
+      "image": "assets/characters/clerk_idle.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 4,
+      "rows": 1,
+      "frameCount": 4,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0
+          ],
+          "repeat": 0
+        },
+        "left": {
+          "frames": [
+            1
+          ],
+          "repeat": 0
+        },
+        "right": {
+          "frames": [
+            2
+          ],
+          "repeat": 0
+        },
+        "up": {
+          "frames": [
+            3
+          ],
+          "repeat": 0
+        }
+      }
+    },
+    {
+      "name": "customer_young_idle",
+      "image": "assets/characters/customer_young_idle.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 4,
+      "rows": 1,
+      "frameCount": 4,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0
+          ],
+          "repeat": 0
+        },
+        "left": {
+          "frames": [
+            1
+          ],
+          "repeat": 0
+        },
+        "right": {
+          "frames": [
+            2
+          ],
+          "repeat": 0
+        },
+        "up": {
+          "frames": [
+            3
+          ],
+          "repeat": 0
+        }
+      }
+    },
+    {
+      "name": "customer_office_idle",
+      "image": "assets/characters/customer_office_idle.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 4,
+      "rows": 1,
+      "frameCount": 4,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0
+          ],
+          "repeat": 0
+        },
+        "left": {
+          "frames": [
+            1
+          ],
+          "repeat": 0
+        },
+        "right": {
+          "frames": [
+            2
+          ],
+          "repeat": 0
+        },
+        "up": {
+          "frames": [
+            3
+          ],
+          "repeat": 0
+        }
+      }
+    },
+    {
+      "name": "customer_senior_idle",
+      "image": "assets/characters/customer_senior_idle.png",
+      "frameWidth": 32,
+      "frameHeight": 48,
+      "columns": 4,
+      "rows": 1,
+      "frameCount": 4,
+      "filter": "nearest",
+      "anchor": [
+        16,
+        44
+      ],
+      "directions": [
+        "down",
+        "left",
+        "right",
+        "up"
+      ],
+      "animations": {
+        "down": {
+          "frames": [
+            0
+          ],
+          "repeat": 0
+        },
+        "left": {
+          "frames": [
+            1
+          ],
+          "repeat": 0
+        },
+        "right": {
+          "frames": [
+            2
+          ],
+          "repeat": 0
+        },
+        "up": {
+          "frames": [
+            3
+          ],
+          "repeat": 0
+        }
+      }
+    },
+    {
+      "name": "shop_props",
+      "image": "assets/environment/shop_props.png",
+      "frameWidth": 96,
+      "frameHeight": 80,
+      "columns": 4,
+      "rows": 4,
+      "frameCount": 16,
+      "filter": "nearest",
+      "items": [
+        {
+          "name": "shelf_empty",
+          "index": 0,
+          "artworkSize": [
+            48,
+            48
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "shelf_foreground",
+          "index": 1,
+          "artworkSize": [
+            48,
+            40
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "counter",
+          "index": 2,
+          "artworkSize": [
+            72,
+            40
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "receiving_cage",
+          "index": 3,
+          "artworkSize": [
+            40,
+            48
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "parcel_small",
+          "index": 4,
+          "artworkSize": [
+            16,
+            16
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "parcel_medium",
+          "index": 5,
+          "artworkSize": [
+            24,
+            20
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "parcel_padded",
+          "index": 6,
+          "artworkSize": [
+            24,
+            12
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "storage_crate",
+          "index": 7,
+          "artworkSize": [
+            28,
+            24
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "scanner",
+          "index": 8,
+          "artworkSize": [
+            16,
+            20
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "printer",
+          "index": 9,
+          "artworkSize": [
+            24,
+            24
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "checkout_terminal",
+          "index": 10,
+          "artworkSize": [
+            32,
+            32
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "trolley",
+          "index": 11,
+          "artworkSize": [
+            24,
+            40
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "locker_bank_future",
+          "index": 12,
+          "artworkSize": [
+            64,
+            48
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "locker_closed_future",
+          "index": 13,
+          "artworkSize": [
+            24,
+            32
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "locker_open_future",
+          "index": 14,
+          "artworkSize": [
+            32,
+            32
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        },
+        {
+          "name": "wall_clock",
+          "index": 15,
+          "artworkSize": [
+            24,
+            24
+          ],
+          "anchor": [
+            48,
+            76
+          ],
+          "collision": "Provisional; see environment_layout.json"
+        }
+      ]
+    },
+    {
+      "name": "ui_icons",
+      "image": "assets/ui/ui_icons.png",
+      "frameWidth": 40,
+      "frameHeight": 40,
+      "columns": 4,
+      "rows": 4,
+      "frameCount": 16,
+      "filter": "nearest",
+      "items": [
+        {
+          "name": "success",
+          "index": 0
+        },
+        {
+          "name": "error",
+          "index": 1
+        },
+        {
+          "name": "patience",
+          "index": 2
+        },
+        {
+          "name": "parcel",
+          "index": 3
+        },
+        {
+          "name": "pickup",
+          "index": 4
+        },
+        {
+          "name": "shelf",
+          "index": 5
+        },
+        {
+          "name": "store",
+          "index": 6
+        },
+        {
+          "name": "staff",
+          "index": 7
+        },
+        {
+          "name": "pause",
+          "index": 8
+        },
+        {
+          "name": "play",
+          "index": 9
+        },
+        {
+          "name": "back",
+          "index": 10
+        },
+        {
+          "name": "restart",
+          "index": 11
+        },
+        {
+          "name": "joystick",
+          "index": 12
+        },
+        {
+          "name": "interact",
+          "index": 13
+        },
+        {
+          "name": "selection",
+          "index": 14
+        },
+        {
+          "name": "coins",
+          "index": 15
+        }
+      ],
+      "note": "Touch hit areas must be at least 48 CSS px; icon size is not button size."
+    },
+    {
+      "name": "shop_tiles",
+      "image": "assets/environment/shop_tiles.png",
+      "frameWidth": 32,
+      "frameHeight": 32,
+      "columns": 4,
+      "rows": 4,
+      "frameCount": 16,
+      "filter": "nearest",
+      "items": [
+        {
+          "name": "floor_a",
+          "index": 0
+        },
+        {
+          "name": "floor_b",
+          "index": 1
+        },
+        {
+          "name": "floor_c",
+          "index": 2
+        },
+        {
+          "name": "floor_d",
+          "index": 3
+        },
+        {
+          "name": "wall_straight",
+          "index": 4
+        },
+        {
+          "name": "wall_corner",
+          "index": 5
+        },
+        {
+          "name": "doorway",
+          "index": 6
+        },
+        {
+          "name": "window",
+          "index": 7
+        },
+        {
+          "name": "pavement",
+          "index": 8
+        },
+        {
+          "name": "asphalt",
+          "index": 9
+        },
+        {
+          "name": "queue_straight",
+          "index": 10
+        },
+        {
+          "name": "queue_corner",
+          "index": 11
+        },
+        {
+          "name": "receiving_corner",
+          "index": 12
+        },
+        {
+          "name": "receiving_border",
+          "index": 13
+        },
+        {
+          "name": "wall_plain",
+          "index": 14
+        },
+        {
+          "name": "floor_quiet",
+          "index": 15
+        }
+      ],
+      "note": "32px environment modules. Walls/doorway/window are complete modules, not seamless ground tiles. Inspect joins in layout preview."
+    },
+    {
+      "name": "achievement_icons",
+      "image": "assets/ui/achievement_icons.png",
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "columns": 5,
+      "rows": 6,
+      "frameCount": 30,
+      "filter": "nearest",
+      "metadata": "assets/metadata/achievement_icons.json"
+    }
+  ],
+  "limitations": [
+    "Raw generated sheets are not equal-grid runtime assets. Use normalized atlases.",
+    "Side walk right direction mirrors left, including costume asymmetry.",
+    "Idle uses one static pose per direction; no breathing cycle claimed.",
+    "Pickup/place contact and shape changes require runtime tuning.",
+    "Movement smoothness, collision, mobile scale and device performance not yet tested in game."
+  ],
+  "release": "0.3",
+  "runtimeAdditions": [
+    {
+      "name": "courier_walk",
+      "metadata": "assets/metadata/courier_walk.json"
+    },
+    {
+      "name": "courier_carry_walk",
+      "metadata": "assets/metadata/courier_carry_walk.json"
+    },
+    {
+      "name": "outbound_cage",
+      "image": "assets/environment/props/outbound_cage.png",
+      "runtimeCanvas": [
+        96,
+        80
+      ],
+      "sourceBounds": "src/courier-art.js COURIER_ART.outboundBounds"
+    }
+  ]
+}
