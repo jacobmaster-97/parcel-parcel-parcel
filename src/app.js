@@ -1,3 +1,4 @@
+import {CUSTOMER_TYPES} from './customers.js';
 import {BackgroundMusic} from './music.js';
 import {ACHIEVEMENTS,achievementTier} from './achievements.js';
 import {Shift, ZONES} from './game.js';
@@ -12,7 +13,7 @@ import {NpcSpeech,eligibleLines,placeSpeech} from './npc-dialogue.js';
 const $ = id => document.getElementById(id);
 const canvas = $('shop'), ctx = canvas.getContext('2d');
 const images = new Map(), keys = new Set();
-const people = ['customer_young', 'customer_office', 'customer_senior'];
+const people = CUSTOMER_TYPES.map(c=>c.key);
 const characterNames = ['courier_walk','courier_carry_walk',...['player','worker'].flatMap(p=>['walk','carry_walk','work','idle','carry_idle'].map(a=>`${p}_${a}`)),
  ...people.flatMap(p=>[`${p}_walk`,`${p}_carry_walk`,`${p}_idle`])];
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
@@ -878,7 +879,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ departures:structuredClone(departures),music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

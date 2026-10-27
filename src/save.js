@@ -1,10 +1,11 @@
+import {CUSTOMER_COUNT} from './customers.js';
 import {migrateAchievements,validAchievements} from './achievements.js';
 import {Shift} from './game.js';
 import {Ledger} from './finance.js';
 import {canStandInShop} from './layout.js';
 import {initialDayEvents,eventSeedFromText,previewNextEvent,validDayEvents} from './day-events.js';
 import {initialUpgrades} from './upgrades.js';
-export const SAVE_SCHEMA=9;
+export const SAVE_SCHEMA=10;
 const savedFields=['achievements','shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
@@ -34,7 +35,7 @@ export function decodeShift(value){
  const packages=new Map(),orderMap=new Map();
  for(const p of value.packages){saveCheck(p&&typeof p.id==='string'&&/^[PS][1-9]\d*$/.test(p.id)&&Number(p.id.slice(1))<=value.serial&&!packages.has(p.id)&&typeof p.code==='string'&&/^(?:\d{4,12}|S\d{1,12})$/.test(p.code)&&['shelf','receiving','outbound','held','customer','worker'].includes(p.location)&&(['A','B','C','D'].includes(p.zone)||p.zone===null)&&(!p.kind||p.kind==='shipping')&&(p.achievementStocked===undefined||typeof p.achievementStocked==='boolean'));packages.set(p.id,p);}
  saveCheck(new Set(value.packages.map(p=>p.code)).size===packages.size);
- for(const o of value.orders){saveCheck(o&&typeof o.id==='string'&&/^O[1-9]\d*$/.test(o.id)&&Number(o.id.slice(1))<=value.orderSerial&&!orderMap.has(o.id)&&packages.has(o.packageId)&&o.code===packages.get(o.packageId).code&&['pickup','shipping'].includes(o.type)&&['waiting','accepted'].includes(o.status)&&typeof o.revealed==='boolean'&&saveInt(o.appearance)&&o.appearance<3&&saveFinite(o.patience)&&saveFinite(o.maxPatience)&&o.patience>=0&&o.patience<=o.maxPatience&&o.maxPatience>0&&o.maxPatience<=60);orderMap.set(o.id,o);}
+ for(const o of value.orders){saveCheck(o&&typeof o.id==='string'&&/^O[1-9]\d*$/.test(o.id)&&Number(o.id.slice(1))<=value.orderSerial&&!orderMap.has(o.id)&&packages.has(o.packageId)&&o.code===packages.get(o.packageId).code&&['pickup','shipping'].includes(o.type)&&['waiting','accepted'].includes(o.status)&&typeof o.revealed==='boolean'&&saveInt(o.appearance)&&o.appearance<CUSTOMER_COUNT&&saveFinite(o.patience)&&saveFinite(o.maxPatience)&&o.patience>=0&&o.patience<=o.maxPatience&&o.maxPatience>0&&o.maxPatience<=60);orderMap.set(o.id,o);}
  for(const [id,time] of Object.entries(value.achievements.today.greeted)){const o=orderMap.get(id);saveCheck(o?.type==='pickup'&&o.revealed&&value.queue.includes(id)&&time<=value.elapsed);}
  const occupancy=new Map(),reserved=new Map();
  saveCheck(['closing','stocking'].includes(value.managementFrom));
@@ -71,14 +72,14 @@ export function decodeShift(value){
  const game=Object.create(Shift.prototype);for(const key of savedFields)game[key]=structuredClone(value[key]);
  game.practice=false;game.packages=new Map([...packages].map(([id,p])=>[id,structuredClone(p)]));game.orders=[...orderMap.values()].map(o=>structuredClone(o));const restored=new Map(game.orders.map(o=>[o.id,o]));game.queue=value.queue.map(id=>restored.get(id));game.ledger=ledger;game.events=[];game.pausedPhase=null;game.selectionId=null;game.workerAvoid=null;return game;
 }
-function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<3&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
+function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<CUSTOMER_COUNT&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 export function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.16.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.17.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 export function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,7,8,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,7,8,9,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);

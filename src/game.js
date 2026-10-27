@@ -1,3 +1,4 @@
+import {CUSTOMER_COUNT} from './customers.js';
 import {initialAchievements,achievementEvent,sealAchievementDay} from './achievements.js';
 import {COURIER_ROUTE,shopLayout} from './layout.js';
 import {initialUpgrades,upgradeOptions} from './upgrades.js';
@@ -214,7 +215,7 @@ export class Shift {
     } else pkg = serial === 0 ? choices[0] : choices[Math.floor(this.random() * choices.length)];
     const basePatience=60,patienceFactor=this.currentEvent().patience;
     const order = {id:`O${serial+1}`,type:shipping?'shipping':'pickup',packageId:pkg.id,code:pkg.code,zone:pkg.zone,
-      appearance:serial%3,patience:basePatience*patienceFactor,maxPatience:basePatience*patienceFactor,
+      appearance:serial%CUSTOMER_COUNT,patience:basePatience*patienceFactor,maxPatience:basePatience*patienceFactor,
       status:'waiting',revealed:false};
     pkg.orderId=order.id; this.queue.push(order); this.orders.push(order);
     this.emit('customer',{order:{...order}}); return order;

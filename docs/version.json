@@ -1,7 +1,7 @@
 {
-  "version": "0.16.0",
-  "html_sha256": "4c9f3086f11ab3ac06627aadf2cfa76b784526a2b2877cb1a0a604ad9fc2af63",
-  "save_schema": 9,
+  "version": "0.17.0",
+  "html_sha256": "0f9793722173560a36200749e73a68f2293b1ea4cb85c4ee90ce882cb7ba95cc",
+  "save_schema": 10,
   "achievements": 30,
   "icons": 30,
   "features": [
@@ -20,6 +20,11 @@
     "gesture-unlock-shared-web-audio",
     "scene-music-pause-resume-and-ducking",
     "music-embedded-offline",
-    "settings-proposal-only"
-  ]
+    "settings-proposal-only",
+    "three-new-customer-appearances",
+    "six-customers-stable-original-ids",
+    "empty-and-carry-four-direction-eight-frame-atlases",
+    "schema10-supports1-through9"
+  ],
+  "customer_types": 6
 }

@@ -1,3 +1,13 @@
+# v0.17.0 三款新客人：驗收通過
+
+116／116單元PASS；新客人三款×提貨／寄貨×桌面／手機觸控12實際路徑PASS。確認正確idle頭像、空手／持箱四向圖集載入及實際離場動畫，寄貨接收不入帳、提貨只入一次帳，完整JSON匯入保留外觀，離線無外部請求。
+
+9圖集204格，32×48cell及腳底44，全部步行各方向8個不同影格；最近鄰縮放、透明留白、無可見綠幕主導像素PASS。三款與舊三款並排及桌面／手機實際截圖已目視。報告deliverables/customers-v017/asset-report.json及browser-report.json。
+
+完整keyboard／pure-touch提貨、錯件／退回、上架、寄貨、送貨員、碰撞閘口、營業／不限時夜間及換日PASS；最後去綠邊後重跑新客人12路徑、storage-smoke原生IndexedDB故障／原子中止／備份／匯入／擁有權／續玩，以及offline-smoke五尺寸與零外部請求PASS。後一次只改PNG，不改JS；完整玩法回歸沿用同一JS版本結果。
+
+schema10支援1–9，新舊客人ID保留，非法外觀拒絕。經濟及音樂不改，營業120秒／基礎耐性60秒，唯一換日前自存。真機iPhone／Android／Safari、喇叭聽感及長時效能UNVERIFIED。設定仍只有提案。
+
 # v0.16.0 背景音樂
 
 已按確認接入營業及整理兩曲。Web Audio共用一個Context，主動操作後才播放；營業、關店／升級／上架按階段切換，暫停／主選單／背景／換日保存停止，恢復時續播。音樂失敗不阻擋遊戲。兩首內嵌離線單檔，與已確認MP3逐byte相同。設定目前只有提案，沒有新增設定UI／HUD或保存時點；schema9不變。詳design/music-integration-v1/IMPLEMENTED.md及design/settings-v1/PROPOSAL.md。

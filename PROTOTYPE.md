@@ -1,3 +1,7 @@
+# v0.17.0 三款新客人
+
+新增黃衫學生、藍帽街坊、酒紅背心伯伯，保留原三款，合共六款。9張實際圖集、四方向各8格空手／持箱步行及站立頭像。schema10支援1–9並保留原appearance，不改經濟／120秒／60秒耐性／音樂／手機全圖或唯一換日前自存。詳design/new-customers-v1/IMPLEMENTED.md。
+
 # v0.16.0 背景音樂
 
 已按確認接入營業及整理兩曲。Web Audio共用一個Context，主動操作後才播放；營業、關店／升級／上架按階段切換，暫停／主選單／背景／換日保存停止，恢復時續播。音樂失敗不阻擋遊戲。兩首內嵌離線單檔，與已確認MP3逐byte相同。設定目前只有提案，沒有新增設定UI／HUD或保存時點；schema9不變。詳design/music-integration-v1/IMPLEMENTED.md及design/settings-v1/PROPOSAL.md。

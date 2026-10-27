@@ -1,0 +1,26 @@
+{
+  "name": "customer_student_idle",
+  "image": "assets/characters/customer_student_idle.png",
+  "frameWidth": 32,
+  "frameHeight": 48,
+  "columns": 4,
+  "rows": 1,
+  "frameCount": 4,
+  "anchor": [
+    16,
+    44
+  ],
+  "filter": "nearest",
+  "directions": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "sourceFrames": [
+    2,
+    10,
+    18,
+    26
+  ]
+}
