@@ -198,3 +198,5 @@ body.large-text .inventory-summary{flex-wrap:wrap}body.large-text .inventory-pat
  .upgrade-dialog .wallet-summary{min-height:0;max-height:100%;overflow:auto;align-self:start}
  .upgrade-dialog .upgrade-footer p{max-height:80px;overflow:auto}
 }
+
+.welcome-dialog .creator-credit{text-align:center;font-size:14px;line-height:1.6;margin:16px 0 0;color:#53614d}

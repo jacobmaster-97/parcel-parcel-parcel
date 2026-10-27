@@ -1,3 +1,7 @@
+# v0.19.3 創作者署名
+
+主選單底部加入使用者指定「創作者：Studios_16」，沿現有青綠／米白字體及標準／大字設定。僅靜態署名，不增加遊戲HUD或改動玩法／schema11／保存；Vercel仍從GitHub來源建置。
+
 # v0.19.2 隱藏版本字樣與Vercel部署準備
 
 移除遊戲內prototype-label，原鍵盤操作提示保留。vercel.json以Other／npm run build:vercel／dist建置；tools/build-vercel.mjs從現有來源生成新單檔及版本SHA，避免部署舊docs包。尚未建立Vercel帳號／專案，部署步驟及跨網域JSON搬移見design/VERCEL_DEPLOYMENT.md。schema11及遊戲進度／偏好保存不改。

@@ -1,3 +1,9 @@
+# v0.19.3 主選單創作者署名
+
+精確加入「創作者：Studios_16」於welcome-dialog最後一個元素，沿原青綠／米白文字，標準14px／大字20px；遊戲內HUD不顯示，prototype-label仍隱藏。只HTML/CSS靜態署名，內部appVersion0.19.3、schema11／玩法／保存規則保留，未重跑無關132規則或新增永久鏡像測試。
+
+fresh Vercel dist/index.html四尺寸1280×1000、390×844、640×360、360×640大字，精確文字／最底位置／可見邊界／無水平溢出、開始遊戲後隱藏／回主選單重新顯示均PASS，console錯誤0，截圖已目視。報告deliverables/creator-credit-v0193/browser-report.json，一次性/tmp/creator-credit-review-v0193.mjs。物理手機／Safari／讀屏未驗。
+
 # v0.19.2 隱藏版本字樣與Vercel準備：本地驗收通過
 
 index.html移除prototype-label，桌面鍵盤提示保留；內部metadata0.19.2／schema11不改。沒有遊戲規則／素材／經濟／存檔行為變動，未重跑無關132規則。
