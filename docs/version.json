@@ -1,6 +1,6 @@
 {
-  "version": "0.19.3",
-  "html_sha256": "a623c2b6cbe86cee0793030c44fd1cb00000703c501ece478d05174bc9941d8a",
+  "version": "0.19.4",
+  "html_sha256": "0a2cb3568b7addb0dd005499fde7699d54cffc58b06f39312b2cc2d1a89fb43d",
   "save_schema": 11,
   "achievements": 31,
   "icons": 31,
@@ -38,7 +38,8 @@
     "large-text-payroll-shop-header-footer-visible",
     "prototype-label-hidden",
     "vercel-static-build",
-    "main-menu-creator-Studios_16"
+    "main-menu-creator-Studios_16",
+    "compact-support-author-links-menu-settings"
   ],
   "customer_types": 6
 }

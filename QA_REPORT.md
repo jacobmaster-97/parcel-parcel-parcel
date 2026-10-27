@@ -1,3 +1,11 @@
+# v0.19.4 支持作者連結
+
+兩個小型連結：主選單creator-row署名右側、settings-scroll末尾（存檔管理下方、固定footer上方），標籤「支持作者」，href精確https://buymeacoffee.com/studios_16。原配色，112×48px，標準15px／大字18px；不全寬，窄畫面換行。原創作者字句不改。原生anchor新分頁並設noopener noreferrer，不加SDK或外部追蹤載入。
+
+fresh Vercel dist六profiles：1280×1000、390×844、360×640、640×360、360×640大字、640×360大字。兩小按鈕尺寸／位置／不遮返回、精確URL、新分頁、window.opener=null，桌面Enter及觸控實際點擊PASS。BuyMeACoffee導覽以本地route fulfillment驗證真正popup URL，不連接付款服務，未宣稱付款流程通過。設定頁持提貨包裹fixture：點擊返回後仍暫停，倒數／耐性／手持／錢包／IDB revision及checksum不變，設定返回原暫停選單PASS。console錯誤0、無水平overflow，截圖已目視。
+
+報告deliverables/support-author-v0194/browser-report.json，一次性/tmp/support-author-review-v0194.mjs。僅HTML/CSS連結，schema11不變，未重跑無關132規則或新增永久鏡像測試。物理手機／Safari及實際付款網站未驗。
+
 # v0.19.3 主選單創作者署名
 
 精確加入「創作者：Studios_16」於welcome-dialog最後一個元素，沿原青綠／米白文字，標準14px／大字20px；遊戲內HUD不顯示，prototype-label仍隱藏。只HTML/CSS靜態署名，內部appVersion0.19.3、schema11／玩法／保存規則保留，未重跑無關132規則或新增永久鏡像測試。

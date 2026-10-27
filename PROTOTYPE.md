@@ -1,3 +1,7 @@
+# v0.19.4 支持作者
+
+主選單署名右側、設定頁存檔管理下方／固定返回區上方，加入小型112×48px「支持作者」連結。窄畫面可換行，大字18px。target=_blank、rel=noopener noreferrer，指向https://buymeacoffee.com/studios_16。沒有新增支付SDK、遊戲HUD或保存，schema11／進度及設定保持。
+
 # v0.19.3 創作者署名
 
 主選單底部加入使用者指定「創作者：Studios_16」，沿現有青綠／米白字體及標準／大字設定。僅靜態署名，不增加遊戲HUD或改動玩法／schema11／保存；Vercel仍從GitHub來源建置。

@@ -78,7 +78,7 @@ export function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<CUSTOMER_COUNT&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 export function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.3',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.4',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 export function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');

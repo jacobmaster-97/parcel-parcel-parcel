@@ -1,7 +1,7 @@
 import {createRequire} from 'node:module';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import {readSave} from '../src/save.js';
 const {chromium}=createRequire(import.meta.url)('playwright');const browser=await chromium.launch({args:['--no-sandbox']});const root=new URL('../deliverables/',import.meta.url).pathname;
-const fileURL=new URL('../deliverables/parcel-point-prototype-v0.19.3.html',import.meta.url).href+'?qa=1';const errors=[],results=[];
+const fileURL=new URL('../deliverables/parcel-point-prototype-v0.19.4.html',import.meta.url).href+'?qa=1';const errors=[],results=[];
 const get=page=>page.evaluate(()=>__parcelQA.snapshot());
 async function stored(page,key='current'){return page.evaluate(key=>new Promise((resolve,reject)=>{const q=indexedDB.open('parcel-parcel-parcel-progress-v1',1);q.onerror=()=>reject(q.error);q.onsuccess=()=>{const d=q.result,t=d.transaction('state','readonly'),r=t.objectStore('state').get(key);r.onsuccess=()=>resolve(r.result||null);t.oncomplete=()=>d.close();};}),key);}
 async function move(p,key,ms){await p.keyboard.down(key);await p.clock.runFor(ms);await p.keyboard.up(key);}
