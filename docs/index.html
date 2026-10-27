@@ -222,15 +222,14 @@ body.large-text .inventory-summary{flex-wrap:wrap}body.large-text .inventory-pat
 body.large-text .support-author{font-size:18px}
 
 /* Contextual home-screen help; no permanent game HUD. */
-.game-dialog.home-screen-dialog{width:min(440px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:22px;overflow:auto;box-sizing:border-box}
+.game-dialog.home-screen-dialog{width:min(352px,calc(80vw - 19.2px));max-height:calc(100dvh - 24px);padding:18px;overflow:auto;box-sizing:border-box}
 .home-screen-dialog h2{font-size:26px;margin:8px 0 10px}
 .game-dialog.home-screen-dialog p,.home-screen-dialog li{font-size:16px;line-height:1.65}
 .home-screen-dialog ol{padding-left:24px;margin:14px 0}
 .home-screen-dialog li+li{margin-top:10px}
-.game-dialog.home-screen-dialog .home-screen-note{font-size:14px;color:#53634f;margin:14px 0}
 .home-screen-dialog .button{min-height:48px;width:100%;font-size:18px}
 body.large-text .home-screen-dialog li{font-size:20px}
-.home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:130px}
+.home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:100px;padding:10px 6px}
 </style>
 </head>
 <body>
@@ -279,12 +278,11 @@ body.large-text .home-screen-dialog li{font-size:20px}
     <p class="detail-time-note">查看詳情仍會計時；需要停下可按暫停。</p><p id="mobile-detail-request"></p><p id="mobile-detail-feedback" role="status" hidden></p>
     <dl id="mobile-detail-facts"></dl><h3>等候隊列</h3><div id="mobile-detail-queue"></div><button id="mobile-detail-back" class="button button-primary">收起，返回地圖</button>
   </dialog>
-  <dialog id="home-screen-dialog" class="game-dialog home-screen-dialog" aria-labelledby="home-screen-title" aria-describedby="home-screen-note">
+  <dialog id="home-screen-dialog" class="game-dialog home-screen-dialog" aria-labelledby="home-screen-title">
     <span class="eyebrow" id="home-screen-browser">SAFARI</span>
     <h2 id="home-screen-title" tabindex="-1" autofocus>加入主畫面</h2>
     <p>開店更方便，試試從主畫面開啟遊戲。</p>
     <ol id="home-screen-steps"></ol>
-    <p id="home-screen-note" class="home-screen-note"></p>
     <div class="home-screen-actions"><button id="home-screen-dismiss" class="button primary">下次再說</button><button id="home-screen-never" class="button secondary">不要再提醒</button></div>
   </dialog>
   <dialog id="welcome-dialog" class="game-dialog welcome-dialog" aria-labelledby="welcome-title">
@@ -1076,7 +1074,7 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<CUSTOMER_COUNT&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.5',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.6',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
@@ -2124,10 +2122,9 @@ const homePlatform=homeScreenPlatform({userAgent:navigator.userAgent,platform:na
 let homeHintDisabled=false;try{homeHintDisabled=localStorage.getItem('parcel-parcel-parcel-home-hint-v1')==='off';}catch{}
 if(homePlatform&&!homeHintDisabled){
  const isAndroid=homePlatform.startsWith('android')||homePlatform==='chrome-android';
- $('home-screen-browser').textContent=isAndroid?'CHROME':homePlatform==='chrome-ios'?'CHROME · iPhone / iPad':'SAFARI';
+ $('home-screen-browser').textContent=isAndroid?(homePlatform==='android-other'?'請用 CHROME 開啟':'CHROME'):homePlatform==='chrome-ios'?'CHROME · iPhone / iPad':'SAFARI';
  const steps=isAndroid?['點選右上角「⋮」選單。','選擇「加至主畫面」或「安裝應用程式」。','按畫面指示，點「新增」或「安裝」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:homePlatform==='chrome-ios'?['點選右上角「分享」按鈕。','向下拉，選擇「加至主畫面」。','點右下角「新增」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:['點選「分享」按鈕。','選擇「加入主畫面」。','點「加入」，之後便可從主畫面的圖示全螢幕開啟遊戲。'];
  $('home-screen-steps').replaceChildren(...steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
- $('home-screen-note').textContent=(homePlatform==='android-other'?'請先用 Chrome 開啟此遊戲。':'')+'選項名稱及全螢幕支援依系統版本而異；加入主畫面不代表可離線遊玩。';
  showDialog('home-screen-dialog');
 }
 $('home-screen-never').addEventListener('click',()=>{try{localStorage.setItem('parcel-parcel-parcel-home-hint-v1','off');}catch{}$('home-screen-dialog').close();clearInput();});

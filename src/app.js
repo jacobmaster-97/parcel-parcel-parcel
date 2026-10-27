@@ -903,10 +903,9 @@ const homePlatform=homeScreenPlatform({userAgent:navigator.userAgent,platform:na
 let homeHintDisabled=false;try{homeHintDisabled=localStorage.getItem('parcel-parcel-parcel-home-hint-v1')==='off';}catch{}
 if(homePlatform&&!homeHintDisabled){
  const isAndroid=homePlatform.startsWith('android')||homePlatform==='chrome-android';
- $('home-screen-browser').textContent=isAndroid?'CHROME':homePlatform==='chrome-ios'?'CHROME · iPhone / iPad':'SAFARI';
+ $('home-screen-browser').textContent=isAndroid?(homePlatform==='android-other'?'請用 CHROME 開啟':'CHROME'):homePlatform==='chrome-ios'?'CHROME · iPhone / iPad':'SAFARI';
  const steps=isAndroid?['點選右上角「⋮」選單。','選擇「加至主畫面」或「安裝應用程式」。','按畫面指示，點「新增」或「安裝」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:homePlatform==='chrome-ios'?['點選右上角「分享」按鈕。','向下拉，選擇「加至主畫面」。','點右下角「新增」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:['點選「分享」按鈕。','選擇「加入主畫面」。','點「加入」，之後便可從主畫面的圖示全螢幕開啟遊戲。'];
  $('home-screen-steps').replaceChildren(...steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
- $('home-screen-note').textContent=(homePlatform==='android-other'?'請先用 Chrome 開啟此遊戲。':'')+'選項名稱及全螢幕支援依系統版本而異；加入主畫面不代表可離線遊玩。';
  showDialog('home-screen-dialog');
 }
 $('home-screen-never').addEventListener('click',()=>{try{localStorage.setItem('parcel-parcel-parcel-home-hint-v1','off');}catch{}$('home-screen-dialog').close();clearInput();});

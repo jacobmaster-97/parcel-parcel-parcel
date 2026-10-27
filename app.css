@@ -209,12 +209,11 @@ body.large-text .inventory-summary{flex-wrap:wrap}body.large-text .inventory-pat
 body.large-text .support-author{font-size:18px}
 
 /* Contextual home-screen help; no permanent game HUD. */
-.game-dialog.home-screen-dialog{width:min(440px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:22px;overflow:auto;box-sizing:border-box}
+.game-dialog.home-screen-dialog{width:min(352px,calc(80vw - 19.2px));max-height:calc(100dvh - 24px);padding:18px;overflow:auto;box-sizing:border-box}
 .home-screen-dialog h2{font-size:26px;margin:8px 0 10px}
 .game-dialog.home-screen-dialog p,.home-screen-dialog li{font-size:16px;line-height:1.65}
 .home-screen-dialog ol{padding-left:24px;margin:14px 0}
 .home-screen-dialog li+li{margin-top:10px}
-.game-dialog.home-screen-dialog .home-screen-note{font-size:14px;color:#53634f;margin:14px 0}
 .home-screen-dialog .button{min-height:48px;width:100%;font-size:18px}
 body.large-text .home-screen-dialog li{font-size:20px}
-.home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:130px}
+.home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:100px;padding:10px 6px}
