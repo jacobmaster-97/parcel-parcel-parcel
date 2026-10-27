@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="集運小店">
   <meta name="theme-color" content="#173d38">
   <meta name="description" content="一間小店，一個繁忙班次。找貨、交貨、上架的像素經營遊戲。">
   <title>集運小店 · 今日當值</title>
@@ -54,6 +58,14 @@
     <div class="dialog-top"><h2 id="mobile-detail-title">工作詳情</h2><div class="inventory-header-actions"><button id="mobile-detail-pause" class="icon-button" aria-label="暫停工作">Ⅱ</button><button id="mobile-detail-close" class="icon-button" aria-label="收起工作詳情">×</button></div></div>
     <p class="detail-time-note">查看詳情仍會計時；需要停下可按暫停。</p><p id="mobile-detail-request"></p><p id="mobile-detail-feedback" role="status" hidden></p>
     <dl id="mobile-detail-facts"></dl><h3>等候隊列</h3><div id="mobile-detail-queue"></div><button id="mobile-detail-back" class="button button-primary">收起，返回地圖</button>
+  </dialog>
+  <dialog id="home-screen-dialog" class="game-dialog home-screen-dialog" aria-labelledby="home-screen-title" aria-describedby="home-screen-note">
+    <span class="eyebrow" id="home-screen-browser">SAFARI</span>
+    <h2 id="home-screen-title" tabindex="-1" autofocus>加入主畫面</h2>
+    <p>開店更方便，試試從主畫面開啟遊戲。</p>
+    <ol id="home-screen-steps"></ol>
+    <p id="home-screen-note" class="home-screen-note"></p>
+    <div class="home-screen-actions"><button id="home-screen-dismiss" class="button primary">下次再說</button><button id="home-screen-never" class="button secondary">不要再提醒</button></div>
   </dialog>
   <dialog id="welcome-dialog" class="game-dialog welcome-dialog" aria-labelledby="welcome-title">
     <span class="eyebrow">一間小店 · 一個繁忙班次</span><h2 id="welcome-title">今日，<br>輪到你當值。</h2><p>幫街坊搵返佢哋嘅包裹。接待、提貨、寄貨，仲要抽空幫送到店嘅新貨上架。</p>

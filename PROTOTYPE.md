@@ -1,3 +1,9 @@
+# v0.19.5 手機／平板主畫面提示
+
+依iOS Safari、iOS Chrome、Android Chrome顯示加入主畫面步驟，iPad桌面UA以觸控辨識；桌面及standalone不提示。每次開頁提示一次，「下次再說」只關閉，「不要再提醒」獨立保存瀏覽器偏好，不改遊戲存檔。無法存偏好時仍可關閉，不宣稱跨瀏覽器記住。manifest standalone及180/192/512主畫面圖示，不新增離線快取。
+
+八個Chromium模擬版面：平台、提醒偏好重載、主選單／時間及帳簿不變PASS，真實Safari／Android安裝與全螢幕未驗。
+
 # v0.19.4 支持作者
 
 主選單署名右側、設定頁存檔管理下方／固定返回區上方，加入小型112×48px「支持作者」連結。窄畫面可換行，大字18px。target=_blank、rel=noopener noreferrer，指向https://buymeacoffee.com/studios_16。沒有新增支付SDK、遊戲HUD或保存，schema11／進度及設定保持。

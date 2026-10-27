@@ -13,6 +13,7 @@ const output=path.join(root,'dist');
 fs.rmSync(output,{recursive:true,force:true});
 fs.mkdirSync(output,{recursive:true});
 fs.writeFileSync(path.join(output,'index.html'),html);
+for(const name of ['manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'])fs.copyFileSync(path.join(root,name),path.join(output,name));
 const preview=path.join(root,'docs','music-preview');
 if(fs.existsSync(preview))fs.cpSync(preview,path.join(output,'music-preview'),{recursive:true});
 const previous=path.join(root,'docs','version.json');

@@ -1,8 +1,14 @@
+# v0.19.5 手機／平板主畫面提示
+
+依iOS Safari、iOS Chrome、Android Chrome顯示加入主畫面步驟，iPad桌面UA以觸控辨識；桌面及standalone不提示。每次開頁提示一次，「下次再說」只關閉，「不要再提醒」獨立保存瀏覽器偏好，不改遊戲存檔。無法存偏好時仍可關閉，不宣稱跨瀏覽器記住。manifest standalone及180/192/512主畫面圖示，不新增離線快取。
+
+八個Chromium模擬版面：平台、提醒偏好重載、主選單／時間及帳簿不變PASS，真實Safari／Android安裝與全螢幕未驗。
+
 # 街坊集運 · Parcel Parcel Parcel
 
 像素風集運自提點經營遊戲，支援鍵盤及手機觸控。
 
-**[立即遊玩 v0.19.4](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.4)**
+**[立即遊玩 v0.19.5](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.5)**
 
 每個營業日2分鐘。接待客人取得提貨碼，找貨交付；亦可接收寄貨、自由上架，並聘用理貨員協助。新店先有A/B貨架，C/D及容量可購買升級；未購入貨物管理系統前需逐架找貨。
 

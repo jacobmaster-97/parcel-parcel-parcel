@@ -1,3 +1,4 @@
+import {homeScreenPlatform} from './home-screen.js';
 import {loadPreferences,savePreferences} from './preferences.js';
 import {CUSTOMER_TYPES} from './customers.js';
 import {BackgroundMusic} from './music.js';
@@ -54,7 +55,7 @@ const mobileLayoutQuery=matchMedia('(pointer:coarse), (max-width:800px), (orient
 const syncMobileLayout=()=>document.body.classList.toggle('full-map-mobile',mobileLayoutQuery.matches);syncMobileLayout();mobileLayoutQuery.addEventListener('change',syncMobileLayout);
 const mobileView=()=>document.body.classList.contains('full-map-mobile');
 let achievementOrigin=null,achievementViewGame=null,achievementSavedSnapshot=null;
-const dialogIds = ['settings-dialog','achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
+const dialogIds = ['home-screen-dialog','settings-dialog','achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const rackHints = () => shift.upgrades.cargoManagement;
 const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
@@ -896,7 +897,21 @@ $('result-menu').addEventListener('click',()=>campaignMenu());
 $('import-button').addEventListener('click',()=>$('import-file').click());
 $('import-file').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{if(file.size>8*1024*1024)throw new Error('備份檔案過大。');const record=JSON.parse(await file.text());await replaceCampaign(record);}catch(error){await askCampaign('無法匯入',error.message,'知道了');}});
 saveStore.onConflict=()=>{if(campaignId&&!ownershipLost){ownershipLost=true;pause('另一分頁已接管此店，本頁已暫停。請匯出本頁或回主選單載入最新進度。');setSaveStatus('另一分頁已接管；本頁不能覆寫最新存檔。');}};
-showDialog('welcome-dialog');refreshCampaignMenu();requestAnimationFrame(loop);
+showDialog('welcome-dialog');refreshCampaignMenu();
+// Show once per page opening, above the menu; never opens during a shift.
+const homePlatform=homeScreenPlatform({userAgent:navigator.userAgent,platform:navigator.platform,maxTouchPoints:navigator.maxTouchPoints,standalone:navigator.standalone===true||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches});
+let homeHintDisabled=false;try{homeHintDisabled=localStorage.getItem('parcel-parcel-parcel-home-hint-v1')==='off';}catch{}
+if(homePlatform&&!homeHintDisabled){
+ const isAndroid=homePlatform.startsWith('android')||homePlatform==='chrome-android';
+ $('home-screen-browser').textContent=isAndroid?'CHROME':homePlatform==='chrome-ios'?'CHROME · iPhone / iPad':'SAFARI';
+ const steps=isAndroid?['點選右上角「⋮」選單。','選擇「加至主畫面」或「安裝應用程式」。','按畫面指示，點「新增」或「安裝」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:homePlatform==='chrome-ios'?['點選右上角「分享」按鈕。','向下拉，選擇「加至主畫面」。','點右下角「新增」。','之後便可從主畫面的圖示全螢幕開啟遊戲。']:['點選「分享」按鈕。','選擇「加入主畫面」。','點「加入」，之後便可從主畫面的圖示全螢幕開啟遊戲。'];
+ $('home-screen-steps').replaceChildren(...steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
+ $('home-screen-note').textContent=(homePlatform==='android-other'?'請先用 Chrome 開啟此遊戲。':'')+'選項名稱及全螢幕支援依系統版本而異；加入主畫面不代表可離線遊玩。';
+ showDialog('home-screen-dialog');
+}
+$('home-screen-never').addEventListener('click',()=>{try{localStorage.setItem('parcel-parcel-parcel-home-hint-v1','off');}catch{}$('home-screen-dialog').close();clearInput();});
+$('home-screen-dismiss').addEventListener('click',()=>{$('home-screen-dialog').close();clearInput();});
+requestAnimationFrame(loop);
 function packRuntimeImage(name,img){
  if(name==='courier_walk'||name==='courier_carry_walk'){
   const packed=document.createElement('canvas');packed.width=256;packed.height=192;
