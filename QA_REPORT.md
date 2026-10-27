@@ -1,3 +1,17 @@
+# v0.18.0 暫停設定：驗收通過
+
+四項設定全部在暫停子選單：獨立BGM／SFX開關及音量、標準／大字、集中匯出匯入及成功保存時間。設定返回仍暫停，偏好獨立本機記住；遊戲schema10與唯一換日前自存保留。
+
+121／121規則測試PASS，含新增5項偏好預設／資料驗證／獨立鍵／重載／儲存拒絕。settings-smoke六尺寸PASS（1280×1000、390×844、360×640、640×360、720×1280、1080×2400）：大字、48px操作、固定返回、計時／錢包／手持不動、沒有額外IDB寫入、下載JSON、壞檔保留／取消／確認取代、成功保存時間、reload偏好、拒絕偏好保存後本頁可用。
+
+WebAudio實際Gain驗證：音樂關閉時SFX1%對應Gain0.01、SFX關閉時不生成oscillator而BGM可播放；靜音bus在active probe下Gain0。原生閒置GainNode不處理AudioParam讀值的行為已隔離重現，詳DEBUG；沒有為測試改玩法或停用靜音。music-smoke原有五組解鎖／兩曲／暫停／延遲解碼／舊靜音／API失敗PASS。
+
+完整鍵盤及純觸控提貨錯件／退回／寄貨／上架／送貨員／碰撞／夜間及換日PASS；storage原生IndexedDB匯入／備份／故障原子中止／重試／所有權及手機續玩PASS。offline五尺寸零外部請求及換日PASS。另透過真實暫停設定選大字後跑ui-smoke，五手機尺寸選貨／旋轉／保留選取／暫停成就往返／取消／確認取件均PASS，主按鈕可見且≥48px。
+
+報告deliverables/settings-v018/browser-report.json、large-ui/ui-integration-report.json及既有music-integration-report.json、wallet-storage-report.json、prototype-browser-report.json、prototype-offline-report.json。UI_AUDIT.md及相關截圖已目視。
+
+真機iPhone／Android／Safari、讀屏、實際OS音量及持續效能UNVERIFIED。設定保留目前瀏覽器，不隨遊戲備份覆蓋；無帳號雲端同步。
+
 # v0.17.0 三款新客人：驗收通過
 
 116／116單元PASS；新客人三款×提貨／寄貨×桌面／手機觸控12實際路徑PASS。確認正確idle頭像、空手／持箱四向圖集載入及實際離場動畫，寄貨接收不入帳、提貨只入一次帳，完整JSON匯入保留外觀，離線無外部請求。

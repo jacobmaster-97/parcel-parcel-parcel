@@ -1,10 +1,11 @@
 import {createRequire} from 'node:module';import assert from 'node:assert/strict';import fs from 'node:fs';
 const {chromium}=createRequire(import.meta.url)('playwright');
-const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.17.0.html',import.meta.url).href;
-const root=new URL('../deliverables/',import.meta.url).pathname,b=await chromium.launch({args:['--no-sandbox']});const errors=[],profiles=[];
+const url=process.env.GAME_URL||new URL('../deliverables/parcel-point-prototype-v0.18.0.html',import.meta.url).href;
+const root=new URL(process.env.LARGE_TEXT?'../deliverables/settings-v018/large-ui/':'../deliverables/',import.meta.url).pathname;fs.mkdirSync(root,{recursive:true});const b=await chromium.launch({args:['--no-sandbox']});const errors=[],profiles=[];
 const c=await b.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));
 try{
  await p.clock.install();await p.goto(url+'?qa=1');await p.locator('#start-button:enabled').click();await p.locator('#welcome-dialog').waitFor({state:'hidden'});await p.clock.runFor(50);
+ if(process.env.LARGE_TEXT){await p.locator('#pause-button').click();await p.locator('#settings-button').click();await p.locator('#text-size').selectOption('large');await p.locator('#settings-back').click();await p.locator('#resume-button').click();await p.clock.runFor(50);}
  assert.equal(await p.locator('#order-zone').innerText(),'—');assert.ok(!(await p.locator('.order-card').innerText()).includes('4826'));
  const outbound=await p.evaluate(()=>__parcelQA.snapshot().targets.find(t=>t.type==='outbound'));assert.deepEqual([outbound.x,outbound.y,outbound.footY],[310,260,330]);
  async function move(key,ms){await p.keyboard.down(key);await p.clock.runFor(ms);await p.keyboard.up(key);}

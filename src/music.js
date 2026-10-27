@@ -3,6 +3,10 @@ export class BackgroundMusic {
  constructor(sources,{volume=.25}={}){
   this.sources=sources;this.volume=volume;this.context=null;this.master=null;this.track=null;this.key=null;this.enabled=false;this.position=0;this.active=null;this.buffers=new Map();this.failed=new Set();this.revision=0;this.pending=null;this.unavailable=false;this.fading=new Set();
  }
+ setVolume(volume){
+  this.volume=Math.max(0,Math.min(1,volume));
+  if(this.master){const now=this.context.currentTime;this.master.gain.cancelScheduledValues(now);this.master.gain.setValueAtTime(this.volume,now);}
+ }
  unlock(){
   try{
    if(!this.context){const Factory=globalThis.AudioContext||globalThis.webkitAudioContext;if(!Factory){this.unavailable=true;return;}
@@ -53,5 +57,5 @@ export class BackgroundMusic {
   if(!this.master||!this.active)return;const g=this.master.gain,t=this.context.currentTime;
   g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(this.volume*.3,t+.025);g.linearRampToValueAtTime(this.volume,t+.25);
  }
- snapshot(){const a=this.active;return{track:this.track,key:this.key,enabled:this.enabled,playing:!!a&&this.enabled&&this.context?.state==='running',activeSources:(a?1:0)+this.fading.size,fadingSources:this.fading.size,loop:!!a?.source.loop,position:a?(a.offset+this.context.currentTime-a.startedAt)%a.duration:this.position,contextState:this.context?.state||'uninitialized',decodedTracks:[...this.buffers.keys()].filter(k=>!this.failed.has(k)),unavailable:this.unavailable};}
+ snapshot(){const a=this.active;return{volume:this.volume,masterGain:this.master?.gain.value??null,track:this.track,key:this.key,enabled:this.enabled,playing:!!a&&this.enabled&&this.context?.state==='running',activeSources:(a?1:0)+this.fading.size,fadingSources:this.fading.size,loop:!!a?.source.loop,position:a?(a.offset+this.context.currentTime-a.startedAt)%a.duration:this.position,contextState:this.context?.state||'uninitialized',decodedTracks:[...this.buffers.keys()].filter(k=>!this.failed.has(k)),unavailable:this.unavailable};}
 }

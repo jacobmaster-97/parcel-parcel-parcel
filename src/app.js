@@ -1,3 +1,4 @@
+import {loadPreferences,savePreferences} from './preferences.js';
 import {CUSTOMER_TYPES} from './customers.js';
 import {BackgroundMusic} from './music.js';
 import {ACHIEVEMENTS,achievementTier} from './achievements.js';
@@ -22,11 +23,12 @@ const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characte
  ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png'],['achievement_icons','assets/ui/achievement_icons.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 const backgroundMusic=new BackgroundMusic({business:sourceURL('assets/audio/business.mp3'),stocking:sourceURL('assets/audio/stocking.mp3')});
-let audioFocused=true;
+let audioFocused=true,sfxMaster=null;
+const loadedPreferences=loadPreferences();let preferences=loadedPreferences.values,preferencesExplicit=loadedPreferences.explicit,preferenceStatus=loadedPreferences.error?'未能讀取偏好，暫用標準設定；遊戲存檔未變動。':'設定會記住在這個瀏覽器。';
 function syncMusic(){
  const phase=shift.phase==='paused'?shift.pausedPhase:shift.phase;
  const track=phase==='playing'?'business':['closing','upgrading','stocking'].includes(phase)?'stocking':null;
- const enabled=!!track&&sound&&campaignActive&&!ownershipLost&&!saveBusy&&audioFocused&&!document.hidden&&shift.phase!=='paused'&&!$('welcome-dialog').open;
+ const enabled=!!track&&preferences.musicEnabled&&preferences.musicVolume>0&&campaignActive&&!ownershipLost&&!saveBusy&&audioFocused&&!document.hidden&&shift.phase!=='paused'&&!$('welcome-dialog').open;
  backgroundMusic.scene(track,track?`${track}:${shift.day}`:null,enabled);
 }
 function primeAudio(){if(document.hidden)return;audioFocused=true;backgroundMusic.unlock();syncMusic();}
@@ -42,7 +44,7 @@ syncLayout();
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', queueSignature = '';
-let sound = true;
+const legacySound=()=>preferences.musicEnabled||preferences.sfxEnabled;
 let suspendedInventory=null,inventoryBusy=false,feedback=null;
 const saveStore=new SaveStore();let campaignId=null,campaignActive=false,campaignMemory=null,campaignCatalog=null,saveBusy=false,ownershipLost=false,menuBusy=false,choiceResolve=null,pendingBoundary=null;
 let purchasesBlocked=false,upgradeCategory='工具',upgradeBusy=false,eventInfoKey='';
@@ -51,7 +53,7 @@ const mobileLayoutQuery=matchMedia('(pointer:coarse), (max-width:800px), (orient
 const syncMobileLayout=()=>document.body.classList.toggle('full-map-mobile',mobileLayoutQuery.matches);syncMobileLayout();mobileLayoutQuery.addEventListener('change',syncMobileLayout);
 const mobileView=()=>document.body.classList.contains('full-map-mobile');
 let achievementOrigin=null,achievementViewGame=null,achievementSavedSnapshot=null;
-const dialogIds = ['achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
+const dialogIds = ['settings-dialog','achievements-dialog','mobile-detail-dialog','welcome-dialog','inventory-dialog','pause-dialog','result-dialog','finance-dialog','checkpoint-dialog','confirm-dialog','upgrade-prompt','upgrade-dialog'];
 const canWork = () => shift.canWork()&&!saveBusy&&!ownershipLost;
 const rackHints = () => shift.upgrades.cargoManagement;
 const rackMessage = text => rackHints()?text:text.replace(/[A-D] 區貨架/g,'貨架').replace(/[A-D] 區/g,'貨架');
@@ -72,15 +74,16 @@ function showDialog(id){clearInput();if(!$(id).open)$(id).showModal();}
 function toast() {}
 
 function beep(success=true){
- if(!sound)return;
+ if(!preferences.sfxEnabled||preferences.sfxVolume===0)return;
  try{
   const audio=backgroundMusic.context;if(!audio||audio.state!=='running')return;
-  backgroundMusic.duck();
+  if(!sfxMaster){sfxMaster=audio.createGain();sfxMaster.connect(audio.destination);}
+  sfxMaster.gain.setValueAtTime(preferences.sfxVolume/100,audio.currentTime);backgroundMusic.duck();
   const osc=audio.createOscillator(),gain=audio.createGain(),now=audio.currentTime;
   osc.type='triangle';osc.frequency.setValueAtTime(success?660:185,now);
   if(success)osc.frequency.setValueAtTime(880,now+.08);
   gain.gain.setValueAtTime(.025,now);gain.gain.exponentialRampToValueAtTime(.001,now+.19);
-  osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(now+.2);
+  osc.connect(gain);gain.connect(sfxMaster);osc.start();osc.stop(now+.2);
  }catch{/* Audio is optional; gameplay continues if the browser denies it. */}
 }
 function beginSession(){
@@ -631,13 +634,49 @@ $('inventory-dialog').addEventListener('cancel',e=>{e.preventDefault();closeInve
 $('pause-dialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
 for(const id of ['welcome-dialog','result-dialog'])$(id).addEventListener('cancel',e=>e.preventDefault());
 document.querySelector('.brand').addEventListener('click',e=>e.preventDefault());
+// Only preferences write here; shop progress remains at its original save boundary.
+function applyPreferences(){
+ document.body.classList.toggle('large-text',preferences.textSize==='large');
+ backgroundMusic.setVolume(preferences.musicVolume/100);
+ if(sfxMaster)sfxMaster.gain.setValueAtTime(preferences.sfxEnabled?preferences.sfxVolume/100:0,backgroundMusic.context.currentTime);
+ syncMusic();
+}
+function applyLegacySound(enabled){
+ if(!preferencesExplicit){preferences={...preferences,musicEnabled:enabled,sfxEnabled:enabled};}
+}
+function renderSettings(){
+ $('music-enabled').checked=preferences.musicEnabled;$('sfx-enabled').checked=preferences.sfxEnabled;
+ for(const kind of ['music','sfx']){$(kind+'-volume').value=preferences[kind+'Volume'];$(kind+'-volume-value').textContent=preferences[kind+'Volume']+'%';}
+ $('text-size').value=preferences.textSize;$('preferences-status').textContent=preferenceStatus;
+}
+async function openSettings(){
+ if(!$('pause-dialog').open)return;
+ showDialog('settings-dialog');renderSettings();$('settings-scroll').scrollTop=0;$('settings-close').focus();
+ $('settings-last-saved').textContent='正在讀取保存時間…';
+ try{const catalog=await saveStore.inspect(),record=catalog.current;if(record){readSave(record);$('settings-last-saved').textContent=`最後成功保存：第 ${record.payload.shift.day} 天 · ${new Date(record.savedAt).toLocaleString('zh-HK',{timeZone:'Asia/Hong_Kong'})}`;}else $('settings-last-saved').textContent='尚未有成功保存的遊戲進度。';}
+ catch{$('settings-last-saved').textContent='無法讀取有效保存時間；現有檔案未被取代。';}
+}
+function closeSettings(){$('settings-dialog').close();clearInput();$('settings-button').focus({preventScroll:true});}
+function changePreferences(){
+ preferences={musicEnabled:$('music-enabled').checked,musicVolume:Number($('music-volume').value),sfxEnabled:$('sfx-enabled').checked,sfxVolume:Number($('sfx-volume').value),textSize:$('text-size').value};
+ preferencesExplicit=true;applyPreferences();const saved=savePreferences(preferences);
+ preferenceStatus=saved?'偏好已記住；遊戲進度仍只在換日前保存。':'偏好在本頁生效，但未能記住；關頁後可能需要重設。';renderSettings();
+}
+$('settings-button').addEventListener('click',openSettings);
+for(const id of ['settings-close','settings-back'])$(id).addEventListener('click',closeSettings);
+$('settings-dialog').addEventListener('cancel',e=>{e.preventDefault();closeSettings();});
+for(const id of ['music-enabled','sfx-enabled','text-size'])$(id).addEventListener('change',changePreferences);
+for(const id of ['music-volume','sfx-volume'])$(id).addEventListener('input',changePreferences);
+$('settings-import').addEventListener('click',()=>$('import-file').click());
+applyPreferences();
+
 // Campaign persistence: gameplay remains in memory until the day boundary.
 function campaignView(game=shift){
  const active=new Map(actors);const queueActors=game.queue.map(o=>active.get(o.id)||newCustomerActor(o));
  return{player:{...player,moving:false},actors:queueActors.map(a=>structuredClone(a)),departures:structuredClone(departures)};
 }
 function newCustomerActor(order){return{id:order.id,appearance:order.appearance,x:ENTRANCE.x,y:ENTRANCE.y,face:'down',moving:true,travel:0,carrying:order.type==='shipping',entered:false,route:[{x:40,y:64},{x:25,y:64},{x:25,y:142}],next:0};}
-function captureCampaign(){return pendingBoundary?.record||makeSave(campaignId,shift,campaignView(),{sound});}
+function captureCampaign(){return pendingBoundary?.record||makeSave(campaignId,shift,campaignView(),{sound:legacySound()});}
 function moneyText(n){return `$${n.toLocaleString('en-US')}`;}
 function savedDescription(record){try{const {game}=readSave(record);return`第 ${game.day} 天 · 可用資金 ${moneyText(game.availableFunds())} · ${new Date(record.savedAt).toLocaleString('zh-HK',{timeZone:'Asia/Hong_Kong'})}`;}catch(e){return e.message;}}
 function setSaveStatus(text){saveStatus=text;document.querySelectorAll('.save-status').forEach(e=>e.textContent=text);}
@@ -688,7 +727,7 @@ async function start(){
 }
 function restoreCampaign(record,{saved=true}={}){
  backgroundMusic.reset();const restored=readSave(record);if(saved)achievementSavedSnapshot=JSON.stringify(restored.game.achievements);closeDialogs();shift=restored.game;syncLayout();campaignId=record.profileId;campaignActive=true;ownershipLost=false;pendingBoundary=null;
- player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;sound=restored.settings.sound;resetSpeech();
+ player={...restored.view.player,moving:false};actors=new Map(restored.view.actors.map(a=>[a.id,a]));departures=restored.view.departures;applyLegacySound(restored.settings.sound);resetSpeech();
  action=null;feedback=null;queueSignature='';suspendedInventory=null;clearInput();
  if(shift.canWork())shift.pause();
  $('pause-button').disabled=false;$('pause-reason').textContent='進度已還原。離線期間沒有推進時間，準備好再繼續。';showDialog('pause-dialog');lastTime=performance.now();
@@ -708,7 +747,7 @@ async function campaignMenu(){
 }
 function stageNextDay(){
  const next=decodeShift(encodeShift(shift));next.openNextDay();next.drainEvents();
- const view=campaignView(next);return{record:makeSave(campaignId,next,view,{sound})};
+ const view=campaignView(next);return{record:makeSave(campaignId,next,view,{sound:legacySound()})};
 }
 async function completeBoundary(){
  if(saveBusy||shift.phase!=='dayend')return;
@@ -879,7 +918,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- departures:structuredClone(departures),music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ departures:structuredClone(departures),preferences:{...preferences},sfxGain:sfxMaster?.gain.value??null,music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};
