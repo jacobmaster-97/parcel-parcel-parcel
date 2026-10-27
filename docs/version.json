@@ -1,6 +1,6 @@
 {
-  "version": "0.19.1",
-  "html_sha256": "a2617545f56d2ae7f538b1ccf570ed9335ce64871ac524fab7b41bb35b2214c3",
+  "version": "0.19.2",
+  "html_sha256": "808fc9dbd60fbd490a7504d63586d9d44ec640dfdf256577f4e815c70941c500",
   "save_schema": 11,
   "achievements": 31,
   "icons": 31,
@@ -35,7 +35,9 @@
     "schema11-supports1-through10",
     "revised-upgrade-copy-and-worker-labels",
     "simplified-tool-and-cage-cards",
-    "large-text-payroll-shop-header-footer-visible"
+    "large-text-payroll-shop-header-footer-visible",
+    "prototype-label-hidden",
+    "vercel-static-build"
   ],
   "customer_types": 6
 }

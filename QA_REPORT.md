@@ -1,3 +1,13 @@
+# v0.19.2 隱藏版本字樣與Vercel準備：本地驗收通過
+
+index.html移除prototype-label，桌面鍵盤提示保留；內部metadata0.19.2／schema11不改。沒有遊戲規則／素材／經濟／存檔行為變動，未重跑無關132規則。
+
+npm run build:vercel成功，fresh dist/index.html與本輪離線HTML逐byte一致；version.json版本／SHA／schema11一致；ZIP CRC與PLAY-OFFLINE一致。三尺寸1280×1000、390×844、640×360真實Chromium離線載入，無PROTOTYPE文字／元素、原新客人及成就圖集載入、鍵盤或觸控接待、暫停凍結／零外部請求／無水平溢出與console error PASS，截圖已目視。報告deliverables/vercel-preparation-v0192/browser-report.json及package-report.json，一次性腳本/tmp/vercel-ready-review-v0192.mjs。
+
+官方vercel.json schema對實際配置欄位驗證0錯誤。Python全schema meta-check碰到未使用services.additionalProperties分支問題，故只用validator.iter_errors驗證實際配置，不宣稱整份官方schema的meta-check成功，亦未改Vercel配置繞過錯誤。
+
+Vercel帳號／專案／正式網址尚未建立或部署，本輪使用者詢問方法，已準備Git匯入配置及操作指南。成功匯入後需以實際Vercel網址驗證網站及JSON存檔搬移。物理iPhone／Android／Safari及讀屏未驗；新舊網域本機儲存不共用。
+
 # v0.19.1 商店文案修訂：驗收通過
 
 按A/B/C/E/G/H/I修訂，工具只保留狀態、設備效果整列及A13小字移除、人手／日薪／續聘及確認詞、狀態回饋與天氣／退貨情境更新。金額、薪金預留／實際發薪、能力、事件倍率／亂數、schema11及唯一換日前自存保留。新showEffect/showState只卡片資料，不進保存。

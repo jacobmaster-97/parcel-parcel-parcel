@@ -2,11 +2,13 @@
 
 像素風集運自提點經營遊戲，支援鍵盤及手機觸控。
 
-**[立即遊玩 v0.19.1](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.1)**
+**[立即遊玩 v0.19.2](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.2)**
 
 每個營業日2分鐘。接待客人取得提貨碼，找貨交付；亦可接收寄貨、自由上架，並聘用理貨員協助。新店先有A/B貨架，C/D及容量可購買升級；未購入貨物管理系統前需逐架找貨。
 
 關店流程：收支摘要 → 明日店況及商店升級 → 不限時貨物上架 → 保存 → 下一天。手機只設完整地圖，頂部工作簡列可展開詳情，操作區獨立。
+
+v0.19.2隱藏畫面內版本字樣，已準備Vercel靜態部署設定。[Vercel上架步驟](design/VERCEL_DEPLOYMENT.md)，匯入倉庫後以Other／根目錄／build:vercel／dist部署。跨網址存檔請以JSON匯出及匯入搬移。
 
 v0.19.1按修訂清單精簡商店卡片及確認文字，更新理貨員稱呼與店況說明；價格、能力、薪金及事件倍率保留。[最新文案](design/store-copy-v0191.md)。
 

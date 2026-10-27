@@ -1,3 +1,7 @@
+# v0.19.2 隱藏版本字樣與Vercel部署準備
+
+移除遊戲內prototype-label，原鍵盤操作提示保留。vercel.json以Other／npm run build:vercel／dist建置；tools/build-vercel.mjs從現有來源生成新單檔及版本SHA，避免部署舊docs包。尚未建立Vercel帳號／專案，部署步驟及跨網域JSON搬移見design/VERCEL_DEPLOYMENT.md。schema11及遊戲進度／偏好保存不改。
+
 # v0.19.1 商店文案修訂
 
 按使用者A/B/C/E/G/H/I修訂表更新商店文字。工具保留狀態並移除效果尾文，貨籠效果整列及A13小字移除；人手稱呼／日薪／續聘、價格餘額／確認及狀態提示、天氣／退貨情境更新。僅呈現變更，schema11／價格／能力／實際預留及發薪／事件倍率／唯一換日前自存保留。詳design/store-copy-v0191.md及design/shop-copy-v0191/IMPLEMENTED.md。

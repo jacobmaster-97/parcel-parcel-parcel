@@ -3,3 +3,5 @@ deliverables/
 assets/.packing/
 .cache/
 .DS_Store
+dist/
+.vercel/

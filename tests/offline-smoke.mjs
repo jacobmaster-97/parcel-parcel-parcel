@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.19.1.html')).href+'?qa=1';
+const uri=pathToFileURL(path.join(root,'deliverables/parcel-point-prototype-v0.19.2.html')).href+'?qa=1';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
 await context.setOffline(true);

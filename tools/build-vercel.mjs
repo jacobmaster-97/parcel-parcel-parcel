@@ -1,0 +1,23 @@
+// Generate a fresh static deployment from source; never serve a stale docs bundle.
+import './package-prototype.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {SAVE_SCHEMA} from '../src/save.js';
+import {ACHIEVEMENTS} from '../src/achievements.js';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const version=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version;
+const html=fs.readFileSync(path.join(root,'deliverables',`parcel-point-prototype-v${version}.html`));
+const output=path.join(root,'dist');
+fs.rmSync(output,{recursive:true,force:true});
+fs.mkdirSync(output,{recursive:true});
+fs.writeFileSync(path.join(output,'index.html'),html);
+const preview=path.join(root,'docs','music-preview');
+if(fs.existsSync(preview))fs.cpSync(preview,path.join(output,'music-preview'),{recursive:true});
+const previous=path.join(root,'docs','version.json');
+const manifest=fs.existsSync(previous)?JSON.parse(fs.readFileSync(previous,'utf8')):{};
+Object.assign(manifest,{version,html_sha256:createHash('sha256').update(html).digest('hex'),save_schema:SAVE_SCHEMA,achievements:ACHIEVEMENTS.length,icons:ACHIEVEMENTS.length});
+manifest.features=[...new Set([...(manifest.features||[]),'prototype-label-hidden','vercel-static-build'])];
+fs.writeFileSync(path.join(output,'version.json'),JSON.stringify(manifest,null,2)+'\n');
+console.log(`Vercel static output: dist/index.html (${html.length.toLocaleString()} bytes), version ${version}`);
