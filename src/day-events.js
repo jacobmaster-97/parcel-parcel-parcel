@@ -2,8 +2,8 @@
 export const DAY_EVENTS=Object.freeze({
  normal:Object.freeze({id:'normal',name:'平常一天',story:'街坊照常到店',mode:'營業中',pickup:1,shipping:1,delivery:1,patience:1,weight:70,busy:false}),
  sale:Object.freeze({id:'sale',name:'購買網優惠',story:'淘淘網年度大優惠，集運訂單創高峰',mode:'優惠高峰',pickup:1.5,shipping:1.5,delivery:1.6,patience:.6,weight:20,busy:true}),
- weather:Object.freeze({id:'weather',name:'惡劣天氣',story:'惡劣天氣影響集運物流',mode:'惡劣天氣',pickup:1,shipping:1,delivery:.6,patience:1,weight:5,busy:false}),
- returns:Object.freeze({id:'returns',name:'退貨潮',story:'大型網購品牌爆出次貨醜聞，大量回收產品',mode:'退貨潮',pickup:1,shipping:1.5,delivery:1,patience:.8,weight:5,busy:true})
+ weather:Object.freeze({id:'weather',name:'惡劣天氣',story:'嚴重影響集運物流',mode:'惡劣天氣',pickup:1,shipping:1,delivery:.6,patience:1,weight:5,busy:false}),
+ returns:Object.freeze({id:'returns',name:'退貨潮',story:'大型網購品牌爆出次貨醜聞，需大量回收產品',mode:'退貨潮',pickup:1,shipping:1.5,delivery:1,patience:.8,weight:5,busy:true})
 });
 export function eventSeedFromText(text){let n=2166136261;for(const c of String(text))n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;}
 export function eventCandidates(day,history=[]){

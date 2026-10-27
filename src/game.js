@@ -50,11 +50,11 @@ export class Shift {
     const item=upgradeOptions(this).find(i=>i.id===id);
     if(!item||item.blocked)return{ok:false,message:item?.blocked||'此升級未開放'};
     if(this.availableFunds()<item.price)return{ok:false,message:'可用資金不足（已扣除預留薪金）'};
-    if(id==='worker'||id==='workerAdvanced'){this.upgrades.workerBookedDay=this.day+1;this.upgrades.workerBookedTier=id==='workerAdvanced'?'advanced':'basic';return{ok:true,message:`已預留明日薪金 $${item.price}，開門時扣款一次`};}
+    if(id==='worker'||id==='workerAdvanced'){this.upgrades.workerBookedDay=this.day+1;this.upgrades.workerBookedTier=id==='workerAdvanced'?'advanced':'basic';return{ok:true,message:`已預留明日薪金 $${item.price}，開門時發薪`};}
     const level=id.startsWith('shelf:')?this.upgrades.shelfLevels[id.slice(-1)]:this.upgrades[id+'Level'];
     const tx=id==='shoes'?`upgrade:shoes:${this.day}`:`upgrade:${id}:${level===undefined?'new':level+1}`;
     const ledger=Ledger.fromJSON(this.ledger.toJSON());
-    if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
+    if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理'};
     this.ledger=ledger;
     if(id==='twoHands')this.upgrades.twoHands=true;
     else if(id==='management')this.upgrades.cargoManagement=true;
@@ -62,7 +62,7 @@ export class Shift {
     else if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
     else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
     else{this.upgrades[id+'Level']++;this[id].push(slot(),slot());}
-    this.emit('upgrade',{id});return{ok:true,message:'已購買，本頁生效；開下一天前保存'};
+    this.emit('upgrade',{id});return{ok:true,message:'已購買並生效；下一個營業日前保存'};
   }
   cancelWorkerBooking(){if(!this.canUpgrade())return false;this.upgrades.workerBookedDay=0;this.upgrades.workerBookedTier='basic';return true;}
   setWorkerZones(zones){

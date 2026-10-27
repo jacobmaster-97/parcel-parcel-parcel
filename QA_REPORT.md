@@ -1,3 +1,15 @@
+# v0.19.1 商店文案修訂：驗收通過
+
+按A/B/C/E/G/H/I修訂，工具只保留狀態、設備效果整列及A13小字移除、人手／日薪／續聘及確認詞、狀態回饋與天氣／退貨情境更新。金額、薪金預留／實際發薪、能力、事件倍率／亂數、schema11及唯一換日前自存保留。新showEffect/showState只卡片資料，不進保存。
+
+132規則PASS（/tmp/shop-copy-v0191-units.txt）。原升級瀏覽器真實v0.5舊檔導入、取消及鞋／架／籠／薪金預留、故障重試不重買／重扣、完整保存／worker匯出／恢復PASS；五手機尺寸另加兩個大字聘員後版面共七手機profiles PASS。事件四預告／五手機版面、手動匯出／失敗重試／重載不重抽或二次縮時PASS。
+
+一次性文案實際審閱四版面（1440×1000、390×844、360×640及640×360，後兩大字）PASS：所有指定顯示文案／刪除效果與空說明／兩種確認視窗／180解鎖及85預留及數值一致、實際weather/returns說明、主控件48px／視窗內。結果deliverables/shop-copy-v0191/review-report.json及截圖；腳本/tmp/shop-copy-review-v0191.mjs，作本輪文案審閱，不新增逐字複製實作的永久測試。
+
+審閱發現原landscape grid在大字薪金feedback時頁首被擠出；改資金列minmax(0,1fr)、max-height及獨立scroll，保留字級及header/footer。既有upgrade-smoke已加入兩個大字預約薪金後bounds案例，修正後全部PASS。UI_AUDIT及截圖已目視。
+
+物理Android／iPhone／Safari、讀屏及短橫向捲動舒適度UNVERIFIED。無素材或玩法數值變動；未因文案變更重跑無關玩法專項。
+
 # v0.19.0 解放雙手及左右開弓：驗收通過
 
 新增工具$500永久「解放雙手」及ID37成就「左右開弓」，31項總成就。132／132單元PASS，新增11項覆蓋資金／重買／原子雙取／來源預留／分架／滿架／退回／關店補滿／最後兩件換日／schema11與舊schema10／AI避開兩件選取及原提貨寄貨單件規則。

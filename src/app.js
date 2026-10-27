@@ -827,7 +827,7 @@ function renderEventInfo(){
 
 // Night management deliberately does not call SaveStore.write.
 function showUpgradePrompt(){
- renderEventInfo();closeDialogs();$('upgrade-prompt-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 預留薪金 ${moneyText(shift.reservedWages())}`;showDialog('upgrade-prompt');
+ renderEventInfo();closeDialogs();$('upgrade-prompt-wallet').textContent=`可用資金 ${moneyText(shift.availableFunds())} · 薪金支出 ${moneyText(shift.reservedWages())}`;showDialog('upgrade-prompt');
 }
 function enterStocking(){
  if(ownershipLost){campaignMenu();return;}
@@ -843,18 +843,18 @@ function openUpgradeShop(){
 }
 function renderUpgrades(){
  renderEventInfo();
- $('upgrade-wallet').textContent=`錢包 ${moneyText(shift.ledger.balance)} · 預留薪金 ${moneyText(shift.reservedWages())} · 可用 ${moneyText(shift.availableFunds())}`;
+ $('upgrade-wallet').textContent=`錢包 ${moneyText(shift.ledger.balance)} · 薪金支出 ${moneyText(shift.reservedWages())} · 可用 ${moneyText(shift.availableFunds())}`;
  const tabs=$('upgrade-tabs');tabs.replaceChildren();for(const category of ['工具','設備','貨架','人手']){const b=document.createElement('button');b.className='button button-secondary';b.textContent=category;b.setAttribute('aria-pressed',String(category===upgradeCategory));b.onclick=()=>{upgradeCategory=category;renderUpgrades();$('upgrade-scroll').scrollTop=0;tabs.querySelector(`[aria-pressed="true"]`).focus();};tabs.append(b);}
  const grid=$('upgrade-cards');grid.replaceChildren();
  for(const item of upgradeOptions(shift).filter(i=>i.category===upgradeCategory)){
   const card=document.createElement('article');card.className='upgrade-card';
   const heading=document.createElement('h3');heading.textContent=item.name;
-  const effect=document.createElement('strong');effect.className='upgrade-effect';effect.textContent=`${item.before} → ${item.after}`;
+  const effect=document.createElement('strong');effect.className='upgrade-effect';effect.textContent=item.showEffect===false?item.before:`${item.before} → ${item.after}`;
   const note=document.createElement('p');note.textContent=item.note;
-  const price=document.createElement('p');price.className='upgrade-price';price.textContent=['worker','workerAdvanced'].includes(item.id)?`每日薪金 ${moneyText(item.price)}`:`價格 ${moneyText(item.price)} · 購買後可用 ${moneyText(Math.max(0,shift.availableFunds()-item.price))}`;
+  const price=document.createElement('p');price.className='upgrade-price';price.textContent=['worker','workerAdvanced'].includes(item.id)?`日薪 ${moneyText(item.price)}`:`價格 ${moneyText(item.price)} · 餘額 ${moneyText(Math.max(0,shift.availableFunds()-item.price))}`;
   const b=document.createElement('button');b.className='button button-primary';b.dataset.upgrade=item.id;
-  const blocked=ownershipLost?'另一分頁已接管':purchasesBlocked?'須先恢復保存能力':item.blocked|| (shift.availableFunds()<item.price?'資金不足':'');
-  b.disabled=!!blocked||upgradeBusy;b.textContent=blocked||(['worker','workerAdvanced'].includes(item.id)?'預約明日店員':'購買');b.onclick=()=>buyUpgrade(item.id);card.append(heading,effect,note,price,b);grid.append(card);
+  const blocked=ownershipLost?'另一分頁已接管':purchasesBlocked?'須先恢復保存':item.blocked|| (shift.availableFunds()<item.price?'資金不足':'');
+  b.disabled=!!blocked||upgradeBusy;b.textContent=blocked||(['worker','workerAdvanced'].includes(item.id)?'續聘員工':'購買');b.onclick=()=>buyUpgrade(item.id);card.append(heading);if(item.showState!==false)card.append(effect);if(item.note)card.append(note);card.append(price,b);grid.append(card);
  }
  const personnel=upgradeCategory==='人手';$('worker-settings').hidden=!personnel;
  if(personnel){
@@ -869,7 +869,8 @@ async function buyUpgrade(id){
  upgradeBusy=true;let button=$('upgrade-cards').querySelector(`[data-upgrade="${id}"]`);
  try{
   if(!await saveStore.isOwner())throw new Error('此工作階段沒有寫入權限，請回主選單繼續或接管店舖。');
-  const message=`${item.before} → ${item.after}\n${['worker','workerAdvanced'].includes(id)?'預留明日薪金':'價格'} ${moneyText(item.price)} · ${['worker','workerAdvanced'].includes(id)?'預約':'購買'}後可用 ${moneyText(shift.availableFunds()-item.price)}\n${['worker','workerAdvanced'].includes(id)?'翌日開門扣款一次，不自動續聘。':'本頁即時生效，開下一天前才保存。'}`;
+  const summary=item.showState===false?'':item.showEffect===false?item.before:`${item.before} → ${item.after}`;
+  const message=`${summary?summary+'\n':''}${['worker','workerAdvanced'].includes(id)?'預留明日薪金':'價格'} ${moneyText(item.price)} · ${['worker','workerAdvanced'].includes(id)?'預約':'購買'}後餘額 ${moneyText(shift.availableFunds()-item.price)}\n${['worker','workerAdvanced'].includes(id)?'翌日開門時發薪，不自動續聘。':'本頁即時生效，開下一天前才保存。'}`;
   if(!await askCampaign(item.name,message,['worker','workerAdvanced'].includes(id)?'確認排班':'確認購買'))return;
   if(ownershipLost||!await saveStore.isOwner())throw new Error('另一分頁已接管，沒有扣款。');
   const result=shift.purchaseUpgrade(id);syncLayout();if(result.ok&&!canStand(player.x,player.y)){const safe=targets.find(t=>t.id===id.split(':')[1])||counter;player.x=safe.x;player.y=safe.y;player.moving=false;clearInput();}$('upgrade-feedback').textContent=result.message;processEvents();

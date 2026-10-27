@@ -1,6 +1,6 @@
 {
-  "version": "0.19.0",
-  "html_sha256": "7fa148eab3062a16d54fb022c5d051eb66d93a3d1e70f80c9a74f3ddb99ae7a8",
+  "version": "0.19.1",
+  "html_sha256": "a2617545f56d2ae7f538b1ccf570ed9335ce64871ac524fab7b41bb35b2214c3",
   "save_schema": 11,
   "achievements": 31,
   "icons": 31,
@@ -32,7 +32,10 @@
     "atomic-two-new-parcel-selection",
     "separate-origin-reservations-and-free-rack-placement",
     "earned-only-two-hands-achievement-icon",
-    "schema11-supports1-through10"
+    "schema11-supports1-through10",
+    "revised-upgrade-copy-and-worker-labels",
+    "simplified-tool-and-cage-cards",
+    "large-text-payroll-shop-header-footer-visible"
   ],
   "customer_types": 6
 }

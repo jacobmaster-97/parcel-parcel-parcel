@@ -192,3 +192,9 @@ body.large-text .order-card h1{font-size:24px}body.large-text .order-card .order
 body.large-text #mobile-service,body.large-text #mobile-location,body.large-text #mobile-patience,body.large-text #mobile-zone,body.large-text .mobile-hand small{font-size:16px}
 body.large-text #mobile-held{font-size:18px}body.large-text .mobile-map-marker{font-size:16px;line-height:22px}
 body.large-text .inventory-summary{flex-wrap:wrap}body.large-text .inventory-patience{min-width:0;max-width:100%}
+/* Keep the shop header/footer visible when large-text payroll feedback wraps. */
+@media(orientation:landscape) and (max-height:500px){
+ .upgrade-dialog[open]{grid-template-rows:auto minmax(0,1fr) auto}
+ .upgrade-dialog .wallet-summary{min-height:0;max-height:100%;overflow:auto;align-self:start}
+ .upgrade-dialog .upgrade-footer p{max-height:80px;overflow:auto}
+}
