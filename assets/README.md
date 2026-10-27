@@ -1,3 +1,11 @@
+# v0.19.0 解放雙手
+
+工具「解放雙手」一次$500永久購入，上架可一次選拿1–2件收貨新貨，按選取順序逐件選架。提貨／寄貨／AI保持單件。新增成就「左右開弓」（ID37），解鎖該功能即達成，圖示仍達成後才揭示，合共31項。schema11支援1–10，保留舊30項及貨物／錢包；不改唯一換日前自存或裝置偏好。詳design/two-hands-v1/IMPLEMENTED.md。
+
+# v0.17.0 三款新客人
+
+新增黃衫學生、藍帽街坊、酒紅背心伯伯，保留原三款，合共六款。9張實際圖集、四方向各8格空手／持箱步行及站立頭像。schema10支援1–9並保留原appearance，不改經濟／120秒／60秒耐性／音樂／手機全圖或唯一換日前自存。詳design/new-customers-v1/IMPLEMENTED.md。
+
 # v0.16 背景音樂
 
 `audio/business.mp3`／`audio/stocking.mp3`為使用者已確認兩曲，直接沿用design/music-review-v1程式合成原始MP3。索引metadata/background_music.json；不使用外部歌曲或錄音。正式曲目音量經Web Audio Gain降低，SFX期間短暫壓低BGM。

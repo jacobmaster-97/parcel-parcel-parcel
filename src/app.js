@@ -20,7 +20,7 @@ const characterNames = ['courier_walk','courier_carry_walk',...['player','worker
 const propNames = ['shelf_empty','counter','receiving_cage','parcel_small','parcel_medium','parcel_padded',
  'scanner','checkout_terminal','trolley','outbound_cage','counter_repeat','gate_open','countertop_decor','info_screen','warm_lamp','festive_decoration'];
 const sources = Object.fromEntries([...characterNames.map(n=>[n,`assets/characters/${n}.png`]),
- ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png'],['achievement_icons','assets/ui/achievement_icons.png']]);
+ ...propNames.map(n=>[n,`assets/environment/props/${n}.png`]),['tiles','assets/environment/shop_tiles.png'],['interior_tiles','assets/environment/shop_interior_tiles.png'],['ui_icons','assets/ui/ui_icons.png'],['achievement_icons','assets/ui/achievement_icons.png'],['achievement_two_hands','assets/ui/achievement_two_hands.png']]);
 const sourceURL = path => window.__PACKAGED_ASSETS__?.[path] || path;
 const backgroundMusic=new BackgroundMusic({business:sourceURL('assets/audio/business.mp3'),stocking:sourceURL('assets/audio/stocking.mp3')});
 let audioFocused=true,sfxMaster=null;
@@ -41,6 +41,7 @@ const npcSpeech=new NpcSpeech(),successfulDepartures=new Set(),speechLayouts=new
 const speechLive=document.createElement('span');speechLive.id='npc-speech-live';speechLive.setAttribute('role','status');speechLive.setAttribute('aria-live','polite');speechLive.style.cssText='position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap';document.body.append(speechLive);
 function resetSpeech(){npcSpeech.reset(shift.dayEvents.seed^shift.day);successfulDepartures.clear();speechBubble=null;speechLive.textContent='';}
 syncLayout();
+let selectedIds=[];
 let action = null, selected = null, inventoryContext = null, selectedIndex = 0;
 let joystickPointer = null, joystickVector = {x:0,y:0}, ready = false, loadError = false;
 let camera = {x:0,y:0,scale:2}, mapViewport=null, mobileMarkers=[],mobileMarkerKey='',mobileDetailKey='', queueSignature = '';
@@ -68,7 +69,7 @@ resetPlayer();
 function clearInput(){
  keys.clear();joystickPointer=null;joystickVector={x:0,y:0};$('joystick-knob').style.transform='';
 }
-function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;suspendedInventory=null;clearInput(); }
+function closeDialogs(){ for(const id of dialogIds)if($(id).open)$(id).close();inventoryContext=null;selected=null;selectedIds=[];suspendedInventory=null;clearInput(); }
 function showDialog(id){clearInput();if(!$(id).open)$(id).showModal();}
 // The floating message area is intentionally silent in every game phase.
 function toast() {}
@@ -98,7 +99,7 @@ function beginSession(){
 function pause(reason='所有客人耐性及班次時間已停止。'){
  if(!shift.pause())return;
  if($('inventory-dialog').open){
-  const saved={target:{...inventoryContext},selected,scroll:$('inventory-scroll').scrollTop};
+  const saved={target:{...inventoryContext},selected,selectedIds:[...selectedIds],scroll:$('inventory-scroll').scrollTop};
   closeInventory(false);suspendedInventory=saved;
  }
  $('pause-reason').textContent=reason;showDialog('pause-dialog');syncMusic();
@@ -168,13 +169,14 @@ function updateInventoryRequest(){
   label.textContent='客人要求';code.textContent=order.code;code.className='inventory-request-code';node.append(label,code);if(rackHints()){const location=document.createElement("span");location.textContent=`${order.zone} 區貨架`;node.append(location);}
  }else node.textContent=text;
 }
+const inventoryLimit=()=>inventoryContext?.type==='receiving'&&shift.upgrades.twoHands?2:1;
 function openInventory(target,restore=null){
- inventoryContext=target;selected=null;selectedIndex=-1;inventoryBusy=false;
+ inventoryContext=target;selected=null;selectedIds=[];selectedIndex=-1;inventoryBusy=false;
  const list=inventoryPackages();
  $('inventory-title').textContent=target.type==='shelf'?`${rackHints()?`${target.zone} 區貨架`:"貨架"} · ${list.length} 格貨位`:`收貨區 · ${list.length} 格待上架`;
- $('inventory-feedback').textContent='';$('inventory-selection').textContent='請先選一件包裹';
+ $('inventory-feedback').textContent='';$('inventory-selection').textContent=inventoryLimit()===2?'可選1至2件新貨，按選取順序逐件上架':'請先選一件包裹';
  updateInventoryRequest();
- $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 已開放貨架 上架':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
+ $('inventory-footnote').textContent=shift.phase==='stocking'?'上架時間不計時 · 返回場景後自由選 已開放貨架 上架':inventoryLimit()===2?'方向鍵移動／Space選取或取消／Enter確認；營業仍計時':'選貨時繼續計時 · 方向鍵選貨 / Enter 確認 / Esc 返回';
  const grid=$('parcel-grid');grid.replaceChildren();
  list.forEach((p,i)=>{
   const button=document.createElement('button');button.className='parcel-choice';button.type='button';
@@ -194,32 +196,37 @@ function openInventory(target,restore=null){
  });
  $('inventory-confirm').disabled=true;$('inventory-confirm').textContent='確認取件';
  showDialog('inventory-dialog');
- const old=restore?.selected?list.findIndex(p=>p?.id===restore.selected):-1;
- if(old>=0)selectParcel(old);else $('inventory-close').focus();
- $('inventory-scroll').scrollTop=restore?.scroll||0;
+ const restored=restore?.selectedIds||[restore?.selected].filter(Boolean);
+ for(const id of restored){const i=list.findIndex(p=>p?.id===id);if(i>=0&&selectedIds.length<inventoryLimit())selectParcel(i,false);}
+ $('inventory-close').focus();$('inventory-scroll').scrollTop=restore?.scroll||0;
 }
 function selectParcel(index,focus=true){
- const list=inventoryPackages();if(!list[index]||inventoryBusy)return;
- selected=list[index].id;selectedIndex=index;
+ const list=inventoryPackages(),item=list[index];if(!item||inventoryBusy)return;
+ if(inventoryLimit()===2){
+  if(selectedIds.includes(item.id))selectedIds=selectedIds.filter(id=>id!==item.id);
+  else if(selectedIds.length<2)selectedIds.push(item.id);
+  else{$('inventory-feedback').textContent='最多同時拿兩件；先取消一件再選其他貨物。';return;}
+ }else selectedIds=[item.id];
+ selected=selectedIds[0]||null;selectedIndex=index;
  $('parcel-grid').querySelectorAll('button').forEach((b,i)=>{
-  b.setAttribute('aria-pressed',String(i===index));const mark=b.querySelector('.selection-mark');if(mark)mark.textContent=i===index?'✓ 已選':'';
+  const chosen=!!list[i]&&selectedIds.includes(list[i].id);b.setAttribute('aria-pressed',String(chosen));const mark=b.querySelector('.selection-mark');if(mark)mark.textContent=chosen?'✓ 已選':'';
  });
- $('inventory-selection').textContent=`已選 ${list[index].code} · ${list[index].zone?(rackHints()?`${list[index].zone} 區貨架`:'貨架包裹'):'待上架'}`;
- $('inventory-confirm').disabled=false;
+ $('inventory-selection').textContent=selectedIds.length?`已選 ${selectedIds.map(id=>list.find(p=>p?.id===id)?.code).join('、')}${inventoryLimit()===2?` · ${selectedIds.length}／2件`:''}`:inventoryLimit()===2?'可選1至2件新貨，按選取順序逐件上架':'請先選一件包裹';
+ $('inventory-confirm').disabled=!selectedIds.length;$('inventory-confirm').textContent=inventoryLimit()===2?`確認取件${selectedIds.length?`（${selectedIds.length}件）`:''}`:'確認取件';
  if(focus){const card=$('parcel-grid').children[index];card?.focus({preventScroll:true});card?.scrollIntoView({block:'nearest'});}
 }
 function confirmParcel(){
  if(!selected||!canWork()||inventoryBusy)return;
- const item=inventoryPackages().find(p=>p?.id===selected);
- if(!item){selected=null;$('inventory-confirm').disabled=true;$('inventory-feedback').textContent='這件貨物已移動，請重新選擇。';return;}
+ const list=inventoryPackages();
+ if(selectedIds.some(id=>!list.some(p=>p?.id===id))){selected=null;$('inventory-confirm').disabled=true;$('inventory-feedback').textContent='這件貨物已移動，請重新選擇。';return;}
  inventoryBusy=true;$('inventory-confirm').disabled=true;$('inventory-confirm').textContent='處理中…';
- const result=shift.take(selected);
+ const result=shift.takeMany([...selectedIds]);
  if(result.ok){closeInventory();handleResult(result,'pickup');}
  else{inventoryBusy=false;$('inventory-confirm').disabled=false;$('inventory-confirm').textContent='確認取件';$('inventory-feedback').textContent=rackMessage(result.message);}
 }
 function closeInventory(focus=true){
  if($('inventory-dialog').open)$('inventory-dialog').close();
- inventoryContext=null;selected=null;inventoryBusy=false;clearInput();if(focus)canvas.focus({preventScroll:true});
+ inventoryContext=null;selected=null;selectedIds=[];inventoryBusy=false;clearInput();if(focus)canvas.focus({preventScroll:true});
 }
 function finish(){
  closeDialogs();clearInput();action=null;const s=shift.stats;
@@ -246,7 +253,7 @@ function renderAchievements(){
  for(const c of ACHIEVEMENTS){const tier=achievementTier(a,c),max=tier===c.goals.length;
   const card=document.createElement('article');card.className=`achievement-card ${tier?'unlocked':'locked'} tier-${tier}`;card.dataset.achievement=c.id;
   const icon=document.createElement('span');icon.className='achievement-icon';icon.setAttribute('role','img');icon.setAttribute('aria-label',tier?`${c.name}已解鎖圖示`:'圖示未解鎖');
-  if(tier){icon.style.backgroundImage=`url("${sourceURL(sources.achievement_icons)}")`;icon.style.backgroundPosition=`${c.icon%5*25}% ${Math.floor(c.icon/5)*20}%`;}else icon.textContent='?';
+  if(tier){icon.style.backgroundImage=`url("${sourceURL(sources[c.iconImage||'achievement_icons'])}")`;if(c.iconImage){icon.style.backgroundSize='100% 100%';icon.style.backgroundPosition='center';}else icon.style.backgroundPosition=`${c.icon%5*25}% ${Math.floor(c.icon/5)*20}%`;}else icon.textContent='?';
   const body=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),progress=document.createElement('strong'),track=document.createElement('div'),fill=document.createElement('span');
   name.textContent=c.name;desc.textContent=c.description;const target=c.goals[Math.min(tier,c.goals.length-1)],value=a.values[c.id];progress.textContent=`${max?'✓ 已完成':tier?'已解鎖 · 下一階段':'未完成'} · ${Math.min(value,target).toLocaleString()}／${target.toLocaleString()}`;track.className='achievement-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label',c.name);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(target));track.setAttribute('aria-valuenow',String(Math.min(value,target)));fill.style.width=`${Math.min(1,value/target)*100}%`;track.append(fill);body.append(name,desc,progress);
   if(c.goals.length>1){const levels=document.createElement('small');levels.className='achievement-levels';levels.textContent=c.goals.map((goal,i)=>`${['銅','銀','金'][i]} ${goal.toLocaleString()}${i<tier?' ✓':''}`).join(' · ');body.append(levels);}
@@ -362,6 +369,7 @@ function drawActor(actor,isPlayer=false){
  else{image=images.get(`${prefix}_idle`);frame=row;row=0;}
  if(isPlayer){ctx.fillStyle='#31554842';ctx.beginPath();ctx.ellipse(Math.round(actor.x),Math.round(actor.y-1),10,3,0,0,Math.PI*2);ctx.fill();}
  if(image)ctx.drawImage(image,frame*32,row*48,32,48,Math.round(actor.x)-16,Math.round(actor.y)-44,32,48);
+ if(isPlayer&&shift.heldExtra&&!work&&actor.face!=='up'){const box=images.get('parcel_small');if(box)ctx.drawImage(box,40,60,16,16,Math.round(actor.x)+(actor.face==='left'?-14:actor.face==='right'?2:-6),Math.round(actor.y)-31,12,12);}
  if(isPlayer){ctx.fillStyle='#f4edc9';ctx.beginPath();ctx.moveTo(actor.x,actor.y-51);ctx.lineTo(actor.x-3,actor.y-56);ctx.lineTo(actor.x+3,actor.y-56);ctx.closePath();ctx.fill();}
 }
 function updateMobileMapLabels(bounds){
@@ -384,7 +392,7 @@ function updateMobileHud(order,known,held,stocking,holdingShipping,activePatienc
  $('mobile-order-open').classList.toggle('error',!!feedback?.error);$('mobile-order-open').classList.toggle('warn',activePatience&&patienceState==='warn');$('mobile-order-open').classList.toggle('danger',activePatience&&patienceState==='danger');
  $('mobile-patience').textContent=activePatience?shift.phase==='paused'?'已暫停':`${ratio<=.2?'！':ratio<=.4?'△ ':''}耐性 ${Math.ceil(order.patience)}秒`:holdingShipping?'已接收':stocking?'不限時':'';
  $('mobile-patience-track').style.visibility=activePatience?'visible':'hidden';$('mobile-patience-track').setAttribute('aria-valuenow',String(Math.round(ratio*100)));$('mobile-patience-fill').style.width=`${ratio*100}%`;
- $('mobile-held').textContent=held?held.kind==='shipping'?'待寄貨':held.code:'空手';
+ $('mobile-held').textContent=shift.heldExtra?shift.heldIds().map(id=>shift.packages.get(id).code).join('／'):held?held.kind==='shipping'?'待寄貨':held.code:'空手';
  $('mobile-order-open').disabled=!shift.canWork()||saveBusy||ownershipLost;
  if(!$('mobile-detail-dialog').open)return;
  const detail={request:holdingShipping?'已接收寄貨，請放到右下寄貨籠。':requestText(),held:$('held-code').textContent,patience:$('mobile-patience').textContent,day:shift.day,phase:shift.phase,receiving:shift.receivingCount(),receivingCapacity:shift.receiving.length,outbound:shift.outbound.filter(s=>s.packageId).length,outboundCapacity:shift.outbound.length,completed:shift.stats.completed+shift.stats.shipped,revenue:shift.stats.revenue,queue:shift.queue.map(o=>({patience:`${Math.ceil(o.patience)}秒`,status:o.revealed?'已接待':'待接待'})),feedback:feedback?.text||''};
@@ -524,7 +532,7 @@ function updateUI(){
   text.textContent=activePatience?patienceText:stocking?'不計時':'—';
  }
  $('inventory-patience').hidden=!activePatience;
- $('held-code').textContent=held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?(rackHints()?`${held.zone} 區貨架`:'架上貨物'): '待上架'}`:'空手';
+ $('held-code').textContent=shift.heldExtra?`${shift.heldIds().map(id=>shift.packages.get(id).code).join('、')} · 2件待上架`:held?`${held.code} · ${held.kind==='shipping'?'待放寄貨區':held.zone?(rackHints()?`${held.zone} 區貨架`:'架上貨物'): '待上架'}`:'空手';
  $('held-icon').style.backgroundImage=`url("${sourceURL(sources.ui_icons)}")`;
  $('order-feedback').hidden=!feedback;
  if(feedback){$('order-feedback').textContent=feedback.text;$('order-feedback').classList.toggle('error',feedback.error);}
@@ -567,7 +575,7 @@ function updateUI(){
 function loop(now){
  const elapsed=Math.max(0,(now-(lastTime||now))/1000),dt=Math.min(.08,elapsed);lastTime=now;
  if(canWork()){
-  shift.selectionId=$('inventory-dialog').open?selected:null;shift.workerAvoid=player;shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
+  shift.selectionId=$('inventory-dialog').open?selected:null;shift.selectionIds=$('inventory-dialog').open?[...selectedIds]:[];shift.workerAvoid=player;shift.tick(elapsed);if(feedback){feedback.remaining-=elapsed;if(feedback.remaining<=0)feedback=null;}if(action){action.remaining-=elapsed;if(action.remaining<=0)action=null;}
   updatePlayer(dt);updateActors(dt);processEvents();
  }
  draw(elapsed);updateUI();syncMusic();requestAnimationFrame(loop);
@@ -578,8 +586,8 @@ window.addEventListener('keydown',e=>{
  if($('inventory-dialog').open){
   if(['arrowleft','arrowright','arrowup','arrowdown'].includes(key)){
    e.preventDefault();const count=inventoryPackages().length,columns=getComputedStyle($('parcel-grid')).gridTemplateColumns.split(' ').length,delta=key==='arrowleft'?-1:key==='arrowright'?1:key==='arrowup'?-columns:columns;
-   if(selectedIndex<0){const first=inventoryPackages().findIndex(Boolean);if(first>=0)selectParcel(first);return;}
-   let index=selectedIndex;for(let n=0;n<count;n++){index=(index+delta+count)%count;if(inventoryPackages()[index]){selectParcel(index);break;}}
+   if(selectedIndex<0){const first=inventoryPackages().findIndex(Boolean);if(first>=0){if(inventoryLimit()===2){selectedIndex=first;$('parcel-grid').children[first].focus();}else selectParcel(first);}return;}
+   let index=selectedIndex;for(let n=0;n<count;n++){index=(index+delta+count)%count;if(inventoryPackages()[index]){if(inventoryLimit()===2){selectedIndex=index;$('parcel-grid').children[index].focus();}else selectParcel(index);break;}}
   }else if(key==='enter'&&e.target.id!=='inventory-close'&&e.target.id!=='inventory-pause'&&e.target.id!=='inventory-back'){
    e.preventDefault();if(!e.repeat)confirmParcel();
   }return;
@@ -918,7 +926,7 @@ Promise.all(Object.entries(sources).map(([name,path])=>new Promise((resolve,reje
 
 // Read-only QA snapshots; never exposes a way to alter inventory or grant income.
 if(new URLSearchParams(location.search).has('qa'))window.__parcelQA={snapshot:()=>({mapViewport:mapViewport?{...mapViewport}:null,mobileView:mobileView(),speech:speechBubble?structuredClone(speechBubble):null,speechTime:npcSpeech.time,speechNext:npcSpeech.next,assetSizes:Object.fromEntries([...images].map(([n,img])=>[n,[img.width,img.height]])),world:{...world},gate:{...GATE},targets:targets.map(t=>({...t})),actors:[...actors.values(),...departures].map(a=>({id:a.id,x:a.x,y:a.y,carrying:a.carrying})),courier:shift.courier?{...shift.courier}:null,outbound:shift.outbound.map(s=>({...s})),phase:shift.phase,
- departures:structuredClone(departures),preferences:{...preferences},sfxGain:sfxMaster?.gain.value??null,music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,
+ departures:structuredClone(departures),preferences:{...preferences},sfxGain:sfxMaster?.gain.value??null,music:backgroundMusic.snapshot(),achievements:structuredClone(shift.achievements),dayEvents:structuredClone(shift.dayEvents),customerTimer:shift.customerTimer,deliveryTimer:shift.deliveryTimer,day:shift.day,totalRevenue:shift.totalRevenue,wallet:shift.ledger.balance,upgrades:structuredClone(shift.upgrades),availableFunds:shift.availableFunds(),worker:shift.worker?structuredClone(shift.worker):null,ledger:shift.ledger.toJSON(),saveBusy,saveStatus,pausedPhase:shift.pausedPhase,receivingCount:shift.receivingCount(),practice:shift.practice,remaining:shift.remaining,player:{...player},held:shift.held?{...shift.packages.get(shift.held)}:null,heldExtra:shift.heldExtra?{...shift.packages.get(shift.heldExtra)}:null,selectedIds:[...selectedIds],
  queue:shift.queue.map(o=>({...o})),stats:{...shift.stats},target:closestTarget()?.id||null,
  packages:[...shift.packages.values()].map(p=>({...p})),dialog:dialogIds.find(id=>$(id).open)||null,
  joystick:{...joystickVector},action:action?.name||null})};

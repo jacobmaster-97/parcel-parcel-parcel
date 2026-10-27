@@ -5,8 +5,8 @@ import {Ledger} from './finance.js';
 import {canStandInShop} from './layout.js';
 import {initialDayEvents,eventSeedFromText,previewNextEvent,validDayEvents} from './day-events.js';
 import {initialUpgrades} from './upgrades.js';
-export const SAVE_SCHEMA=10;
-const savedFields=['achievements','shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
+export const SAVE_SCHEMA=11;
+const savedFields=['achievements','shippingChance','deferDayStart','courier','courierSerial','seed','phase','day','totalRevenue','remaining','elapsed','shelves','receiving','outbound','held','heldExtra','serial','orderSerial','customerTimer','deliveryTimer','stats','upgrades','worker','managementFrom','dayEvents'];
 const saveFaces=['down','left','right','up'];
 function saveCheck(ok){if(!ok)throw new Error('存檔資料不完整或已損壞，原有進度沒有被取代。');}
 const saveInt=n=>Number.isSafeInteger(n)&&n>=0;
@@ -40,7 +40,7 @@ export function decodeShift(value){
  const occupancy=new Map(),reserved=new Map();
  saveCheck(['closing','stocking'].includes(value.managementFrom));
  const u=value.upgrades;
- saveCheck(u&&typeof u.cargoManagement==='boolean'&&u.cargoManagement===ledger.paid.includes('upgrade:management:new')&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&typeof u.workerAdvancedUnlocked==='boolean'&&['basic','advanced'].includes(u.workerBookedTier)&&(u.workerBookedTier!=='advanced'||u.workerAdvancedUnlocked)&&ledger.balance>=(u.workerBookedDay?(u.workerBookedTier==='advanced'?85:60):0));
+ saveCheck(u&&typeof u.twoHands==='boolean'&&u.twoHands===ledger.paid.includes('upgrade:twoHands:new')&&typeof u.cargoManagement==='boolean'&&u.cargoManagement===ledger.paid.includes('upgrade:management:new')&&saveInt(u.shoeThroughDay)&&u.shoeThroughDay<=value.day+3&&u.shelfLevels&&['A','B'].every(z=>saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&Object.keys(u.shelfLevels).every(z=>['A','B','C','D'].includes(z)&&saveInt(u.shelfLevels[z])&&u.shelfLevels[z]<=2)&&saveInt(u.receivingLevel)&&u.receivingLevel<=3&&saveInt(u.outboundLevel)&&u.outboundLevel<=3&&[0,value.day+1].includes(u.workerBookedDay)&&u.workerBookedDay!==value.day&&Array.isArray(u.workerZones)&&u.workerZones.length>0&&new Set(u.workerZones).size===u.workerZones.length&&u.workerZones.every(z=>u.shelfLevels[z]!==undefined)&&typeof u.workerAdvancedUnlocked==='boolean'&&['basic','advanced'].includes(u.workerBookedTier)&&(u.workerBookedTier!=='advanced'||u.workerAdvancedUnlocked)&&ledger.balance>=(u.workerBookedDay?(u.workerBookedTier==='advanced'?85:60):0));
  saveCheck(value.shelves&&Object.keys(value.shelves).sort().join()===Object.keys(u.shelfLevels).sort().join()&&Array.isArray(value.receiving)&&value.receiving.length===6+u.receivingLevel*2&&Array.isArray(value.outbound)&&value.outbound.length===6+u.outboundLevel*2);
  const groups=[...Object.keys(value.shelves).map(z=>['shelf',z,value.shelves[z]]),['receiving',null,value.receiving],['outbound',null,value.outbound]];
  const worker=value.worker;
@@ -59,27 +59,30 @@ export function decodeShift(value){
  let held=0;
  for(const p of packages.values()){
   if(['shelf','receiving','outbound'].includes(p.location))saveCheck(occupancy.has(p.id)&&!p.origin&&(p.location!=='outbound'||p.kind==='shipping'));
-  if(p.location==='held'){held++;const r=reserved.get(p.id);saveCheck(value.held===p.id&&p.origin&&r&&r.type===p.origin.type&&r.zone===p.origin.zone&&r.index===p.origin.index);}
+  if(p.location==='held'){held++;const r=reserved.get(p.id);saveCheck([value.held,value.heldExtra].includes(p.id)&&p.origin&&r&&r.type===p.origin.type&&r.zone===p.origin.zone&&r.index===p.origin.index);}
   if(p.location==='customer'){const r=reserved.get(p.id);saveCheck(p.kind==='shipping'&&r?.type==='outbound'&&r.index===p.index);}
   if(reserved.has(p.id))saveCheck(['held','customer','worker'].includes(p.location)||p.id===worker?.task?.packageId&&p.location==='receiving');
   if(p.location==='worker')saveCheck(worker?.task?.carrying&&worker.task.packageId===p.id&&p.origin?.type==='receiving'&&value.receiving[p.origin.index]?.reservedFor===p.id);
   if(p.orderId)saveCheck(orderMap.has(p.orderId)&&value.queue.includes(p.orderId));
  }
- saveCheck(held===(value.held?1:0));
+ saveCheck((value.held===null||typeof value.held==='string'&&packages.get(value.held)?.location==='held')&&(value.heldExtra===null||typeof value.heldExtra==='string'&&packages.get(value.heldExtra)?.location==='held'));
+ const heldIds=[value.held,value.heldExtra].filter(Boolean);saveCheck(held===heldIds.length&&new Set(heldIds).size===heldIds.length&&heldIds.every(id=>packages.get(id)?.location==='held'));
+ if(value.heldExtra)saveCheck(value.held&&u.twoHands&&heldIds.every(id=>{const p=packages.get(id);return p.kind!=='shipping'&&p.zone===null&&p.origin?.type==='receiving'&&!p.orderId;}));
+ saveCheck(value.achievements.values[37]===Number(u.twoHands));
  for(const id of value.queue){const o=orderMap.get(id),p=o&&packages.get(o.packageId);saveCheck(o&&o.status==='waiting'&&p.orderId===id&&(o.type==='shipping'?p.kind==='shipping'&&p.location==='customer':p.kind!=='shipping'&&['shelf','held'].includes(p.location)));}
  for(const o of orderMap.values())if(!value.queue.includes(o.id))saveCheck(o.status==='accepted'&&o.type==='shipping'&&packages.get(o.packageId).location==='held');
  if(value.courier){const q=value.courier;saveCheck(saveInt(q.id)&&q.id>0&&q.id<=value.courierSerial&&savePoint(q)&&saveFaces.includes(q.face)&&typeof q.carrying==='boolean'&&['arriving','waiting','unloading','leaving'].includes(q.stage)&&saveRoute(q.route)&&saveInt(q.next)&&q.next<=q.route.length&&saveFinite(q.unloadRemaining)&&q.unloadRemaining>=0&&q.unloadRemaining<=.6&&saveFinite(q.travel)&&q.travel>=0);}
  const game=Object.create(Shift.prototype);for(const key of savedFields)game[key]=structuredClone(value[key]);
- game.practice=false;game.packages=new Map([...packages].map(([id,p])=>[id,structuredClone(p)]));game.orders=[...orderMap.values()].map(o=>structuredClone(o));const restored=new Map(game.orders.map(o=>[o.id,o]));game.queue=value.queue.map(id=>restored.get(id));game.ledger=ledger;game.events=[];game.pausedPhase=null;game.selectionId=null;game.workerAvoid=null;return game;
+ game.practice=false;game.packages=new Map([...packages].map(([id,p])=>[id,structuredClone(p)]));game.orders=[...orderMap.values()].map(o=>structuredClone(o));const restored=new Map(game.orders.map(o=>[o.id,o]));game.queue=value.queue.map(id=>restored.get(id));game.ledger=ledger;game.events=[];game.pausedPhase=null;game.selectionId=null;game.selectionIds=[];game.workerAvoid=null;return game;
 }
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<CUSTOMER_COUNT&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 export function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.18.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.0',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 export function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
- saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,7,8,9,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
+ saveCheck(record&&record.format==='parcel-parcel-parcel'&&[1,2,3,4,5,6,7,8,9,10,SAVE_SCHEMA].includes(record.schemaVersion)&&typeof record.profileId==='string'&&record.profileId.length>0&&record.profileId.length<100&&saveInt(record.revision)&&typeof record.savedAt==='string'&&Number.isFinite(Date.parse(record.savedAt))&&record.payload&&record.checksum===saveChecksum(record.payload));
  const payload=structuredClone(record.payload);if(record.schemaVersion===1){payload.shift.upgrades=initialUpgrades();payload.shift.upgrades.shelfLevels=Object.fromEntries(Object.keys(payload.shift.shelves||{}).map(z=>[z,0]));payload.shift.upgrades.workerZones=Object.keys(payload.shift.shelves||{});payload.shift.worker=null;payload.shift.managementFrom='closing';}
  if(record.schemaVersion<3){
   const old=payload.shift;saveCheck(saveFinite(old.remaining)&&old.remaining>=0&&old.remaining<=180&&saveFinite(old.elapsed)&&old.elapsed>=0);
@@ -93,6 +96,7 @@ export function readSave(record){
  if(record.schemaVersion<7){const u=payload.shift.upgrades;u.workerAdvancedUnlocked=false;u.workerBookedTier='basic';if(payload.shift.worker)payload.shift.worker.tier='basic';}
  if(record.schemaVersion<8)payload.shift.upgrades.cargoManagement=false;
  if(record.schemaVersion<9){const old=payload.shift;const viewGame={...old,packages:new Map(old.packages.map(p=>[p.id,p])),ledger:Ledger.fromJSON(old.ledger)};old.achievements=migrateAchievements(viewGame);}
+ if(record.schemaVersion<11){payload.shift.heldExtra=null;payload.shift.upgrades.twoHands=false;payload.shift.achievements.values[37]=0;payload.shift.achievements.unlocked[37]=[];}
  const {view,settings}=payload;saveCheck(view&&view.player&&savePoint(view.player)&&canStandInShop(view.player.x,view.player.y,payload.shift.shelves)&&saveFaces.includes(view.player.face)&&saveFinite(view.player.travel)&&view.player.travel>=0&&Array.isArray(view.actors)&&view.actors.length<=5&&Array.isArray(view.departures)&&view.departures.length<=50&&settings&&typeof settings.sound==='boolean');
  const game=decodeShift(payload.shift);view.actors.forEach(validateActor);view.departures.forEach(validateActor);saveCheck(new Set(view.actors.map(a=>a.id)).size===view.actors.length&&view.actors.length===game.queue.length&&view.actors.every(a=>game.queue.some(o=>o.id===a.id)));
  return{game,view:structuredClone(view),settings:structuredClone(settings)};

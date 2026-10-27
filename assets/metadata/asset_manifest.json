@@ -3185,5 +3185,14 @@
       "assets/metadata/customers-v017-carry-generation.json",
       "assets/metadata/customers-v017-packing.json"
     ]
+  },
+  "twoHandsAchievement": {
+    "version": "0.19.0",
+    "id": "37",
+    "name": "左右開弓",
+    "image": "assets/ui/achievement_two_hands.png",
+    "metadata": "assets/metadata/achievement_two_hands.json",
+    "reveal": "earned only",
+    "originalAtlas": "unchanged 30 icons"
   }
 }

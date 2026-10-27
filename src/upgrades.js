@@ -1,9 +1,10 @@
 // Approved shop upgrades; prices are incremental purchases, not cumulative totals.
 export const BASE_ZONES=['A','B'];
 export const ALL_ZONES=['A','B','C','D'];
-export function initialUpgrades(){return{cargoManagement:false,shoeThroughDay:0,shelfLevels:{A:0,B:0},receivingLevel:0,outboundLevel:0,workerBookedDay:0,workerBookedTier:'basic',workerAdvancedUnlocked:false,workerZones:['A','B']};}
+export function initialUpgrades(){return{twoHands:false,cargoManagement:false,shoeThroughDay:0,shelfLevels:{A:0,B:0},receivingLevel:0,outboundLevel:0,workerBookedDay:0,workerBookedTier:'basic',workerAdvancedUnlocked:false,workerZones:['A','B']};}
 export function upgradeOptions(game){
  const u=game.upgrades,items=[{id:'shoes',category:'工具',name:'輕便工作鞋',price:80,before:game.upgrades.shoeThroughDay>=game.day?'輕快步伐生效中':'一般步伐',after:'提升步行速度 · 下一個營業日起連續3日',note:`當晚整理即可使用，不疊加。${u.shoeThroughDay?`現有有效至第 ${u.shoeThroughDay} 天整理結束。`:''}`,blocked:u.shoeThroughDay>game.day?'仍在有效期內':''}];
+ items.push({id:'twoHands',category:'工具',name:'解放雙手',price:500,before:u.twoHands?'已啟用':'每次拿1件新貨',after:'上架時一次拿最多2件新貨',note:'容許上架時一次拿兩件貨物',blocked:u.twoHands?'已購買':''});
  items.push({id:'management',category:'工具',name:'貨物管理系統',price:900,before:u.cargoManagement?'已啟用':'未啟用',after:'恢復貨架區名及提貨位置提示',note:'每件貨物上架後會自動記錄位置，客人取貨時可更快速找到',blocked:u.cargoManagement?'已購買':''});
  for(const z of ALL_ZONES){const level=u.shelfLevels[z],exists=level!==undefined;items.push({id:`shelf:${z}`,category:'貨架',name:exists?`${z} 區貨架加層`:`新增 ${z} 區貨架`,price:exists?(level===0?480:650):320,before:exists?`${game.shelves[z].length} 格`:'尚未設置',after:exists?`${Math.min(8,6+level*2)} 格`:`新增4格 · ${z==='C'?'原下排右側位置':'店面下方新一排'}`,note:exists?'原貨物及格號保留，新增空格，不附送貨物。':'沿用原貨架美術，保持原店寬度及主要動線。',blocked:level===2?'已滿級':''});}
  for(const type of ['receiving','outbound'])items.push({id:type,category:'設備',name:type==='receiving'?'收貨籠擴容':'寄貨籠擴容',price:200,before:`${game[type].length} 格`,after:`${Math.min(12,game[type].length+2)} 格`,note:'每次增加2格，上限12格；不改客流、到貨頻率或服務費。',blocked:game[type].length>=12?'已滿級':''});

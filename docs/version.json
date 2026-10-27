@@ -1,9 +1,9 @@
 {
-  "version": "0.18.0",
-  "html_sha256": "c5cbe63f1d4a5c84e18ccdd24fd8328d1e2ec33e06cba6fe2e1b96d2cae81aa8",
-  "save_schema": 10,
-  "achievements": 30,
-  "icons": 30,
+  "version": "0.19.0",
+  "html_sha256": "7fa148eab3062a16d54fb022c5d051eb66d93a3d1e70f80c9a74f3ddb99ae7a8",
+  "save_schema": 11,
+  "achievements": 31,
+  "icons": 31,
   "features": [
     "achievement-album-three-entries",
     "earned-icons-only",
@@ -23,12 +23,16 @@
     "three-new-customer-appearances",
     "six-customers-stable-original-ids",
     "empty-and-carry-four-direction-eight-frame-atlases",
-    "schema10-supports1-through9",
     "pause-settings-submenu-only",
     "independent-music-and-sfx-switches-volumes",
     "standard-and-large-text",
     "central-backup-import-export-and-save-time",
-    "device-preferences-separate-from-day-boundary-save"
+    "device-preferences-separate-from-day-boundary-save",
+    "two-hands-permanent500-tool",
+    "atomic-two-new-parcel-selection",
+    "separate-origin-reservations-and-free-rack-placement",
+    "earned-only-two-hands-achievement-icon",
+    "schema11-supports1-through10"
   ],
   "customer_types": 6
 }

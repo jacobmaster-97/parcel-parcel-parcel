@@ -1,11 +1,11 @@
 {
   "name": "parcel-point-prototype",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node tools/serve-game.mjs",
-    "test": "node tests/game.test.mjs && node tests/finance.test.mjs && node tests/save.test.mjs && node tests/upgrades.test.mjs && node tests/shop-revision.test.mjs && node tests/day-events.test.mjs && node tests/npc-dialogue.test.mjs && node tests/achievements.test.mjs && node tests/customers.test.mjs && node tests/preferences.test.mjs",
+    "test": "node tests/game.test.mjs && node tests/finance.test.mjs && node tests/save.test.mjs && node tests/upgrades.test.mjs && node tests/shop-revision.test.mjs && node tests/day-events.test.mjs && node tests/npc-dialogue.test.mjs && node tests/achievements.test.mjs && node tests/customers.test.mjs && node tests/preferences.test.mjs && node tests/two-hands.test.mjs",
     "build": "node tools/package-prototype.mjs"
   }
 }

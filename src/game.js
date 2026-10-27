@@ -28,7 +28,7 @@ export class Shift {
     this.packages = new Map();
     this.queue = [];
     this.orders = [];
-    this.held = null;
+    this.held = null;this.heldExtra=null;
     this.serial = 0;
     this.orderSerial = 0;
     this.customerTimer = 7;
@@ -56,7 +56,8 @@ export class Shift {
     const ledger=Ledger.fromJSON(this.ledger.toJSON());
     if(!ledger.post(tx,'investment',item.price,id,true,item.name))return{ok:false,message:'這項購買已處理，沒有再次扣款'};
     this.ledger=ledger;
-    if(id==='management')this.upgrades.cargoManagement=true;
+    if(id==='twoHands')this.upgrades.twoHands=true;
+    else if(id==='management')this.upgrades.cargoManagement=true;
     else if(id==='workerUnlock')this.upgrades.workerAdvancedUnlocked=true;
     else if(id==='shoes')this.upgrades.shoeThroughDay=this.day+3;
     else if(id.startsWith('shelf:')){const z=id.slice(-1);if(!this.shelves[z]){this.upgrades.shelfLevels[z]=0;this.shelves[z]=Array.from({length:4},slot);}else{this.upgrades.shelfLevels[z]++;this.shelves[z].push(slot(),slot());}}
@@ -87,7 +88,7 @@ export class Shift {
     const w=this.worker;if(!w||this.phase!=='playing')return;
     if(this.workerAvoid&&Math.hypot(w.x-this.workerAvoid.x,w.y-this.workerAvoid.y)<24){w.moving=false;return;}
     if(!w.task){
-      const p=[...this.packages.values()].find(p=>p.location==='receiving'&&p.id!==this.selectionId);
+      const p=[...this.packages.values()].find(p=>p.location==='receiving'&&p.id!==this.selectionId&&!this.selectionIds?.includes(p.id));
       const zone=this.upgrades.workerZones.find(z=>this.shelves[z]?.some(s=>!s.packageId&&!s.reservedFor));
       if(!p||!zone){w.moving=false;return;}
       const index=this.shelves[zone].findIndex(s=>!s.packageId&&!s.reservedFor);
@@ -135,7 +136,7 @@ export class Shift {
   }
   nextDay() {
     if (this.phase !== 'stocking') return false;
-    if (this.held && !this.isHoldingShipping() && !this.returnHeld().ok) return false;
+    while(this.held&&!this.isHoldingShipping())if(!this.returnHeld().ok)return false;
     this.forwardOutbound();
     sealAchievementDay(this);this.ledger.seal(this.stats);
     if(this.deferDayStart){this.phase='dayend';this.emit('checkpoint');return true;}
@@ -152,7 +153,7 @@ export class Shift {
   closeDay() {
     if (this.phase !== 'playing') return;
     this.returnWorkerCargo();this.worker=null;
-    if (this.held && !this.isHoldingShipping()) this.returnHeld();
+    while(this.held&&!this.isHoldingShipping()){if(!this.returnHeld().ok)throw new Error('手持貨物未能安全退回');}
     this.forwardOutbound();
     if (this.courier && this.courier.stage !== 'leaving') this.turnCourierAround();
     for (const order of this.queue) {
@@ -241,19 +242,25 @@ export class Shift {
     if(this.phase==='stocking' && this.receivingCount()===0) this.nextDay();
     return {ok:true,message:'寄貨入庫成功'};
   }
-  take(id) {
-    if (!this.canWork()) return {ok: false, message: '班次已暫停或結束'};
-    if (this.held) return {ok: false, message: '先交貨、上架或退回手上包裹'};
-    const p = this.packages.get(id);
-    if(this.worker?.task?.packageId===id)return{ok:false,message:'理貨店員已預留此件，請選其他貨物'};
-    if (!p || !['shelf', 'receiving'].includes(p.location)) return {ok: false, message: '這件貨物已不在原位'};
-    const origin = {type: p.location, zone: p.zone, index: p.index};
-    const s = this.slots(origin)[origin.index];
-    if (s.packageId !== id) return {ok: false, message: '貨位資料不一致'};
-    s.packageId = null; s.reservedFor = id;
-    p.origin = origin; p.location = 'held'; p.index = null; this.held = id;
-    this.emit('take', {packageId: id});
-    return {ok: true, message: `已拿起 ${p.code}${p.zone ? ` · ${p.zone} 區` : ' · 自選已開放貨架上架'}`};
+  heldIds(){return [this.held,this.heldExtra].filter(Boolean);}
+  releaseHeld(){this.held=this.heldExtra;this.heldExtra=null;}
+  take(id){return this.takeMany([id]);}
+  takeMany(ids){
+    if(!this.canWork())return{ok:false,message:'班次已暫停或結束'};
+    if(this.held)return{ok:false,message:'先交貨、上架或退回手上包裹'};
+    if(!Array.isArray(ids)||!ids.length||ids.length>2||new Set(ids).size!==ids.length)return{ok:false,message:'請選擇不同包裹，最多兩件'};
+    const parcels=ids.map(id=>this.packages.get(id));
+    if(parcels.some(p=>!p||!['shelf','receiving'].includes(p.location)))return{ok:false,message:'這件貨物已不在原位'};
+    if(ids.length===2&&(!this.upgrades.twoHands||parcels.some(p=>p.location!=='receiving'||p.kind==='shipping')))return{ok:false,message:'解放雙手只可同時拿兩件待上架新貨'};
+    if(ids.some(id=>this.worker?.task?.packageId===id))return{ok:false,message:'理貨店員已預留此件，請選其他貨物'};
+    if(parcels.some(p=>this.slots({type:p.location,zone:p.zone})[p.index]?.packageId!==p.id))return{ok:false,message:'貨位資料不一致'};
+    // All selections validate before moving either parcel; origin slots stay reserved.
+    for(const [i,p] of parcels.entries()){
+      const origin={type:p.location,zone:p.zone,index:p.index},s=this.slots(origin)[origin.index];s.packageId=null;s.reservedFor=p.id;p.origin=origin;p.location='held';p.index=null;
+      if(i===0)this.held=p.id;else this.heldExtra=p.id;
+    }
+    for(const p of parcels)this.emit('take',{packageId:p.id});
+    const p=parcels[0];return{ok:true,message:parcels.length===2?`已拿起 ${parcels.map(p=>p.code).join('、')} · 可逐件選架上架`:`已拿起 ${p.code}${p.zone?` · ${p.zone} 區`:' · 自選已開放貨架上架'}`};
   }
   freeOrigin(p) {
     if (!p.origin) return;
@@ -268,7 +275,7 @@ export class Shift {
     const s = this.slots(origin)[origin.index];
     if (s.packageId || s.reservedFor !== p.id) return {ok: false, message: '原位暫時不可用'};
     s.packageId = p.id; s.reservedFor = null;
-    p.location = origin.type; p.index = origin.index; p.origin = null; this.held = null;
+    p.location = origin.type; p.index = origin.index; p.origin = null; this.releaseHeld();
     this.emit('return', {packageId: p.id});
     return {ok: true, message: `已退回 ${p.code}`};
   }
@@ -285,7 +292,7 @@ export class Shift {
     p.location = 'shelf'; p.zone = zone; p.index = index;
     const order = this.queue.find(o => o.packageId === p.id);
     if (order) order.zone = zone;
-    p.origin = null; this.held = null;
+    p.origin = null; this.releaseHeld();
     if (fresh) this.stats.stocked++;
     const first=fresh&&!p.achievementStocked;p.achievementStocked=true;this.emit('stock', {packageId:p.id,fresh:first,zone});
     if (this.phase === 'stocking' && this.receivingCount() === 0 && !this.isHoldingShipping()) this.nextDay();

@@ -1,0 +1,31 @@
+{
+  "version": "0.19.0",
+  "achievementId": "37",
+  "name": "左右開弓",
+  "image": "assets/ui/achievement_two_hands.png",
+  "size": [
+    64,
+    64
+  ],
+  "filter": "nearest",
+  "source": "assets/raw/two-hands-v019/achievement-generated.png",
+  "generatedWith": "image_gen",
+  "reference": "assets/ui/achievement_icons.png",
+  "brief": "Two distinct cream-gloved teal-cuffed hands each holding one kraft parcel; gold sparkle; no text; existing pixel achievement style. Green background; centered single asset.",
+  "sourceBounds": [
+    198,
+    320,
+    859,
+    631
+  ],
+  "contentBounds": [
+    6,
+    13,
+    58,
+    51
+  ],
+  "sha256": "19b9d1c76d9c5084cacc9286bb27b47c2bb98d7ddbf3e8e8891d1e9cf9097f93",
+  "reveal": "only after first tier earned; locked card attaches no image",
+  "normalization": "ImageMagick alpha chroma key: g>0.08 && g>r*1.35 && g>b*1.35; measured content bounds crop; point resize tofit52x52; center transparent64x64 depth8. Pillow/numpy only used for analysis.",
+  "prompt": "Create ONE original tiny pixel-art achievement badge icon for a cozy Hong Kong parcel pickup shop game. Use the provided existing 30-icon atlas ONLY as pixel-art style/palette reference; create a NEW standalone icon, not a copy of atlas and not an atlas. Theme: 左右開弓 / two hands free: TWO clearly separate cream gloved hands with dark teal wrist cuffs, LEFT hand carrying one small kraft cardboard parcel and RIGHT hand carrying a second small kraft parcel, symmetrical readable silhouette, two cardboard boxes side by side with cream tape, a small warm gold sparkle above center to suggest newly unlocked carrying efficiency. No text, no letters, no numbers, no border, no circular medal/background disk, no UI card, no scene. Front three-quarter game icon perspective matching the reference, chunky crisp pixel clusters and dark brown outlines, warm amber kraft parcels, cream highlights, teal cuffs, tiny gold accent. Exactly one centered compact icon with plenty of plain SOLID GREEN #00FF00 background around every edge, absolutely no other green in artwork, no gradients, no shadow on background, no antialias blur. Entire asset inside canvas, no clipping. It will be chroma-keyed and nearest-neighbor packed into a64x64 transparent game icon, opaque content fitting within52x52 pixels. Make the two parcels and TWO carrying hands instantly distinct at small size."
+}
