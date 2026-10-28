@@ -37,3 +37,12 @@ GitHub Pages仍以main /docs服務，本輪隱藏版本標籤亦會更新Pages�
 本地建置／瀏覽器及檔案一致性結果見QA_REPORT.md與deliverables/vercel-preparation-v0192。沒有登入或操作Vercel帳號，不宣稱Vercel正式部署已完成。
 
 官方依據（2026-10-27香港查閱）：https://openapi.vercel.sh/vercel.json支持framework:null、buildCommand及outputDirectory；GitHub整合說明https://vercel.com/docs/git/vercel-for-github。成功部署後仍需以使用者實際Vercel網址確認正式載入及存檔匯入。
+
+## Vercel Web Analytics（2026-10-28）
+已加入 `@vercel/analytics`（package-lock固定2.0.1）。Vercel執行npm安裝後，平台預設VERCEL=1使build:vercel把套件原生瀏覽器ESM輸出到dist/vercel-analytics.js，並在頁面以inject啟用正式流量統計。沒有引入React或改遊戲程式。
+
+請到Vercel專案 → Analytics → Enable啟用Web Analytics，並部署本次main更新。後台未啟用時可能無數據，本地不能驗證帳號是否已啟用。只有Vercel部署版注入；GitHub Pages docs、一般本地建置與PLAY-OFFLINE不載入。VERCEL_ANALYTICS_DISABLED=1可在Vercel環境變數停用，下次重建生效。若手動關閉了Vercel「自動暴露系統環境變數」，須恢復VERCEL系統變數才啟用。
+
+只使用套件預設瀏覽流量統計，不新增自訂遊戲事件；beforeSend去除URL query/hash，不傳送存檔、錢包、貨物、訂單或客人資料。統計服務被阻擋／不可用不影響獨立的遊戲模組。這不新增雲端存檔。
+
+Vercel版HTML因含統計入口會與離線／Pages不同；各自version.json的html_sha256仍核對各自實際HTML。驗本地部署輸出可用VERCEL=1 npm run build:vercel；一般npm run build:vercel維持離線同檔。
