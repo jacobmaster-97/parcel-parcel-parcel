@@ -1,5 +1,5 @@
 import{createRequire}from'node:module';import assert from'node:assert/strict';import fs from'node:fs/promises';import{Shift}from'../src/game.js';import{makeSave,readSave}from'../src/save.js';import{PREFERENCES_KEY}from'../src/preferences.js';
-const{chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({args:['--no-sandbox']}),url=new URL('../deliverables/parcel-point-prototype-v0.19.7.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/settings-v018/',import.meta.url).pathname,checks=[],errors=[];
+const{chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({args:['--no-sandbox']}),url=new URL('../deliverables/parcel-point-prototype-v0.19.8.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/settings-v018/',import.meta.url).pathname,checks=[],errors=[];
 await fs.mkdir(out,{recursive:true});const snap=p=>p.evaluate(()=>__parcelQA.snapshot());
 async function musicPlaying(p){for(let n=0;n<160;n++){if((await snap(p)).music.playing)return;await p.waitForTimeout(25);}assert.fail(JSON.stringify((await snap(p)).music));}
 async function range(p,id,value){await p.locator(id).press(value===1?'Home':'End');if(value===1)await p.locator(id).press('ArrowRight');}
