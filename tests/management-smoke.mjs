@@ -1,7 +1,7 @@
 import{createRequire}from'node:module';import assert from'node:assert/strict';import fs from'node:fs/promises';
 import{Shift}from'../src/game.js';import{makeSave,readSave}from'../src/save.js';
 const{chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({args:['--no-sandbox']});
-const url=new URL('../deliverables/parcel-point-prototype-v0.19.6.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
+const url=new URL('../deliverables/parcel-point-prototype-v0.19.7.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
 const snap=p=>p.evaluate(()=>__parcelQA.snapshot());
 const current=p=>p.evaluate(()=>new Promise(resolve=>{const q=indexedDB.open('parcel-parcel-parcel-progress-v1',1);q.onsuccess=()=>{const db=q.result,t=db.transaction('state','readonly'),r=t.objectStore('state').get('current');r.onsuccess=()=>resolve(r.result);t.oncomplete=()=>db.close();};}));
 function fixture(){const g=new Shift({shippingChance:0,deferDayStart:true});g.start();g.ledger.post('fixture','pickup',2000,'fixture');g.totalRevenue=g.stats.revenue=2000;g.closeDay();return makeSave('management-fixture',g,{player:{x:174,y:218,face:'up',travel:0},actors:[],departures:[]});}

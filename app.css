@@ -217,3 +217,8 @@ body.large-text .support-author{font-size:18px}
 .home-screen-dialog .button{min-height:48px;width:100%;font-size:18px}
 body.large-text .home-screen-dialog li{font-size:20px}
 .home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:100px;padding:10px 6px}
+
+/* Main-menu support link: 80% visual size, with a 48px touch area. */
+.welcome-dialog .support-author{position:relative;min-width:89.6px;min-height:38.4px;padding:6.4px 11.2px;border-width:.8px;border-radius:3.2px;font-size:12px}
+body.large-text .welcome-dialog .support-author{font-size:14.4px}
+.welcome-dialog .support-author::after{content:"";position:absolute;inset:-4.8px}

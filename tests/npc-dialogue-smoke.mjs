@@ -1,7 +1,7 @@
 import{createRequire}from'node:module';import assert from'node:assert/strict';import fs from'node:fs/promises';
 import{Shift}from'../src/game.js';import{makeSave,saveChecksum}from'../src/save.js';import{rectOverlaps}from'../src/npc-dialogue.js';
 const{chromium}=createRequire(import.meta.url)('playwright'),browser=await chromium.launch({args:['--no-sandbox']});
-const url=new URL('../deliverables/parcel-point-prototype-v0.19.6.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
+const url=new URL('../deliverables/parcel-point-prototype-v0.19.7.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname,errors=[],checks=[];
 function fixture(role){const g=new Shift({deferDayStart:true,shippingChance:0});g.start();if(role==='worker'){g.ledger.post('fixture','pickup',1000,'fixture');g.totalRevenue=g.stats.revenue=1000;g.closeDay();g.purchaseUpgrade('worker');g.beginStocking();g.nextDay();g.openNextDay();for(const z of['A','B'])while(g.addPackage(z,'shelf')){}}
  if(role!=='customer')for(const o of[...g.queue])g.expire(o);
  if(role==='courier'){while(g.addPackage(null,'receiving')){}g.requestCourier();g.advanceCourier(20);assert.equal(g.courier.stage,'waiting');}

@@ -230,6 +230,11 @@ body.large-text .support-author{font-size:18px}
 .home-screen-dialog .button{min-height:48px;width:100%;font-size:18px}
 body.large-text .home-screen-dialog li{font-size:20px}
 .home-screen-actions{display:flex;gap:10px;flex-wrap:wrap}.home-screen-actions .button{flex:1;min-width:100px;padding:10px 6px}
+
+/* Main-menu support link: 80% visual size, with a 48px touch area. */
+.welcome-dialog .support-author{position:relative;min-width:89.6px;min-height:38.4px;padding:6.4px 11.2px;border-width:.8px;border-radius:3.2px;font-size:12px}
+body.large-text .welcome-dialog .support-author{font-size:14.4px}
+.welcome-dialog .support-author::after{content:"";position:absolute;inset:-4.8px}
 </style>
 </head>
 <body>
@@ -1074,7 +1079,7 @@ function decodeShift(value){
 function validateActor(a){saveCheck(a&&typeof a.id==='string'&&a.id.length<40&&savePoint(a)&&saveFaces.includes(a.face)&&saveFinite(a.travel)&&a.travel>=0&&typeof a.carrying==='boolean'&&saveInt(a.appearance)&&a.appearance<CUSTOMER_COUNT&&saveRoute(a.route)&&saveInt(a.next)&&a.next<=a.route.length&&typeof a.entered==='boolean');}
 function makeSave(profileId,game,view,settings={sound:true}){
  if(game.practice)throw new Error('練習不能覆蓋正式店舖進度。');
- const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.6',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
+ const record={format:'parcel-parcel-parcel',schemaVersion:SAVE_SCHEMA,appVersion:'0.19.7',profileId,revision:0,savedAt:new Date().toISOString(),payload:{shift:encodeShift(game),view:structuredClone(view),settings:{sound:!!settings.sound}}};record.checksum=saveChecksum(record.payload);readSave(record);return record;
 }
 function readSave(record){
  if(record?.schemaVersion>SAVE_SCHEMA)throw new Error('此存檔來自較新版本，請使用相容版本開啟。');
