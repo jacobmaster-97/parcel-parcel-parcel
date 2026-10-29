@@ -2,7 +2,7 @@ import{createRequire}from'node:module';import assert from'node:assert/strict';im
 import{Shift}from'../src/game.js';import{makeSave}from'../src/save.js';
 const{chromium}=createRequire(import.meta.url)('playwright');
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-const url=new URL('../deliverables/parcel-point-prototype-v0.19.8.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname;
+const url=new URL('../deliverables/parcel-point-prototype-v0.19.9.html',import.meta.url).href+'?qa=1',out=new URL('../deliverables/',import.meta.url).pathname;
 const errors=[],checks=[];
 function fixture(){const g=new Shift({deferDayStart:true,shippingChance:0});g.start();g.ledger.post('art-fixture','pickup',5000,'fixture');g.totalRevenue=5000;g.stats.revenue=5000;g.closeDay();for(const id of['shelf:C','shelf:D','shelf:A','shelf:A','worker'])assert.ok(g.purchaseUpgrade(id).ok,id);g.beginStocking();g.nextDay();g.openNextDay();for(let n=0;n<1500&&!g.worker.task?.carrying;n++)g.advanceWorker(.02);assert.ok(g.worker.task.carrying);for(let i=0;i<4;i++)assert.ok(g.spawnCustomer({type:'shipping'}));return{g,record:makeSave('art-save-schema4',g,{player:{x:174,y:218,face:'up',travel:0},actors:g.queue.map((o,i)=>({id:o.id,appearance:o.appearance,x:[174,140,106,72,38][i],y:142,face:'down',travel:0,carrying:o.type==='shipping',entered:true,route:[{x:40,y:64}],next:1})),departures:[]})};}
 try{

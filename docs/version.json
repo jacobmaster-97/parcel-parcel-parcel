@@ -1,6 +1,6 @@
 {
-  "version": "0.19.8",
-  "html_sha256": "24c7c649e2ac9d5caec2767f6474f22114304cbd251ce20e604e9a99305d1d0a",
+  "version": "0.19.9",
+  "html_sha256": "f0fe207f5d67fa6b8da646a395979901087796a7d796668cc4b1b00dc80d40e6",
   "save_schema": 11,
   "achievements": 31,
   "icons": 31,
@@ -42,5 +42,6 @@
     "compact-support-author-links-menu-settings",
     "platform-home-screen-help-and-device-opt-out"
   ],
-  "customer_types": 6
+  "customer_types": 6,
+  "vercelAnalytics": false
 }

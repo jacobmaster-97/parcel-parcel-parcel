@@ -11,7 +11,7 @@ const server=http.createServer(async(req,res)=>{
  try{
   const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
   const relative=pathname==='/'?'index.html':pathname.slice(1);
-  if(!['index.html','app.css','favicon.svg','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'].includes(relative)&&!relative.startsWith('src/')&&
+  if(!['index.html','app.css','favicon.svg','social-preview-v2.png','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'].includes(relative)&&!relative.startsWith('src/')&&
    !/^assets\/(characters|environment|ui|audio)\//.test(relative)){res.writeHead(404).end();return;}
   const target=path.resolve(root,relative);
   if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}

@@ -1,3 +1,7 @@
+# v0.19.9 分享縮圖
+
+使用已確認宣傳圖v2為Open Graph／Twitter大圖，原圖PNG無裁切；靜態head提供標題、描述、圖片絕對網址及尺寸。Pages用原Pages網址，Vercel建置按系統production/deployment URL套用。手機主畫面圖示不變。
+
 # v0.19.8 主選單標題
 
 標題改為「今日又夠鐘開工」，保留原兩行樣式。

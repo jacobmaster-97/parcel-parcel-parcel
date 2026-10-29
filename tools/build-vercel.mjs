@@ -12,6 +12,17 @@ let html=fs.readFileSync(path.join(root,'deliverables',`parcel-point-prototype-v
 const output=path.join(root,'dist');
 fs.rmSync(output,{recursive:true,force:true});
 fs.mkdirSync(output,{recursive:true});
+// Publish crawler-readable absolute metadata for the actual Vercel site.
+const deploymentHost=process.env.VERCEL==='1'&&(process.env.VERCEL_PROJECT_PRODUCTION_URL||process.env.VERCEL_URL);
+if(deploymentHost){
+ const siteBase=new URL(`https://${deploymentHost}`).origin+'/';
+ let page=html.toString();
+ for(const [attribute,value]of [['property="og:url"',siteBase],['property="og:image"',siteBase+'social-preview-v2.png'],['name="twitter:image"',siteBase+'social-preview-v2.png']]){
+  const expression=new RegExp(`(<meta ${attribute} content=")[^"]*(")`);
+  page=page.replace(expression,(_,before,after)=>before+value+after);
+ }
+ html=Buffer.from(page);
+}
 // Only Vercel owns /_vercel/insights; keep Pages and offline builds independent.
 const analyticsEnabled=process.env.VERCEL==='1'&&process.env.VERCEL_ANALYTICS_DISABLED!=='1';
 if(analyticsEnabled){
@@ -26,7 +37,7 @@ if(location.protocol==='https:')inject({mode:'production',beforeSend(event){
  html=Buffer.from(html.toString().replace('</body>',analytics+'\n</body>'));
 }
 fs.writeFileSync(path.join(output,'index.html'),html);
-for(const name of ['manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'])fs.copyFileSync(path.join(root,name),path.join(output,name));
+for(const name of ['social-preview-v2.png','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'])fs.copyFileSync(path.join(root,name),path.join(output,name));
 const preview=path.join(root,'docs','music-preview');
 if(fs.existsSync(preview))fs.cpSync(preview,path.join(output,'music-preview'),{recursive:true});
 const previous=path.join(root,'docs','version.json');

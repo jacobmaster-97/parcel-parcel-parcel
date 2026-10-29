@@ -1,3 +1,7 @@
+# v0.19.9 分享縮圖
+
+使用已確認宣傳圖v2為Open Graph／Twitter大圖，原圖PNG無裁切；靜態head提供標題、描述、圖片絕對網址及尺寸。Pages用原Pages網址，Vercel建置按系統production/deployment URL套用。手機主畫面圖示不變。
+
 # v0.19.8 主選單標題
 
 標題改為「今日又夠鐘開工」，保留原兩行樣式。
@@ -20,7 +24,7 @@
 
 像素風集運自提點經營遊戲，支援鍵盤及手機觸控。
 
-**[立即遊玩 v0.19.8](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.8)**
+**[立即遊玩 v0.19.9](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.9)**
 
 每個營業日2分鐘。接待客人取得提貨碼，找貨交付；亦可接收寄貨、自由上架，並聘用理貨員協助。新店先有A/B貨架，C/D及容量可購買升級；未購入貨物管理系統前需逐架找貨。
 
