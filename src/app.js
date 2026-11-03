@@ -317,7 +317,9 @@ function walkActor(actor,target,dt){
  actor.moving=d>1;
  if(actor.moving){const step=Math.min(d,dt*54);actor.x+=dx/d*step;actor.y+=dy/d*step;actor.travel+=step;
   actor.face=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
- }else actor.face='up';
+ // Snap the same <=1-unit arrival tolerance used by walkActor. Without this,
+ // an exact one-unit gap stops walking but never satisfies followRoute's <1 test.
+ }else {actor.x=target.x;actor.y=target.y;actor.face='up';}
 }
 function followRoute(actor,dt){
  const target=actor.route[actor.next];if(!target)return true;
