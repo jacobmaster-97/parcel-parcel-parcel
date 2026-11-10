@@ -46,3 +46,6 @@ GitHub Pages仍以main /docs服務，本輪隱藏版本標籤亦會更新Pages�
 只使用套件預設瀏覽流量統計，不新增自訂遊戲事件；beforeSend去除URL query/hash，不傳送存檔、錢包、貨物、訂單或客人資料。統計服務被阻擋／不可用不影響獨立的遊戲模組。這不新增雲端存檔。
 
 Vercel版HTML因含統計入口會與離線／Pages不同；各自version.json的html_sha256仍核對各自實際HTML。驗本地部署輸出可用VERCEL=1 npm run build:vercel；一般npm run build:vercel維持離線同檔。
+
+## v0.19.11 快取與頻寬
+Vercel headers只對/static/(.*)的內容hash檔給public,max-age31536000,immutable；HTML/manifest/version維持max-age0,must-revalidate。建置複製分享原PNG及主畫面icons到hash路徑並改metadata/webmanifest，保留root舊路徑兼容舊分享。不改分享圖畫面、不對整份HTML設一年cache、不新增service worker。CDN HIT仍可能計Fast Data Transfer，內嵌圖像音樂不能各自快取；這輪收益主要來自預處理圖集和降低音樂bitrate。

@@ -11,14 +11,22 @@
       "seconds": 73.84615,
       "sampleRate": 44100,
       "channels": 2,
-      "mp3Bytes": 1223225,
-      "mp3Sha256": "1f405d963b01786cb090270496fbf4a0ebc4a7bf6cfb09e3fab1e8889c1191fe",
+      "mp3Bytes": 886972,
+      "mp3Sha256": "ac31f715bd4aaaef63e2e388615599d40e7b7e6c94c0e0b57e18f05d3a64a575",
       "peakDbfs": -7.54,
       "rmsDbfs": -21.41,
       "clippedSamples": 0,
       "loopBoundaryStep": 8.609399343406134e-05,
       "noteCount": 550,
-      "file": "assets/audio/business.mp3"
+      "file": "assets/audio/business.mp3",
+      "targetBitrateKbps": 96,
+      "encoding": "CBR MP3 from original PCM master",
+      "masterFrames": 3256615,
+      "masterSha256": "5ca2e06efec8f1d78e47474d987cfdd891e070ba4f1b95de8672a4ad96c5987f",
+      "originalMp3File": "design/music-review-v1/business.mp3",
+      "originalMp3Bytes": 1223225,
+      "decodedPeakDbfs": -7.983090400695801,
+      "decodedLoopBoundaryStep": 0.0034040240570902824
     },
     {
       "id": "stocking",
@@ -28,15 +36,24 @@
       "seconds": 68.57143,
       "sampleRate": 44100,
       "channels": 2,
-      "mp3Bytes": 663872,
-      "mp3Sha256": "6d8704a7686cd73bf10660dacd703c021691696975d1eed2e761357d6d0303a7",
+      "mp3Bytes": 549158,
+      "mp3Sha256": "7e69b622644706b0eb18837c0bb4c2e159d82d101d4ba61f98aaaeda9be3b4be",
       "peakDbfs": -6.54,
       "rmsDbfs": -21.41,
       "clippedSamples": 0,
       "loopBoundaryStep": 0.0003006945513818922,
       "noteCount": 264,
-      "file": "assets/audio/stocking.mp3"
+      "file": "assets/audio/stocking.mp3",
+      "targetBitrateKbps": 64,
+      "encoding": "CBR MP3 from original PCM master",
+      "masterFrames": 3024000,
+      "masterSha256": "c4e1cc36e520da75d5a93a50a43e6cf976be1d1aef9e80fd4cafb48d67538446",
+      "originalMp3File": "design/music-review-v1/stocking.mp3",
+      "originalMp3Bytes": 663872,
+      "decodedPeakDbfs": -6.920746803283691,
+      "decodedLoopBoundaryStep": 0.0034760055132210255
     }
   ],
-  "version": "0.16.0"
+  "version": "0.19.11",
+  "optimization": "96/64kbps stereo encoded from original WAV, originals retained in design/music-review-v1."
 }

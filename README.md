@@ -1,3 +1,7 @@
+# v0.19.11 頻寬優化
+
+送貨員及寄貨籠預輸出與舊Canvas逐像素一致；兩首BGM由原WAV編碼96/64kbps立體聲。獨立分享PNG/icon採內容hash網址與Vercel一年快取，HTML仍更新核對。分享圖畫面／原PNG、玩法／schema11／唯一換日前存檔維持。詳design/bandwidth-v01911/IMPLEMENTED.md及assets/metadata/bandwidth-v01911.json。
+
 # v0.19.10 修復客人不補位
 
 修復角色距離路線點剛好一格時停步、路線卻不前進，令客人卡在入口而擋住接待的問題。角色進入到達範圍時貼齊目標，不跳過訂單、不重設耐性或收入；離店路線亦可正常完成。
@@ -29,7 +33,7 @@
 
 像素風集運自提點經營遊戲，支援鍵盤及手機觸控。
 
-**[立即遊玩 v0.19.10](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.10)**
+**[立即遊玩 v0.19.11](https://jacobmaster-97.github.io/parcel-parcel-parcel/?v=0.19.11)**
 
 每個營業日2分鐘。接待客人取得提貨碼，找貨交付；亦可接收寄貨、自由上架，並聘用理貨員協助。新店先有A/B貨架，C/D及容量可購買升級；未購入貨物管理系統前需逐架找貨。
 

@@ -3163,7 +3163,10 @@
         96,
         80
       ],
-      "sourceBounds": "src/courier-art.js COURIER_ART.outboundBounds"
+      "sourceBounds": "src/courier-art.js COURIER_ART.outboundBounds",
+      "sourceImage": "assets/raw/bandwidth-v01911/outbound_cage.png",
+      "runtimePrepacked": true,
+      "sourceBoundsNote": "Bounds apply only to the preserved sourceImage; runtime image already96x80."
     }
   ],
   "customerExpansion": {
@@ -3194,5 +3197,10 @@
     "metadata": "assets/metadata/achievement_two_hands.json",
     "reveal": "earned only",
     "originalAtlas": "unchanged 30 icons"
+  },
+  "runtimeOptimizations": {
+    "version": "0.19.11",
+    "metadata": "assets/metadata/bandwidth-v01911.json",
+    "description": "Courier and outbound cage are prepacked to exact runtime dimensions; originals retained under assets/raw/bandwidth-v01911."
   }
 }

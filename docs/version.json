@@ -1,6 +1,6 @@
 {
-  "version": "0.19.10",
-  "html_sha256": "e7c5a0a27b5b23c2eef727fa2b5b381baff2a658ecc132929fdbe619befdf5fc",
+  "version": "0.19.11",
+  "html_sha256": "eceed08d8a61c7b2e593b75a5cfccf51d8b23c379a24e08fff503619a411557e",
   "save_schema": 11,
   "achievements": 31,
   "icons": 31,
@@ -40,8 +40,17 @@
     "vercel-static-build",
     "main-menu-creator-Studios_16",
     "compact-support-author-links-menu-settings",
-    "platform-home-screen-help-and-device-opt-out"
+    "platform-home-screen-help-and-device-opt-out",
+    "prepacked-courier-and-cage",
+    "compressed-approved-original-music",
+    "hashed-static-assets-long-cache"
   ],
   "customer_types": 6,
-  "vercelAnalytics": false
+  "vercelAnalytics": false,
+  "immutableAssets": {
+    "social-preview-v2.png": "static/social-preview-v2.e8b9cd8d4602cb19.png",
+    "icon-180.png": "static/icon-180.d8fe4cdc93119609.png",
+    "icon-192.png": "static/icon-192.2102225aff9eb801.png",
+    "icon-512.png": "static/icon-512.99bfd33039641c90.png"
+  }
 }

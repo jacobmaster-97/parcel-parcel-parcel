@@ -914,6 +914,9 @@ $('home-screen-never').addEventListener('click',()=>{try{localStorage.setItem('p
 $('home-screen-dismiss').addEventListener('click',()=>{$('home-screen-dialog').close();clearInput();});
 requestAnimationFrame(loop);
 function packRuntimeImage(name,img){
+ // Optimized assets already contain the exact runtime pixels; do not crop twice.
+ if((name==='courier_walk'||name==='courier_carry_walk')&&img.width===256&&img.height===192)return img;
+ if(name==='outbound_cage'&&img.width===96&&img.height===80)return img;
  if(name==='courier_walk'||name==='courier_carry_walk'){
   const packed=document.createElement('canvas');packed.width=256;packed.height=192;
   const painter=packed.getContext('2d');painter.imageSmoothingEnabled=false;

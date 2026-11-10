@@ -36,14 +36,31 @@ if(location.protocol==='https:')inject({mode:'production',beforeSend(event){
 </script>`;
  html=Buffer.from(html.toString().replace('</body>',analytics+'\n</body>'));
 }
+// Versioned external assets can be cached forever without freezing game updates.
+const staticDirectory=path.join(output,'static');fs.mkdirSync(staticDirectory,{recursive:true});
+const retained=path.join(root,'docs','static');
+if(fs.existsSync(retained))fs.cpSync(retained,staticDirectory,{recursive:true});
+const immutableAssets={};
+for(const name of ['social-preview-v2.png','icon-180.png','icon-192.png','icon-512.png']){
+ const bytes=fs.readFileSync(path.join(root,name)),digest=createHash('sha256').update(bytes).digest('hex').slice(0,16),ext=path.extname(name);
+ const relative=`static/${path.basename(name,ext)}.${digest}${ext}`;
+ fs.writeFileSync(path.join(output,relative),bytes);immutableAssets[name]=relative;
+}
+let page=html.toString();
+page=page.replaceAll('social-preview-v2.png',immutableAssets['social-preview-v2.png']);
+page=page.replace('href="icon-180.png"',`href="${immutableAssets['icon-180.png']}"`);
+html=Buffer.from(page);
 fs.writeFileSync(path.join(output,'index.html'),html);
 for(const name of ['social-preview-v2.png','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'])fs.copyFileSync(path.join(root,name),path.join(output,name));
+const webManifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
+for(const icon of webManifest.icons)icon.src=immutableAssets[icon.src]||icon.src;
+fs.writeFileSync(path.join(output,'manifest.webmanifest'),JSON.stringify(webManifest,null,2)+'\n');
 const preview=path.join(root,'docs','music-preview');
 if(fs.existsSync(preview))fs.cpSync(preview,path.join(output,'music-preview'),{recursive:true});
 const previous=path.join(root,'docs','version.json');
 const manifest=fs.existsSync(previous)?JSON.parse(fs.readFileSync(previous,'utf8')):{};
 Object.assign(manifest,{version,html_sha256:createHash('sha256').update(html).digest('hex'),save_schema:SAVE_SCHEMA,achievements:ACHIEVEMENTS.length,icons:ACHIEVEMENTS.length});
-manifest.vercelAnalytics=analyticsEnabled;
-manifest.features=[...new Set([...(manifest.features||[]),'prototype-label-hidden','vercel-static-build'])];
+manifest.vercelAnalytics=analyticsEnabled;manifest.immutableAssets=immutableAssets;
+manifest.features=[...new Set([...(manifest.features||[]),'prototype-label-hidden','vercel-static-build','prepacked-courier-and-cage','compressed-approved-original-music','hashed-static-assets-long-cache'])];
 fs.writeFileSync(path.join(output,'version.json'),JSON.stringify(manifest,null,2)+'\n');
 console.log(`Vercel static output: dist/index.html (${html.length.toLocaleString()} bytes), version ${version}`);

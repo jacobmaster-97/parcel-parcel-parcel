@@ -220,5 +220,12 @@
   ],
   "framesPerDirection": 8,
   "fps": 12,
-  "import": "src/app.js packRuntimeImage: nearest-neighbor packing once on load; never equal-cut the source PNG"
+  "import": "src/app.js packRuntimeImage: nearest-neighbor packing once on load; never equal-cut the source PNG",
+  "sourceImage": "assets/raw/bandwidth-v01911/courier_walk.png",
+  "imageSize": [
+    256,
+    192
+  ],
+  "runtimePrepacked": true,
+  "sourceFramesNote": "Historical raw-source bounds apply only to sourceImage; image is already the runtime atlas."
 }

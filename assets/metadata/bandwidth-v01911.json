@@ -1,0 +1,51 @@
+{
+  "version": "0.19.11",
+  "method": "Exact existing Canvas crop/nearest-neighbour scale, baked once; PNG roundtrip pixel-identical.",
+  "footAnchor": [
+    16,
+    44
+  ],
+  "assets": [
+    {
+      "name": "courier_walk",
+      "file": "assets/characters/courier_walk.png",
+      "original": "assets/raw/bandwidth-v01911/courier_walk.png",
+      "originalBytes": 1216461,
+      "bytes": 51556,
+      "width": 256,
+      "height": 192,
+      "rgbaDifferences": 0,
+      "sha256": "f6eab731a78c49c9ea0e8b6001cb63606986d70a95ab9d8a26f53492e18fbe4a",
+      "originalSha256": "1ed7ac0257401be026d72abc7758cd824db68ef5b11f0ab374c95aba95287b5d"
+    },
+    {
+      "name": "courier_carry_walk",
+      "file": "assets/characters/courier_carry_walk.png",
+      "original": "assets/raw/bandwidth-v01911/courier_carry_walk.png",
+      "originalBytes": 1263202,
+      "bytes": 54800,
+      "width": 256,
+      "height": 192,
+      "rgbaDifferences": 0,
+      "sha256": "588564785b41a4d2545f6309a3ce55dc35838061d36c0a534a38a36895596eb1",
+      "originalSha256": "8c1d86592e643de188579646b69467c2f11e5a0d8fd1a82ef29be49648009b7e"
+    },
+    {
+      "name": "outbound_cage",
+      "file": "assets/environment/props/outbound_cage.png",
+      "original": "assets/raw/bandwidth-v01911/outbound_cage.png",
+      "originalBytes": 332881,
+      "bytes": 5480,
+      "width": 96,
+      "height": 80,
+      "rgbaDifferences": 0,
+      "sha256": "32c55b404ac01d71ce88c875a697c22b4d371791a20df9668bf4a523590c1f65",
+      "originalSha256": "ff0a5a7ef2b2015020b524dc8ee64fafd20ace668ac6172909291c26f095da13"
+    }
+  ],
+  "shareImage": {
+    "file": "social-preview-v2.png",
+    "bytes": 2149272,
+    "sha256": "e8b9cd8d4602cb19f8ea201e7b3c72199fbd49be42fc8df21464fecc61fdbbe5"
+  }
+}

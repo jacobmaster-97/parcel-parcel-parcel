@@ -1,3 +1,6 @@
+# v0.19.11 頻寬優化
+送貨員兩張256×192／寄貨籠96×80已預先輸出，與舊runtime Canvas轉換逐像素一致，原PNG保留assets/raw/bandwidth-v01911。音樂由原WAV重新編96/64kbps立體聲MP3；原MP3保留design/music-review-v1。詳metadata/bandwidth-v01911.json與background_music.json。
+
 # v0.19.0 解放雙手
 
 工具「解放雙手」一次$500永久購入，上架可一次選拿1–2件收貨新貨，按選取順序逐件選架。提貨／寄貨／AI保持單件。新增成就「左右開弓」（ID37），解鎖該功能即達成，圖示仍達成後才揭示，合共31項。schema11支援1–10，保留舊30項及貨物／錢包；不改唯一換日前自存或裝置偏好。詳design/two-hands-v1/IMPLEMENTED.md。
